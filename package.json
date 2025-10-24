@@ -8,7 +8,9 @@
   },
   "scripts": {
     "start": "node app.js",
-    "dev": "node app.js"
+    "dev": "node app.js",
+    "build": "echo 'Build completed'",
+    "vercel-build": "echo 'Vercel build completed'"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.76.1",
