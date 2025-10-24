@@ -1,4 +1,3 @@
-// app.js
 import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
@@ -17,15 +16,14 @@ const PORT = process.env.PORT || 3000;
 
 // --- Middlewares globales ---
 
-// --- ¡SIMPLIFICADO! Esto permite todas las solicitudes CORS. ---
-// La seguridad la manejará el token JWT (authMiddleware) y la configuración de Vercel (headers).
+// Configuración CORS para PERMITIR CUALQUIER ORIGEN (origin: true).
+// Esto soluciona los problemas de "preflight" de localhost.
 app.use(cors({
     origin: true,
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
 }));
-// --- FIN: Configuración CORS simple ---
 
 // Aumentar el límite de payload para aceptar los archivos (ej. 50mb)
 app.use(express.json({ limit: "50mb" }));
