@@ -1,28 +1,35 @@
 # Node modules (will be installed by Vercel)
+
 node_modules
 
 # Development files
-*.log
+
+\*.log
 .env.local
 .env.development
 
 # IDE files
+
 .vscode
 .idea
 
 # OS files
+
 .DS_Store
 Thumbs.db
 
 # Git files
+
 .git
 .gitignore
 
 # Test files
+
 test
 tests
-*.test.js
+\*.test.js
 
 # Documentation
+
 README.md
 docs
