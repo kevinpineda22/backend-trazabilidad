@@ -17,35 +17,15 @@ const PORT = process.env.PORT || 3000;
 
 // --- Middlewares globales ---
 
-// --- ¡CORREGIDO Y MEJORADO! ---
-// Lista de orígenes permitidos
-const whitelist = [
-    'http://localhost:5173', // Tu frontend de desarrollo
-    process.env.FRONTEND_URL  // Tu frontend en producción (añadir a .env)
-];
-
-const corsOptions = {
-    origin: function (origin, callback) {
-        // Permitir peticiones sin 'origin' (como Postman o apps móviles)
-        // o si el origen está en la whitelist
-        if (!origin || whitelist.indexOf(origin) !== -1) {
-            callback(null, true);
-        } else {
-            callback(new Error('No permitido por CORS'));
-        }
-    },
+// --- ¡SIMPLIFICADO! Esto permite todas las solicitudes CORS. ---
+// La seguridad la manejará el token JWT (authMiddleware) y la configuración de Vercel (headers).
+app.use(cors({
+    origin: true,
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
-};
-
-// Usamos la configuración de CORS mejorada
-app.use(cors(corsOptions));
-
-// Habilitar la respuesta a peticiones pre-flight (OPTIONS)
-// Vercel puede necesitar esto explícitamente
-app.options('*', cors(corsOptions));
-// --- FIN CORRECCIÓN ---
+}));
+// --- FIN: Configuración CORS simple ---
 
 // Aumentar el límite de payload para aceptar los archivos (ej. 50mb)
 app.use(express.json({ limit: "50mb" }));
@@ -58,58 +38,58 @@ app.use(`${apiBase}/proveedores`, proveedoresContabilidadRoutes);
 app.use(`${apiBase}/clientes`, clientesContabilidadRoutes);
 app.use(`${apiBase}/admin`, adminContabilidadRoutes);
 
-// --- Rutas de Bienvenida y Salud (de tu archivo) ---
+// --- Rutas de Bienvenida y Salud ---
 app.get("/", (req, res) => {
-    res.json({
-        message: "API de Trazabilidad de Contabilidad está corriendo.",
-        status: "active",
-        timestamp: new Date().toISOString(),
-        environment: process.env.NODE_ENV || "development",
-    });
+    res.json({
+        message: "API de Trazabilidad de Contabilidad está corriendo.",
+        status: "active",
+        timestamp: new Date().toISOString(),
+        environment: process.env.NODE_ENV || "development",
+    });
 });
 
 app.get("/health", (req, res) => {
-    res.json({
-        status: "OK",
-        timestamp: new Date().toISOString(),
-        uptime: process.uptime(),
-    });
+    res.json({
+        status: "OK",
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+    });
 });
 
 app.get("/api", (req, res) => {
-    res.json({
-        message: "API de Trazabilidad",
-        endpoints: {
-            empleados: "/api/trazabilidad/empleados",
-            proveedores: "/api/trazabilidad/proveedores",
-            clientes: "/api/trazabilidad/clientes",
-            admin: "/api/trazabilidad/admin",
-        },
-    });
+    res.json({
+        message: "API de Trazabilidad",
+        endpoints: {
+            empleados: "/api/trazabilidad/empleados",
+            proveedores: "/api/trazabilidad/proveedores",
+            clientes: "/api/trazabilidad/clientes",
+            admin: "/api/trazabilidad/admin",
+        },
+    });
 });
 
-// --- Manejo de errores 404 (de tu archivo) ---
+// --- Manejo de errores 404 (Rutas no encontradas) ---
 app.use((req, res, next) => {
-    res.status(404).json({
-        message: "Ruta no encontrada",
-        path: req.path,
-    });
+    res.status(404).json({
+        message: "Ruta no encontrada",
+        path: req.path,
+    });
 });
 
-// --- Error handler global (de tu archivo) ---
+// --- Error handler global ---
 app.use((error, req, res, next) => {
-    console.error("Error global:", error);
-    res.status(error.status || 500).json({
-        message: error.message || "Error interno del servidor",
-        ...(process.env.NODE_ENV === "development" && { stack: error.stack }),
-    });
+    console.error("Error global:", error);
+    res.status(error.status || 500).json({
+        message: error.message || "Error interno del servidor",
+        ...(process.env.NODE_ENV === "development" && { stack: error.stack }),
+    });
 });
 
 // --- Iniciar el servidor ---
 if (process.env.NODE_ENV !== "production") {
-    app.listen(PORT, () => {
-        console.log(`Servidor escuchando en http://localhost:${PORT}`);
-    });
+    app.listen(PORT, () => {
+        console.log(`Servidor escuchando en http://localhost:${PORT}`);
+    });
 }
 
 export default app;
