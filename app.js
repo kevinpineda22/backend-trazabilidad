@@ -11,36 +11,14 @@ import adminContabilidadRoutes from "./routes/adminContabilidadRoutes.js";
 // Cargar variables de entorno
 dotenv.config();
 
-// Obtener los orígenes permitidos del .env y convertirnos en un array normalizado
-const allowedOrigins = process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(",")
-      .map((s) => s.trim())
-      .filter(Boolean)
-  : [];
-
-const sharedCorsConfig = {
+// Configuración CORS laxa para evitar bloqueos por origen durante el desarrollo
+// Si en el futuro necesitas restringir, reemplaza origin:true por una función que valide contra una lista.
+const corsOptions = {
+  origin: true,
   credentials: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
 };
-
-const corsOptions = allowedOrigins.length
-  ? {
-      ...sharedCorsConfig,
-      origin: (origin, callback) => {
-        // Permitir peticiones sin origen (ej. Postman) o si el origen está en la lista de permitidos
-        if (!origin || allowedOrigins.includes(origin)) {
-          callback(null, true);
-        } else {
-          console.error(`CORS Blocked: Origin ${origin} not in allowed list.`);
-          callback(new Error("Not allowed by CORS policy"), false);
-        }
-      },
-    }
-  : {
-      ...sharedCorsConfig,
-      origin: true, // Fallback permisivo cuando no se configuraron orígenes
-    };
 
 const app = express();
 const PORT = process.env.PORT || 3000;
