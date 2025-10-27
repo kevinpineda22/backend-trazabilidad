@@ -57,6 +57,15 @@ app.get("/health", (req, res) => {
   });
 });
 
+// Endpoint de prueba para verificar que la API funciona
+app.get("/api/test", (req, res) => {
+  res.json({
+    message: "✅ API funcionando correctamente",
+    timestamp: new Date().toISOString(),
+    server: "backend-trazabilidad.vercel.app"
+  });
+});
+
 app.get("/api", (req, res) => {
   res.json({
     message: "API de Trazabilidad",
