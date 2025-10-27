@@ -3,10 +3,10 @@ dotenv.config();
 import express from "express";
 import cors from "cors";
 
-import empleadosContabilidadRoutes from "./routes/empleadosContabilidadRoutes.js";
-import proveedoresContabilidadRoutes from "./routes/proveedoresContabilidadRoutes.js";
-import clientesContabilidadRoutes from "./routes/clientesContabilidadRoutes.js";
-import adminContabilidadRoutes from "./routes/adminContabilidadRoutes.js";
+import empleadosContabilidadRoutes from "./src/routes/empleadosContabilidadRoutes.js";
+import proveedoresContabilidadRoutes from "./src/routes/proveedoresContabilidadRoutes.js";
+import clientesContabilidadRoutes from "./src/routes/clientesContabilidadRoutes.js";
+import adminContabilidadRoutes from "./src/routes/adminContabilidadRoutes.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
