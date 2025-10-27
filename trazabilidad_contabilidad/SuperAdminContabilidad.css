@@ -1,0 +1,457 @@
+/* src/pages/trazabilidad_contabilidad/SuperAdminContabilidad.css */
+
+/* --- Variables de Color --- */
+:root {
+    --admin-cont-primary-dark: #210d65;
+    --admin-cont-primary-medium: #3b1a9a;
+    --admin-cont-primary-light: #5c3eb8;
+    --admin-cont-accent: #4caf50;
+    --admin-cont-text-dark: #1f2933;
+    --admin-cont-text-light: #f8f9fa;
+    --admin-cont-text-muted: #64748b;
+    --admin-cont-bg-main: #f4f6fb;
+    --admin-cont-card-bg: #ffffff;
+    --admin-cont-border: #d9e2ec;
+    --admin-cont-shadow: 0 8px 24px rgba(18, 38, 63, 0.06);
+    --admin-cont-transition: 0.3s ease;
+}
+
+/* --- Contenedor Principal (Sidebar + Content) --- */
+.admin-cont-main-container {
+    display: flex;
+    min-height: 100vh;
+    background-color: var(--admin-cont-bg-main);
+    font-family: "Poppins", sans-serif;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* --- Sidebar (Panel Izquierdo) --- */
+.admin-cont-sidebar {
+    width: 280px;
+    background: linear-gradient(
+        180deg,
+        var(--admin-cont-primary-dark) 0%,
+        var(--admin-cont-primary-medium) 100%
+    );
+    color: var(--admin-cont-text-light);
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    padding-top: 1rem;
+    flex-shrink: 0;
+    z-index: 10;
+}
+
+.admin-cont-sidebar-header {
+    padding: 1.5rem 1.5rem 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    position: relative;
+}
+
+.admin-cont-back-button {
+    position: absolute !important;
+    top: 1rem !important;
+    left: 1rem !important;
+    color: var(--admin-cont-text-light);
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--admin-cont-transition);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.admin-cont-back-button:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: scale(1.05);
+    color: #ffffff;
+}
+
+.admin-cont-logo {
+    width: 70px;
+    height: 70px;
+    object-fit: contain;
+    border-radius: 50%;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    background-color: #ffffff;
+}
+
+.admin-cont-sidebar-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0.5rem 0 0 0;
+    color: var(--admin-cont-text-light);
+}
+
+.admin-cont-sidebar-nav {
+    flex: 1;
+    padding: 1.5rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    overflow-y: auto;
+}
+
+.admin-cont-sidebar-button {
+    width: calc(100% - 2rem);
+    margin: 0.25rem 1rem;
+    padding: 0.9rem 1rem;
+    text-align: left;
+    background: none;
+    border: none;
+    color: #dbeafe;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--admin-cont-transition);
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    border-radius: 8px;
+    border-left: 5px solid transparent;
+}
+
+.admin-cont-sidebar-button svg {
+    font-size: 1.1rem;
+    opacity: 0.8;
+    flex-shrink: 0;
+}
+
+.admin-cont-sidebar-button:hover {
+    background-color: var(--admin-cont-primary-light);
+    color: #ffffff;
+    transform: translateX(3px);
+}
+
+.admin-cont-sidebar-button-active {
+    background-color: var(--admin-cont-primary-light);
+    color: #ffffff;
+    font-weight: 600;
+    border-left: 5px solid var(--admin-cont-accent);
+    padding-left: calc(1rem - 5px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+.admin-cont-sidebar-button-active svg {
+    opacity: 1;
+}
+
+/* --- Área de Contenido (Derecha) --- */
+.admin-cont-content {
+    flex: 1;
+    padding: 2.5rem;
+    background-color: var(--admin-cont-bg-main);
+    overflow-y: auto;
+    height: 100vh;
+    box-sizing: border-box;
+}
+
+.admin-cont-main-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--admin-cont-primary-dark);
+    margin: 0 0 2rem 0;
+    text-align: left;
+}
+
+/* --- Estilos del Dashboard --- */
+.admin-cont-dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.admin-cont-stat-card {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    padding: 1.5rem;
+    background: var(--admin-cont-card-bg);
+    border-radius: 12px;
+    border: 1px solid var(--admin-cont-border);
+    box-shadow: var(--admin-cont-shadow);
+    transition: all var(--admin-cont-transition);
+}
+.admin-cont-stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px rgba(18, 38, 63, 0.08);
+}
+
+.stat-card-icon {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    font-size: 1.75rem;
+    color: var(--admin-cont-primary);
+    background: #eef2ff;
+}
+
+.admin-cont-stat-card:nth-child(2) .stat-card-icon {
+    background: #f0fdf4;
+    color: #16a34a;
+}
+.admin-cont-stat-card:nth-child(3) .stat-card-icon {
+    background: #eef2ff;
+    color: #3b82f6;
+}
+
+.stat-card-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.stat-card-value {
+    font-size: 2.25rem;
+    font-weight: 700;
+    color: var(--admin-cont-text-dark);
+    line-height: 1.1;
+}
+
+.stat-card-label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--admin-cont-text-muted);
+}
+
+/* --- Estilos de Historial (Tablas) --- */
+.admin-cont-historial-wrapper {
+    background: var(--admin-cont-card-bg);
+    border-radius: 12px;
+    border: 1px solid var(--admin-cont-border);
+    box-shadow: var(--admin-cont-shadow);
+    overflow: hidden;
+}
+
+.admin-cont-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.admin-cont-table-wrapper table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.admin-cont-table-wrapper th,
+.admin-cont-table-wrapper td {
+    padding: 0.85rem 1.25rem;
+    text-align: left;
+    border-bottom: 1px solid var(--admin-cont-border);
+    white-space: nowrap;
+}
+
+.admin-cont-table-wrapper th {
+    background: #f8fafc;
+    font-weight: 600;
+    color: var(--admin-cont-text-muted);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.admin-cont-table-wrapper tbody tr:hover {
+    background: #f9fbff;
+}
+
+/* --- NUEVO: Estilos para DocLink (Botón de Documento) --- */
+.historial-docs {
+    display: flex;
+    gap: 0.5rem;
+}
+.doc-link-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    color: var(--admin-cont-text-muted);
+    padding: 0.3rem 0.6rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.doc-link-button svg {
+    font-size: 0.9em;
+    color: var(--admin-cont-primary-light);
+}
+.doc-link-button:hover {
+    background: #eef2ff;
+    border-color: var(--admin-cont-primary-light);
+    color: var(--admin-cont-primary);
+}
+/* Colores de icono por tipo */
+.doc-link-button .fa-file-pdf { color: #e53e3e; }
+.doc-link-button .fa-file-image { color: #38a169; }
+
+.user-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--admin-cont-text-dark);
+}
+.user-cell svg {
+    color: var(--admin-cont-text-muted);
+    flex-shrink: 0;
+}
+.doc-link-empty {
+    font-size: 0.85rem;
+    color: #cbd5e1;
+    cursor: not-allowed;
+    padding: 0.3rem 0.6rem;
+}
+
+
+/* --- Loader y Mensaje de Vacío --- */
+.admin-cont-loader,
+.admin-cont-empty-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 3rem;
+    font-size: 1.1rem;
+    color: var(--admin-cont-text-muted);
+    font-weight: 500;
+    background: var(--admin-cont-card-bg);
+    border-radius: 12px;
+    border: 1px dashed var(--admin-cont-border);
+}
+
+.spinner {
+    animation: admin-cont-spin 1s linear infinite;
+}
+@keyframes admin-cont-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* --- Responsividad --- */
+@media (max-width: 1024px) {
+    .admin-cont-main-container {
+        flex-direction: column;
+        height: auto;
+        min-height: 100vh;
+        position: static;
+    }
+    
+    .admin-cont-sidebar {
+        width: 100%;
+        height: auto;
+        flex-direction: column;
+        padding-top: 0;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+    }
+
+    .admin-cont-sidebar-header {
+        flex-direction: row;
+        justify-content: space-between;
+        padding: 0.75rem 1rem;
+    }
+
+    .admin-cont-back-button {
+        position: static;
+        box-shadow: none;
+        width: 40px;
+        height: 40px;
+    }
+
+    .admin-cont-logo {
+        height: 40px;
+        width: 40px;
+    }
+
+    .admin-cont-sidebar-title {
+        font-size: 1.1rem;
+        margin: 0;
+    }
+
+    .admin-cont-sidebar-nav {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        padding: 0.5rem 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.15);
+    }
+    
+    .admin-cont-sidebar-button {
+        width: auto;
+        border-left: none;
+        border-bottom: 3px solid transparent;
+        border-radius: 4px;
+        padding: 0.75rem 1rem;
+        margin: 0.25rem;
+    }
+    
+    .admin-cont-sidebar-button-active {
+        border-left: none;
+        padding-left: 1rem;
+        border-bottom: 3px solid var(--admin-cont-accent);
+        background-color: transparent;
+    }
+    .admin-cont-sidebar-button:hover {
+        transform: none;
+        background-color: var(--admin-cont-primary-light);
+    }
+
+    .admin-cont-content {
+        padding: 1.5rem;
+        height: auto;
+        overflow-y: visible;
+    }
+
+    .admin-cont-main-title {
+        font-size: 1.75rem;
+        margin-bottom: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .admin-cont-content {
+        padding: 1rem;
+    }
+    .admin-cont-main-title {
+        font-size: 1.4rem;
+    }
+    .admin-cont-stat-card {
+        padding: 1rem;
+    }
+    .stat-card-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 1.25rem;
+    }
+    .stat-card-value {
+        font-size: 1.75rem;
+    }
+    .stat-card-label {
+        font-size: 0.8rem;
+    }
+    .admin-cont-table-wrapper th,
+    .admin-cont-table-wrapper td {
+        padding: 0.75rem;
+        font-size: 0.8rem;
+    }
+}

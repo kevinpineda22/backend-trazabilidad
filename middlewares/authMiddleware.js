@@ -18,6 +18,11 @@ if (!SUPABASE_JWT_SECRET) {
  * adjunta la información del usuario a 'req.user'.
  */
 export const authMiddleware = (req, res, next) => {
+    // Permitir peticiones OPTIONS (preflight) sin autenticación
+    if (req.method === 'OPTIONS') {
+        return next();
+    }
+
     // 1. Obtener el header de autorización
     const authHeader = req.headers.authorization;
 
