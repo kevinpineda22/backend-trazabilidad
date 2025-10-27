@@ -3,10 +3,10 @@ import express from "express";
 import cors from "cors";
 
 // --- Importar las rutas que creamos ---
-import empleadosContabilidadRoutes from "./src/routes/empleadosContabilidadRoutes.js";
-import proveedoresContabilidadRoutes from "./src/routes/proveedoresContabilidadRoutes.js";
-import clientesContabilidadRoutes from "./src/routes/clientesContabilidadRoutes.js";
-import adminContabilidadRoutes from "./src/routes/adminContabilidadRoutes.js";
+import empleadosContabilidadRoutes from "./routes/empleadosContabilidadRoutes.js";
+import proveedoresContabilidadRoutes from "./routes/proveedoresContabilidadRoutes.js";
+import clientesContabilidadRoutes from "./routes/clientesContabilidadRoutes.js";
+import adminContabilidadRoutes from "./routes/adminContabilidadRoutes.js";
 
 // Cargar variables de entorno
 dotenv.config();
