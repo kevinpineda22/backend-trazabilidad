@@ -11,59 +11,22 @@ import adminContabilidadRoutes from "./routes/adminContabilidadRoutes.js";
 // Cargar variables de entorno
 dotenv.config();
 
-// Configuración CORS laxa para evitar bloqueos por origen durante el desarrollo
-// Si en el futuro necesitas restringir, reemplaza origin:true por una función que valide contra una lista.
+// Configuración CORS simple y robusta
 const corsOptions = {
-  origin: function (origin, callback) {
-    // Permitir peticiones sin origin (como aplicaciones móviles) o desde cualquier origin en desarrollo
-    const allowedOrigins = [
-      'http://localhost:3000',
-      'http://localhost:5173',
-      'http://localhost:4173',
-      'https://localhost:5173',
-      'https://localhost:4173'
-    ];
-    
-    if (!origin || allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
-      callback(null, true);
-    } else {
-      callback(null, true); // En producción, cambiar a false si quieres restringir
-    }
-  },
+  origin: true, // Permitir todos los orígenes en desarrollo
   credentials: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept", "Origin"],
-  exposedHeaders: ["Content-Length", "X-Request-Id"],
-  optionsSuccessStatus: 200,
-  preflightContinue: false
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
 };
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware manual para manejar CORS antes que express.cors()
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  
-  // Siempre establecer los headers CORS
-  res.header('Access-Control-Allow-Origin', origin || '*');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS,PATCH');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-  res.header('Access-Control-Expose-Headers', 'Content-Length, X-Request-Id');
-  
-  // Responder inmediatamente a las peticiones OPTIONS
-  if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
-  }
-  
-  next();
-});
+// Aplicar CORS middleware
+app.use(cors(corsOptions));
 
-// Aplicar la configuración CORS (como respaldo)
-const corsMiddleware = cors(corsOptions);
-app.use(corsMiddleware);
+// Manejar peticiones OPTIONS explícitamente
+app.options("*", cors(corsOptions));
 
 // Aumentar el límite de payload para aceptar los archivos (ej. 50mb)
 app.use(express.json({ limit: "50mb" }));
