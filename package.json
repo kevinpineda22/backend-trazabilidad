@@ -1,6 +1,7 @@
 {
-  "name": "backend-trazabilidad",
+  "name": "backend-trazabilidad-contabilidad",
   "version": "1.0.0",
+  "description": "Backend API para el módulo de Trazabilidad de Contabilidad - Sistema de gestión de empleados, proveedores y clientes",
   "type": "module",
   "main": "app.js",
   "engines": {
@@ -8,19 +9,29 @@
   },
   "scripts": {
     "start": "node app.js",
-    "dev": "node app.js",
-    "build": "echo 'Build completed'",
-    "vercel-build": "echo 'Vercel build completed'"
+    "dev": "nodemon app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "keywords": [
+    "trazabilidad",
+    "contabilidad",
+    "api",
+    "express",
+    "supabase",
+    "vercel"
+  ],
+  "author": "Tu Nombre",
+  "license": "ISC",
   "dependencies": {
-    "@supabase/supabase-js": "^2.76.1",
-    "axios": "^1.12.2",
+    "@supabase/supabase-js": "^2.39.3",
+    "axios": "^1.6.5",
     "cors": "^2.8.5",
-    "date-fns": "^4.1.0",
-    "date-holidays": "^3.26.2",
-    "dotenv": "^17.2.3",
-    "express": "^5.1.0",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
     "jsonwebtoken": "^9.0.2",
-    "multer": "^2.0.2"
+    "multer": "^1.4.5-lts.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
   }
 }
