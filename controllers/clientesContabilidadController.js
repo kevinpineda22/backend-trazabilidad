@@ -7,26 +7,31 @@ import { supabaseAxios, storageClient } from "../services/supabaseClient.js";
 const uploadFileToStorage = async (file, bucketName, subFolder = 'clientes') => {
     if (!file) return null;
 
-    const fileName = `${subFolder}/${Date.now()}-${file.originalname.replace(/ /g, '_')}`;
-    
-    const { data, error } = await storageClient.storage
-        .from(bucketName)
-        .upload(fileName, file.buffer, {
-            contentType: file.mimetype,
-            cacheControl: '3600',
-            upsert: false,
-        });
+    try {
+        const fileName = `${subFolder}/${Date.now()}-${file.originalname.replace(/ /g, '_')}`;
+        
+        const { data, error } = await storageClient.storage
+            .from(bucketName)
+            .upload(fileName, file.buffer, {
+                contentType: file.mimetype,
+                cacheControl: '3600',
+                upsert: false,
+            });
 
-    if (error) {
-        console.error("Error subiendo archivo a Storage:", error);
-        throw new Error(`Error al subir ${file.originalname}: ${error.message}`);
+        if (error) {
+            console.error("Error subiendo archivo a Storage:", error);
+            throw new Error(`Error al subir ${file.originalname}: ${error.message}`);
+        }
+
+        const { data: publicUrlData } = storageClient.storage
+            .from(bucketName)
+            .getPublicUrl(data.path);
+        
+        return publicUrlData.publicUrl;
+    } catch (error) {
+        console.error("Error en uploadFileToStorage:", error);
+        throw error;
     }
-
-    const { data: publicUrlData } = storageClient.storage
-        .from(bucketName)
-        .getPublicUrl(data.path);
-    
-    return publicUrlData.publicUrl;
 };
 
 /**
@@ -40,18 +45,32 @@ export const createClienteContabilidad = async (req, res) => {
             return res.status(401).json({ message: "Usuario no autenticado." });
         }
 
-        const files = req.files || {};
-        const url_rut = await uploadFileToStorage(files.rut?.[0], 'documentos_contabilidad', 'clientes/rut');
+        console.log("Files received:", req.files); // Debug log
+        console.log("User ID:", user_id); // Debug log
 
-        // Validación: El RUT es el único campo, así que es obligatorio
+        const files = req.files || {};
+        
+        // Verificar si el archivo está presente
+        const rutFile = files.rut_cliente?.[0] || files.rut?.[0];
+        if (!rutFile) {
+            return res.status(400).json({ 
+                message: "El archivo RUT es obligatorio.",
+                debug: { filesReceived: Object.keys(files) }
+            });
+        }
+
+        const url_rut = await uploadFileToStorage(rutFile, 'documentos_contabilidad', 'clientes/rut');
+
         if (!url_rut) {
-            return res.status(400).json({ message: "El archivo RUT es obligatorio." });
+            return res.status(400).json({ message: "Error al subir el archivo RUT." });
         }
 
         const payload = {
             user_id,
             url_rut,
         };
+
+        console.log("Payload to Supabase:", payload); // Debug log
 
         const { data, error } = await supabaseAxios.post(
             "/clientes_contabilidad",
@@ -61,14 +80,21 @@ export const createClienteContabilidad = async (req, res) => {
 
         if (error) {
             console.error("Error al guardar en Supabase:", error);
-            return res.status(400).json({ message: error.message, details: error.details });
+            return res.status(400).json({ 
+                message: error.message || "Error al guardar en la base de datos", 
+                details: error.details || error
+            });
         }
 
         res.status(201).json(data[0]);
 
     } catch (error) {
         console.error("Error en createClienteContabilidad:", error);
-        res.status(500).json({ message: "Error interno del servidor.", error: error.message });
+        res.status(500).json({ 
+            message: "Error interno del servidor.", 
+            error: error.message,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        });
     }
 };
 

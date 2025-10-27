@@ -16,7 +16,7 @@ const upload = multer({
 
 // Definir el campo de archivo esperado
 const clienteUploadFields = [
-    { name: 'rut', maxCount: 1 }
+    { name: 'rut_cliente', maxCount: 1 }
 ];
 
 /**

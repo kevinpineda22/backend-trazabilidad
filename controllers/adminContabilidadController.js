@@ -59,32 +59,31 @@ export const getHistorialClientesAdmin = async (req, res) => {
  */
 export const getDashboardStats = async (req, res) => {
     try {
-        // Esta es una forma más eficiente de contar en Supabase
-        const { data: empData, error: empErr } = await supabaseAxios.get('/empleados_contabilidad?select=id', { headers: { 'Prefer': 'count=exact,head=true' } });
-        const { data: provData, error: provErr } = await supabaseAxios.get('/proveedores_contabilidad?select=id', { headers: { 'Prefer': 'count=exact,head=true' } });
-        const { data: cliData, error: cliErr } = await supabaseAxios.get('/clientes_contabilidad?select=id', { headers: { 'Prefer': 'count=exact,head=true' } });
-        
-        if (empErr || provErr || cliErr) {
-             throw new Error("Error al contar registros");
-        }
-        
-        // El conteo viene en los headers
-        const getCountFromHeaders = (headers) => {
-            const range = headers['content-range'];
-            if (range) return parseInt(range.split('/')[1], 10);
-            return 0;
-        };
+        // Obtener conteos de manera simple
+        const [empleadosResponse, proveedoresResponse, clientesResponse] = await Promise.all([
+            supabaseAxios.get('/empleados_contabilidad?select=id'),
+            supabaseAxios.get('/proveedores_contabilidad?select=id'),
+            supabaseAxios.get('/clientes_contabilidad?select=id')
+        ]);
 
         const stats = {
-             totalEmpleados: getCountFromHeaders(empData.headers),
-             totalProveedores: getCountFromHeaders(provData.headers),
-             totalClientes: getCountFromHeaders(cliData.headers),
+            totalEmpleados: empleadosResponse.data?.length || 0,
+            totalProveedores: proveedoresResponse.data?.length || 0,
+            totalClientes: clientesResponse.data?.length || 0,
         };
 
         res.status(200).json(stats);
         
     } catch (error) {
         console.error("Error en getDashboardStats:", error);
-        res.status(500).json({ message: "Error interno del servidor.", error: error.message });
+        res.status(500).json({ 
+            message: "Error interno del servidor.", 
+            error: error.message,
+            stats: {
+                totalEmpleados: 0,
+                totalProveedores: 0,
+                totalClientes: 0,
+            }
+        });
     }
 };
