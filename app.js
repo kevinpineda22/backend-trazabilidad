@@ -1,6 +1,9 @@
 import dotenv from "dotenv";
 import express from "express";
-import cors from "cors";
+import {
+  corsMiddleware,
+  preflightCorsMiddleware,
+} from "./config/corsConfig.js";
 
 // --- Importar las rutas que creamos ---
 import empleadosContabilidadRoutes from "./routes/empleadosContabilidadRoutes.js";
@@ -11,22 +14,16 @@ import adminContabilidadRoutes from "./routes/adminContabilidadRoutes.js";
 // Cargar variables de entorno
 dotenv.config();
 
-// Configuración CORS simple y robusta
-const corsOptions = {
-  origin: true, // Permitir todos los orígenes en desarrollo
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
-};
-
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Aplicar CORS middleware
-app.use(cors(corsOptions));
+app.use(corsMiddleware);
 
-// Manejar peticiones OPTIONS explícitamente
-app.options("*", cors(corsOptions));
+// Manejar peticiones OPTIONS con respuesta inmediata
+app.options("*", preflightCorsMiddleware, (req, res) => {
+  res.sendStatus(204);
+});
 
 // Aumentar el límite de payload para aceptar los archivos (ej. 50mb)
 app.use(express.json({ limit: "50mb" }));
@@ -62,7 +59,7 @@ app.get("/api/test", (req, res) => {
   res.json({
     message: "✅ API funcionando correctamente",
     timestamp: new Date().toISOString(),
-    server: "backend-trazabilidad.vercel.app"
+    server: "backend-trazabilidad.vercel.app",
   });
 });
 
