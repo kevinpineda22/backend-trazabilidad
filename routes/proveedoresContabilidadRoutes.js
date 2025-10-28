@@ -1,7 +1,6 @@
-// src/routes/proveedoresContabilidadRoutes.js
 import express from "express";
 import multer from "multer";
-import { preflightCorsMiddleware } from "../config/corsConfig.js";
+// import { preflightCorsMiddleware } from "../config/corsConfig.js"; // <-- Eliminar o comentar
 import { authMiddleware } from "../middlewares/authMiddleware.js";
 import {
   createProveedorContabilidad,
@@ -22,10 +21,6 @@ const proveedorUploadFields = [
   { name: "composicion_accionaria", maxCount: 1 },
   { name: "certificacion_bancaria", maxCount: 1 },
 ];
-
-router.options("/", preflightCorsMiddleware, (req, res) => {
-  res.sendStatus(204);
-});
 
 router.post(
   "/",
