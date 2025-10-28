@@ -1,6 +1,6 @@
 import express from "express";
 import multer from "multer";
-// import { preflightCorsMiddleware } from "../config/corsConfig.js"; // <-- Eliminar o comentar
+// Importaciones de CORS eliminadas, ya que se maneja globalmente en app.js
 import { authMiddleware } from "../middlewares/authMiddleware.js";
 import {
   createProveedorContabilidad,

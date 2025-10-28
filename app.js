@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 import express from "express";
 import {
   corsMiddleware,
-  preflightCorsMiddleware,
+  // preflightCorsMiddleware ya no es necesario importarlo si solo usamos corsMiddleware globalmente
 } from "./config/corsConfig.js";
 
 // --- Importar las rutas que creamos ---
@@ -17,15 +17,9 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Aplicar CORS middleware
 app.use(corsMiddleware);
 
-// Manejar peticiones OPTIONS con respuesta inmediata
-app.options("*", preflightCorsMiddleware, (req, res) => {
-  res.sendStatus(204);
-});
-
-// Aumentar el límite de payload para aceptar los archivos (ej. 50mb)
+// 2. Aumentar el límite de payload para aceptar los archivos (ej. 50mb)
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
@@ -92,7 +86,7 @@ app.use((error, req, res, next) => {
   });
 });
 
-// --- Iniciar el servidor ---
+// --- Iniciar el servidor (solo si no es producción) ---
 if (process.env.NODE_ENV !== "production") {
   app.listen(PORT, () => {
     console.log(`Servidor escuchando en http://localhost:${PORT}`);
