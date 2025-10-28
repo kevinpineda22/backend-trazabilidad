@@ -41,6 +41,7 @@ const corsOptions = {
   ],
 };
 
+// Exportamos ambos, ya que el preflight lo usaremos directamente en el POST
 export const corsMiddleware = cors(corsOptions);
 export const preflightCorsMiddleware = cors(corsOptions);
 export const allowedCorsOrigins = allowedOrigins;
