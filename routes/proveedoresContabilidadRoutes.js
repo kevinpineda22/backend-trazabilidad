@@ -1,6 +1,6 @@
+// src/routes/proveedoresContabilidadRoutes.js
 import express from "express";
 import multer from "multer";
-// Importaciones de CORS eliminadas, ya que se maneja globalmente en app.js
 import { authMiddleware } from "../middlewares/authMiddleware.js";
 import {
   createProveedorContabilidad,
@@ -11,7 +11,7 @@ const router = express.Router();
 const storage = multer.memoryStorage();
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 10 * 1024 * 1024 },
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
 });
 
 const proveedorUploadFields = [
@@ -22,6 +22,7 @@ const proveedorUploadFields = [
   { name: "certificacion_bancaria", maxCount: 1 },
 ];
 
+// POST: Totalmente limpia de lógica CORS. Usa el middleware global en app.js.
 router.post(
   "/",
   authMiddleware,

@@ -1,11 +1,11 @@
+// app.js
 import dotenv from "dotenv";
 import express from "express";
 import {
   corsMiddleware,
-  // preflightCorsMiddleware ya no es necesario importarlo si solo usamos corsMiddleware globalmente
 } from "./config/corsConfig.js";
 
-// --- Importar las rutas que creamos ---
+// --- Importar las rutas ---
 import empleadosContabilidadRoutes from "./routes/empleadosContabilidadRoutes.js";
 import proveedoresContabilidadRoutes from "./routes/proveedoresContabilidadRoutes.js";
 import clientesContabilidadRoutes from "./routes/clientesContabilidadRoutes.js";
@@ -17,9 +17,17 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// =======================================================
+// MANEJO DE CORS LIMPIO Y ROBUSTO (Solo middleware global)
+// =======================================================
+// 1. Aplicar CORS middleware al inicio. Esto maneja automáticamente OPTIONS
+//    para todas las rutas.
 app.use(corsMiddleware);
 
-// 2. Aumentar el límite de payload para aceptar los archivos (ej. 50mb)
+// 2. Manejador manual de OPTIONS ELIMINADO.
+// =======================================================
+
+// Aumentar el límite de payload para archivos grandes (50mb)
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
@@ -48,7 +56,6 @@ app.get("/health", (req, res) => {
   });
 });
 
-// Endpoint de prueba para verificar que la API funciona
 app.get("/api/test", (req, res) => {
   res.json({
     message: "✅ API funcionando correctamente",

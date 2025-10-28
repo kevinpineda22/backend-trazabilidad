@@ -19,11 +19,7 @@ const clienteUploadFields = [
     { name: 'rut_cliente', maxCount: 1 }
 ];
 
-/**
- * @route   POST /api/trazabilidad/clientes/
- * @desc    Crear un nuevo registro de cliente (con RUT)
- * @access  Privado
- */
+// POST: Totalmente limpia de lógica CORS. Usa el middleware global en app.js.
 router.post(
     '/',
     authMiddleware,
@@ -31,11 +27,6 @@ router.post(
     createClienteContabilidad
 );
 
-/**
- * @route   GET /api/trazabilidad/clientes/historial
- * @desc    Obtener el historial de clientes creados por el usuario
- * @access  Privado
- */
 router.get(
     '/historial',
     authMiddleware,

@@ -17,10 +17,11 @@ const upload = multer({
 // Campos de archivo esperados
 const empleadoUploadFields = [
     { name: 'hoja_de_vida', maxCount: 1 },
-    { name: 'cedula_file', maxCount: 1 }, // Coincide con el FormData del frontend
+    { name: 'cedula_file', maxCount: 1 },
     { name: 'certificado_bancario', maxCount: 1 }
 ];
 
+// POST: Totalmente limpia de lógica CORS. Usa el middleware global en app.js.
 router.post(
     '/',
     authMiddleware,
