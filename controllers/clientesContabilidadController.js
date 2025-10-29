@@ -8,21 +8,18 @@ import { supabaseAxios } from "../services/supabaseClient.js";
  */
 export const createClienteContabilidad = async (req, res) => {
   try {
-    const { url_rut, razon_social, nit } = req.body;
+    const { url_rut } = req.body;
     const user_id = req.user?.id;
     if (!user_id) {
       return res.status(401).json({ message: "Usuario no autenticado." });
     }
     if (!url_rut) {
-      return res
-        .status(400)
-        .json({ message: "La URL del RUT es obligatoria." });
+      return res.status(400).json({ message: "La URL del RUT es obligatoria." });
     }
     const payload = {
       user_id,
       url_rut,
-      razon_social: razon_social || null,
-      nit: nit || null,
+      created_at: new Date().toISOString(),
     };
     const { data, error } = await supabaseAxios.post(
       "/clientes_contabilidad",
@@ -31,14 +28,6 @@ export const createClienteContabilidad = async (req, res) => {
     );
     if (error) {
       console.error("Error al guardar cliente en Supabase:", error);
-      if (error.response?.data?.code === "23505") {
-        return res
-          .status(409)
-          .json({
-            message: "Error: Ya existe un cliente con ese NIT.",
-            details: error.response.data.details,
-          });
-      }
       return res.status(400).json({
         message: error.message || "Error al guardar en la base de datos",
         details: error.details || error,
