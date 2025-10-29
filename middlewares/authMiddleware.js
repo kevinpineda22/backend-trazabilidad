@@ -1,23 +1,27 @@
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 
-// Cargar variables de entorno (necesitamos el JWT_SECRET)
 dotenv.config();
 
 const SUPABASE_JWT_SECRET = process.env.SUPABASE_JWT_SECRET;
 
 if (!SUPABASE_JWT_SECRET) {
     console.error("Error: Falta SUPABASE_JWT_SECRET en .env. El middleware de autenticación no puede funcionar.");
-    // Esto debería disparar un error solo al iniciar el servidor en desarrollo
+    // No salimos para permitir que Vercel build exitosamente, pero el log queda.
 }
 
 /**
- * Middleware para verificar el token JWT de Supabase.
+ * Middleware para verificar el token JWT de Supabase, terminando la petición
+ * OPTIONS si es el caso.
  */
 export const authMiddleware = (req, res, next) => {
-    // Permitir peticiones OPTIONS (preflight) sin autenticación
+    // === SOLUCIÓN CLAVE: Terminar la petición OPTIONS ===
+    // Si es una petición OPTIONS, significa que solo estamos pidiendo los headers
+    // de CORS. Si el corsMiddleware global ya actuó, podemos responder 204.
     if (req.method === 'OPTIONS') {
-        return next();
+        // En Express, después de que CORS global actuó (en app.js), la petición
+        // OPTIONS debería tener los headers. Responder 204 (No Content) y finalizar.
+        return res.sendStatus(204); 
     }
 
     // 1. Obtener el header de autorización
@@ -40,12 +44,12 @@ export const authMiddleware = (req, res, next) => {
         
         // 4. Adjuntar la información del usuario a la solicitud (req)
         req.user = {
-            id: decoded.sub, // 'sub' es el User ID en los tokens de Supabase
+            id: decoded.sub, 
             email: decoded.email,
             role: decoded.role,
         };
 
-        // 5. Continuar
+        // 5. Continuar con el siguiente middleware o controlador
         next();
 
     } catch (error) {
