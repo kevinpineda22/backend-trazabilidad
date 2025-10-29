@@ -1,42 +1,42 @@
 // app.js
 import dotenv from "dotenv";
 import express from "express";
-import { corsMiddleware } from "./config/corsConfig.js";
+import {
+  corsMiddleware,
+} from "./config/corsConfig.js";
 
-// Rutas
+// --- Importar las rutas ---
 import empleadosContabilidadRoutes from "./routes/empleadosContabilidadRoutes.js";
 import proveedoresContabilidadRoutes from "./routes/proveedoresContabilidadRoutes.js";
 import clientesContabilidadRoutes from "./routes/clientesContabilidadRoutes.js";
 import adminContabilidadRoutes from "./routes/adminContabilidadRoutes.js";
 
+// Cargar variables de entorno
 dotenv.config();
 
 const app = express();
+const PORT = process.env.PORT || 3000;
 
-// ============================
-// CORS (global, antes de todo)
-// ============================
+// =======================================================
+// MANEJO DE CORS LIMPIO Y ROBUSTO
+// =======================================================
+// 1. Aplicar CORS middleware al inicio. Esto maneja automáticamente OPTIONS
+//    para todas las rutas con la configuración de 'origin: true'.
 app.use(corsMiddleware);
+// =======================================================
 
-// Responder explícito a preflight (opcional si cors() ya lo hace, pero ayuda en Edge/CDN)
-app.options("*", corsMiddleware);
-
-// Payload limits
+// Aumentar el límite de payload para archivos grandes (50mb - se mantiene)
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
-// ================
-// Rutas de la API
-// ================
+// --- Definición de Rutas ---
 const apiBase = "/api/trazabilidad";
 app.use(`${apiBase}/empleados`, empleadosContabilidadRoutes);
 app.use(`${apiBase}/proveedores`, proveedoresContabilidadRoutes);
 app.use(`${apiBase}/clientes`, clientesContabilidadRoutes);
 app.use(`${apiBase}/admin`, adminContabilidadRoutes);
 
-// ========================
-// Rutas básicas de salud
-// ========================
+// --- Rutas de Bienvenida y Salud (Se mantienen) ---
 app.get("/", (req, res) => {
   res.json({
     message: "API de Trazabilidad de Contabilidad está corriendo.",
@@ -74,41 +74,32 @@ app.get("/api", (req, res) => {
   });
 });
 
-// ===================
-// Favicons de cortesía
-// ===================
-app.get(["/favicon.ico", "/favicon.png"], (req, res) => res.status(204).end());
-
-// ========================
-// 404 y Error handler CORS
-// ========================
+// --- Manejo de errores 404 (Rutas no encontradas) ---
 app.use((req, res, next) => {
-  // Asegura CORS también en 404
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.status(404).json({ message: "Ruta no encontrada", path: req.path });
+  res.status(404).json({
+    message: "Ruta no encontrada",
+    path: req.path,
+  });
 });
 
+// --- Error handler global ---
 app.use((error, req, res, next) => {
-  console.error("Error global:", error);
-  // Asegura CORS también en 5xx
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.status(error.status || 500).json({
+  // Aseguramos que el error.status exista, si no, usamos 500.
+  const statusCode = error.status || 500;
+  console.error(`Error global (Status: ${statusCode}):`, error);
+  
+  res.status(statusCode).json({
     message: error.message || "Error interno del servidor",
+    // Mostrar stack solo en desarrollo o si el error lo contiene
     ...(process.env.NODE_ENV === "development" && { stack: error.stack }),
   });
 });
 
-// =============================
-// Export para Vercel (@vercel/node)
-// =============================
-export default function handler(req, res) {
-  return app(req, res);
-}
-
-// Server local solo en dev (opcional)
+// --- Iniciar el servidor (solo si no es producción) ---
 if (process.env.NODE_ENV !== "production") {
-  const PORT = process.env.PORT || 3000;
   app.listen(PORT, () => {
     console.log(`Servidor escuchando en http://localhost:${PORT}`);
   });
 }
+
+export default app;

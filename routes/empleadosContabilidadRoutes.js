@@ -1,4 +1,3 @@
-// src/routes/empleadosContabilidadRoutes.js
 import express from "express";
 import multer from "multer";
 import { authMiddleware } from "../middlewares/authMiddleware.js";
@@ -21,7 +20,7 @@ const empleadoUploadFields = [
     { name: 'certificado_bancario', maxCount: 1 }
 ];
 
-// POST: Totalmente limpia de lógica CORS. Usa el middleware global en app.js.
+// POST: Usa authMiddleware y multer para manejar los archivos
 router.post(
     '/',
     authMiddleware,

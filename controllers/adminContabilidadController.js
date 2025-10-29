@@ -1,4 +1,3 @@
-// src/controllers/adminContabilidadController.js
 import { supabaseAxios } from "../services/supabaseClient.js";
 
 /**
@@ -55,35 +54,33 @@ export const getHistorialClientesAdmin = async (req, res) => {
 
 /**
  * @route GET /api/trazabilidad/admin/dashboard-stats
- * (Placeholder) Obtiene estadísticas para el dashboard.
+ * Obtiene estadísticas para el dashboard.
  */
 export const getDashboardStats = async (req, res) => {
     try {
-        // Obtener conteos de manera simple
+        // Usamos count=* para obtener solo el conteo de filas, lo cual es más eficiente
         const [empleadosResponse, proveedoresResponse, clientesResponse] = await Promise.all([
-            supabaseAxios.get('/empleados_contabilidad?select=id'),
-            supabaseAxios.get('/proveedores_contabilidad?select=id'),
-            supabaseAxios.get('/clientes_contabilidad?select=id')
+            supabaseAxios.get('/empleados_contabilidad?select=count', { headers: { Prefer: 'count=exact' } }),
+            supabaseAxios.get('/proveedores_contabilidad?select=count', { headers: { Prefer: 'count=exact' } }),
+            supabaseAxios.get('/clientes_contabilidad?select=count', { headers: { Prefer: 'count=exact' } })
         ]);
 
         const stats = {
-            totalEmpleados: empleadosResponse.data?.length || 0,
-            totalProveedores: proveedoresResponse.data?.length || 0,
-            totalClientes: clientesResponse.data?.length || 0,
+            // El conteo se obtiene del header Content-Range, pero si falla, usamos length.
+            totalEmpleados: empleadosResponse.headers['content-range'] ? parseInt(empleadosResponse.headers['content-range'].split('/')[1]) : (empleadosResponse.data?.length || 0),
+            totalProveedores: proveedoresResponse.headers['content-range'] ? parseInt(proveedoresResponse.headers['content-range'].split('/')[1]) : (proveedoresResponse.data?.length || 0),
+            totalClientes: clientesResponse.headers['content-range'] ? parseInt(clientesResponse.headers['content-range'].split('/')[1]) : (clientesResponse.data?.length || 0),
         };
 
         res.status(200).json(stats);
         
     } catch (error) {
+        // En caso de error, devolvemos un objeto de estadísticas vacío para evitar que el frontend falle
         console.error("Error en getDashboardStats:", error);
         res.status(500).json({ 
             message: "Error interno del servidor.", 
             error: error.message,
-            stats: {
-                totalEmpleados: 0,
-                totalProveedores: 0,
-                totalClientes: 0,
-            }
+            stats: { totalEmpleados: 0, totalProveedores: 0, totalClientes: 0 } 
         });
     }
 };

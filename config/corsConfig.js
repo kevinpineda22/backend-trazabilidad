@@ -1,21 +1,19 @@
-// src/config/corsConfig.js
 import cors from "cors";
 import dotenv from "dotenv";
+
 dotenv.config();
 
-/**
- * Abrimos CORS a cualquier origen (origin: true) y permitimos credenciales.
- * Agregamos:
- * - optionsSuccessStatus: 204  (mejor para algunos navegadores)
- * - maxAge: 86400              (cachea preflight 24h)
- * - exposedHeaders: Content-Disposition (para descargas)
- */
+// Configuración de CORS Abierto: permite cualquier origen y el envío de credenciales.
 const corsOptions = {
+  // CONFIGURACIÓN CLAVE: Se configura la función 'origin' para devolver true
+  // Esto permite cualquier origen y hace que el paquete 'cors' maneje la respuesta
+  // para 'Access-Control-Allow-Origin' correctamente para solicitudes con credenciales.
   origin: (origin, callback) => {
-    // permite todos los orígenes; si necesitas cerrar en futuro, aquí es el punto
     callback(null, true);
   },
-  credentials: true,
+  
+  // CRÍTICO: Debe ser true para permitir que el frontend envíe el token (JWT) en el header.
+  credentials: true, 
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: [
     "Content-Type",
@@ -23,11 +21,9 @@ const corsOptions = {
     "X-Requested-With",
     "Accept",
   ],
-  exposedHeaders: ["Content-Disposition"],
-  optionsSuccessStatus: 204,
-  maxAge: 86400,
-  preflightContinue: false,
 };
 
+// Exportamos un único middleware para usar en app.js
 export const corsMiddleware = cors(corsOptions);
-export const preflightCorsMiddleware = cors(corsOptions);
+
+// Se elimina 'preflightCorsMiddleware' y 'allowedCorsOrigins' no utilizados.

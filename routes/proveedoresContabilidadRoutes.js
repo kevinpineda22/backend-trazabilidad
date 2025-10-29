@@ -1,4 +1,3 @@
-// src/routes/proveedoresContabilidadRoutes.js
 import express from "express";
 import multer from "multer";
 import { authMiddleware } from "../middlewares/authMiddleware.js";
@@ -14,15 +13,15 @@ const upload = multer({
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
 });
 
+// Nota: Se asume que estos campos serán actualizados en el frontend para incluir NIT, Razón Social, etc.
 const proveedorUploadFields = [
   { name: "rut", maxCount: 1 },
   { name: "camara_comercio", maxCount: 1 },
+  { name: "certificacion_bancaria", maxCount: 1 },
   { name: "formato_vinculacion", maxCount: 1 },
   { name: "composicion_accionaria", maxCount: 1 },
-  { name: "certificacion_bancaria", maxCount: 1 },
 ];
 
-// POST: Totalmente limpia de lógica CORS. Usa el middleware global en app.js.
 router.post(
   "/",
   authMiddleware,
