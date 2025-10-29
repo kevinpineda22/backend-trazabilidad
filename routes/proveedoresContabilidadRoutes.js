@@ -1,34 +1,39 @@
-import express from "express";
-import multer from "multer";
-import { authMiddleware } from "../middlewares/authMiddleware.js";
-import {
-  createProveedorContabilidad,
-  getHistorialProveedores,
-} from "../controllers/proveedoresContabilidadController.js";
+import express from 'express';
+import multer from 'multer';
+import { 
+    createProveedorContabilidad, 
+    getHistorialProveedores 
+} from '../controllers/proveedoresContabilidadController.js';
+
+// NOTA: Se ha eliminado la importación de authMiddleware
+// NOTA: El middleware de autenticación (authMiddleware) fue removido intencionalmente
+// para permitir acceso público a las rutas de creación/historial.
 
 const router = express.Router();
-const storage = multer.memoryStorage();
-const upload = multer({
-  storage: storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
-});
+const upload = multer(); // Configuración de Multer para manejar archivos en memoria
 
-// Nota: Se asume que estos campos serán actualizados en el frontend para incluir NIT, Razón Social, etc.
-const proveedorUploadFields = [
-  { name: "rut", maxCount: 1 },
-  { name: "camara_comercio", maxCount: 1 },
-  { name: "certificacion_bancaria", maxCount: 1 },
-  { name: "formato_vinculacion", maxCount: 1 },
-  { name: "composicion_accionaria", maxCount: 1 },
-];
-
+// =========================================================================
+// RUTA DE CREACIÓN (POST) - ACCESO PÚBLICO
+// =========================================================================
 router.post(
-  "/",
-  authMiddleware,
-  upload.fields(proveedorUploadFields),
-  createProveedorContabilidad
+    '/',
+    upload.fields([
+        { name: 'rut', maxCount: 1 },
+        { name: 'camara_comercio', maxCount: 1 },
+        { name: 'certificacion_bancaria', maxCount: 1 },
+        { name: 'formato_vinculacion', maxCount: 1 },
+        { name: 'composicion_accionaria', maxCount: 1 },
+    ]),
+    createProveedorContabilidad
 );
 
-router.get("/historial", authMiddleware, getHistorialProveedores);
+// =========================================================================
+// RUTA DE LECTURA (GET) - ACCESO PÚBLICO
+// =========================================================================
+router.get(
+    '/historial', 
+    getHistorialProveedores
+);
+
 
 export default router;
