@@ -12,10 +12,10 @@
       "dest": "/app.js"
     }
   ],
-  "functions": {  
+  "functions": {
     "app.js": {
       "maxDuration": 60,
-      "maxLambdaSize": "50mb"
+      "maxRequestBodySize": "50mb"  
     }
   }
 }
