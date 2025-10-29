@@ -3,16 +3,14 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-// Configuración de CORS Abierto: permite cualquier origen y el envío de credenciales.
+// CORS Abierto: permite cualquier origen y el envío de credenciales.
 const corsOptions = {
-  // CONFIGURACIÓN CLAVE: Se configura la función 'origin' para devolver true
-  // Esto permite cualquier origen y hace que el paquete 'cors' maneje la respuesta
-  // para 'Access-Control-Allow-Origin' correctamente para solicitudes con credenciales.
+  // CONFIGURACIÓN CLAVE: Permite cualquier origen (origin: true)
   origin: (origin, callback) => {
     callback(null, true);
   },
   
-  // CRÍTICO: Debe ser true para permitir que el frontend envíe el token (JWT) en el header.
+  // CRÍTICO: Debe ser true para permitir el envío de tokens (si estuvieran activos).
   credentials: true, 
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: [
@@ -23,7 +21,4 @@ const corsOptions = {
   ],
 };
 
-// Exportamos un único middleware para usar en app.js
 export const corsMiddleware = cors(corsOptions);
-
-// Se elimina 'preflightCorsMiddleware' y 'allowedCorsOrigins' no utilizados.

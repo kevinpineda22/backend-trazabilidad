@@ -1,5 +1,4 @@
 import express from "express";
-import multer from "multer";
 import { authMiddleware } from "../middlewares/authMiddleware.js";
 import {
   createProveedorContabilidad,
@@ -7,27 +6,10 @@ import {
 } from "../controllers/proveedoresContabilidadController.js";
 
 const router = express.Router();
-const storage = multer.memoryStorage();
-const upload = multer({
-  storage: storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
-});
 
-// Nota: Se asume que estos campos serán actualizados en el frontend para incluir NIT, Razón Social, etc.
-const proveedorUploadFields = [
-  { name: "rut", maxCount: 1 },
-  { name: "camara_comercio", maxCount: 1 },
-  { name: "certificacion_bancaria", maxCount: 1 },
-  { name: "formato_vinculacion", maxCount: 1 },
-  { name: "composicion_accionaria", maxCount: 1 },
-];
+// Rutas de Proveedores (Acceso Público / Recibe JSON con URLs)
 
-router.post(
-  "/",
-  authMiddleware,
-  upload.fields(proveedorUploadFields),
-  createProveedorContabilidad
-);
+router.post("/", authMiddleware, createProveedorContabilidad);
 
 router.get("/historial", authMiddleware, getHistorialProveedores);
 

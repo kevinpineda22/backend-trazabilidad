@@ -1,36 +1,23 @@
 import express from "express";
-import multer from "multer";
-import { authMiddleware } from "../middlewares/authMiddleware.js";
+import { authMiddleware } from "../middlewares/authMiddleware.js"; // REACTIVAMOS AUTH
 import {
     createEmpleadoContabilidad,
     getHistorialEmpleados,
 } from "../controllers/empleadosContabilidadController.js";
 
 const router = express.Router();
-const storage = multer.memoryStorage();
-const upload = multer({ 
-    storage: storage,
-    limits: { fileSize: 10 * 1024 * 1024 } // 10MB
-});
 
-// Campos de archivo esperados
-const empleadoUploadFields = [
-    { name: 'hoja_de_vida', maxCount: 1 },
-    { name: 'cedula_file', maxCount: 1 },
-    { name: 'certificado_bancario', maxCount: 1 }
-];
+// Rutas de Empleados (Acceso Privado / Recibe JSON con URLs)
 
-// POST: Usa authMiddleware y multer para manejar los archivos
 router.post(
     '/',
-    authMiddleware,
-    upload.fields(empleadoUploadFields),
-    createEmpleadoContabilidad
+    authMiddleware, // AHORA REQUIERE TOKEN
+    createEmpleadoContabilidad 
 );
 
 router.get(
     '/historial',
-    authMiddleware,
+    authMiddleware, // AHORA REQUIERE TOKEN
     getHistorialEmpleados
 );
 
