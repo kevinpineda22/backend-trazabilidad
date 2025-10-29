@@ -1,35 +1,34 @@
-import express from 'express';
-import multer from 'multer';
-import { 
-    createClienteContabilidad, 
-    getHistorialClientes 
-} from '../controllers/clientesContabilidadController.js';
-
-// NOTA: Se ha eliminado la importación de authMiddleware
-// NOTA: El middleware de autenticación (authMiddleware) fue removido intencionalmente
-// para permitir acceso público a las rutas de creación/historial.
+import express from "express";
+import multer from "multer";
+import { authMiddleware } from "../middlewares/authMiddleware.js";
+import {
+    createClienteContabilidad,
+    getHistorialClientes,
+} from "../controllers/clientesContabilidadController.js";
 
 const router = express.Router();
-const upload = multer(); // Configuración de Multer para manejar archivos en memoria
+const storage = multer.memoryStorage();
+const upload = multer({ 
+    storage: storage,
+    limits: { fileSize: 10 * 1024 * 1024 } // 10MB
+});
 
-// =========================================================================
-// RUTA DE CREACIÓN (POST) - ACCESO PÚBLICO
-// =========================================================================
+// Definir el campo de archivo esperado
+const clienteUploadFields = [
+    { name: 'rut_cliente', maxCount: 1 }
+];
+
 router.post(
     '/',
-    upload.fields([
-        { name: 'rut_cliente', maxCount: 1 },
-    ]),
+    authMiddleware,
+    upload.fields(clienteUploadFields),
     createClienteContabilidad
 );
 
-// =========================================================================
-// RUTA DE LECTURA (GET) - ACCESO PÚBLICO
-// =========================================================================
 router.get(
-    '/historial', 
+    '/historial',
+    authMiddleware,
     getHistorialClientes
 );
-
 
 export default router;
