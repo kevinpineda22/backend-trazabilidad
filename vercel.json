@@ -6,11 +6,21 @@
       "use": "@vercel/node",
       "config": {
         "maxRequestBodySize": "50mb",
-        "maxDuration": 60 
+        "maxDuration": 60
       }
     }
   ],
   "routes": [
+    {
+      "src": "/api/trazabilidad/(.*)",
+      "methods": ["OPTIONS"],
+      "dest": "/app.js"
+    },
+    {
+      "src": "/api/trazabilidad/(.*)",
+      "methods": ["GET", "POST", "PUT", "PATCH", "DELETE"],
+      "dest": "/app.js"
+    },
     {
       "src": "/(.*)",
       "dest": "/app.js"
