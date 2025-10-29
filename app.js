@@ -23,6 +23,7 @@ const PORT = process.env.PORT || 3000;
 // 1. Aplicar CORS middleware al inicio. Esto maneja automáticamente OPTIONS
 //    para todas las rutas.
 app.use(corsMiddleware);
+app.options("*", corsMiddleware);
 
 // 2. Manejador manual de OPTIONS ELIMINADO.
 // =======================================================

@@ -1,24 +1,21 @@
 // src/config/corsConfig.js
 import cors from "cors";
 import dotenv from "dotenv";
-
 dotenv.config();
 
-// La seguridad real es el authMiddleware. Abrimos CORS para evitar problemas de despliegue.
-
-// La lista de orígenes se mantiene solo para referencias, pero la lógica de CORS
-// usará el comodín (origin: true) para permitir cualquier origen.
-const rawAllowedOrigins = process.env.ALLOWED_ORIGINS || "";
-const allowedOrigins = rawAllowedOrigins.split(",").map(o => o.trim()).filter(Boolean);
-
+/**
+ * Abrimos CORS a cualquier origen (origin: true) y permitimos credenciales.
+ * Agregamos:
+ * - optionsSuccessStatus: 204  (mejor para algunos navegadores)
+ * - maxAge: 86400              (cachea preflight 24h)
+ * - exposedHeaders: Content-Disposition (para descargas)
+ */
 const corsOptions = {
-  // Configuración clave: permitir cualquier origen
   origin: (origin, callback) => {
+    // permite todos los orígenes; si necesitas cerrar en futuro, aquí es el punto
     callback(null, true);
   },
-  
-  // Es CRÍTICO que esto sea 'true' ya que el frontend envía tokens de autenticación.
-  credentials: true, 
+  credentials: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: [
     "Content-Type",
@@ -26,9 +23,11 @@ const corsOptions = {
     "X-Requested-With",
     "Accept",
   ],
+  exposedHeaders: ["Content-Disposition"],
+  optionsSuccessStatus: 204,
+  maxAge: 86400,
+  preflightContinue: false,
 };
 
-// Exportamos ambos middlewares con la misma configuración
 export const corsMiddleware = cors(corsOptions);
 export const preflightCorsMiddleware = cors(corsOptions);
-export const allowedCorsOrigins = allowedOrigins;
