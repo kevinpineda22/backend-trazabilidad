@@ -9,7 +9,7 @@ export const createProveedorContabilidad = async (req, res) => {
   try {
     const {
       url_rut,
-      url_camara_comercio,
+      url_camara_comercio, // Opcional
       url_certificacion_bancaria,
       url_formato_vinculacion,
       url_composicion_accionaria,
@@ -18,21 +18,28 @@ export const createProveedorContabilidad = async (req, res) => {
     if (!user_id) {
       return res.status(401).json({ message: "Usuario no autenticado." });
     }
-    if (!url_rut || !url_camara_comercio || !url_certificacion_bancaria) {
-      return res
-        .status(400)
-        .json({
-          message:
-            "Faltan URLs de documentos obligatorios (RUT, Cámara de Comercio, Certificación Bancaria).",
-        });
+
+    // --- ¡VALIDACIÓN ACTUALIZADA! ---
+    if (
+      !url_rut ||
+      !url_certificacion_bancaria ||
+      !url_formato_vinculacion ||
+      !url_composicion_accionaria
+    ) {
+      return res.status(400).json({
+        message:
+          "Faltan URLs de documentos obligatorios (RUT, Cert. Bancaria, Vinculación y Comp. Accionaria).",
+      });
     }
+    
+    // --- PAYLOAD ACTUALIZADO ---
     const payload = {
       user_id,
       url_rut,
-      url_camara_comercio,
-      url_certificacion_bancaria,
-      url_formato_vinculacion: url_formato_vinculacion || null,
-      url_composicion_accionaria: url_composicion_accionaria || null,
+      url_camara_comercio: url_camara_comercio || null, // Opcional
+      url_certificacion_bancaria, // Obligatorio
+      url_formato_vinculacion, // Obligatorio
+      url_composicion_accionaria, // Obligatorio
     };
     
     // Se elimina 'error' de la desestructuración
@@ -45,7 +52,7 @@ export const createProveedorContabilidad = async (req, res) => {
     res.status(201).json(data[0]);
 
   } catch (error) {
-    // --- ¡LÓGICA DE ERROR CORREGIDA! ---
+    // --- ¡LÓGICA DE ERROR MEJORADA! ---
     console.error("Error en createProveedorContabilidad:", error.response ? error.response.data : error.message);
 
     if (error.response) {
