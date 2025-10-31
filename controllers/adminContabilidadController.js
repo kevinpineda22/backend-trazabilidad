@@ -1,8 +1,10 @@
+// src/controllers/adminContabilidadController.js
 import { supabaseAxios } from "../services/supabaseClient.js";
 
 /**
  * @route GET /api/trazabilidad/admin/historial-empleados
  * Obtiene TODO el historial de empleados, uniendo el nombre del creador.
+ * (Vista de Admin - sin filtrar por user_id)
  */
 export const getHistorialEmpleadosAdmin = async (req, res) => {
   try {
@@ -10,8 +12,9 @@ export const getHistorialEmpleadosAdmin = async (req, res) => {
     if (!user_id) {
       return res.status(401).json({ message: "Usuario no autenticado." });
     }
+    // ¡CORREGIDO! Se eliminó el filtro user_id para la vista de admin
     const { data, error } = await supabaseAxios.get(
-      `/empleados_contabilidad?select=*,profiles(nombre, area)&user_id=eq.${user_id}&order=created_at.desc`
+      `/empleados_contabilidad?select=*,profiles(nombre, area)&order=created_at.desc`
     );
     if (error) throw error;
     res.status(200).json(data || []);
@@ -25,7 +28,8 @@ export const getHistorialEmpleadosAdmin = async (req, res) => {
 
 /**
  * @route GET /api/trazabilidad/admin/historial-proveedores
- * Obtiene TODO el historial de proveedores, uniendo el nombre del creador.
+ * Obtiene TODO el historial de proveedores.
+ * (Vista de Admin - sin filtrar por user_id)
  */
 export const getHistorialProveedoresAdmin = async (req, res) => {
   try {
@@ -33,8 +37,9 @@ export const getHistorialProveedoresAdmin = async (req, res) => {
     if (!user_id) {
       return res.status(401).json({ message: "Usuario no autenticado." });
     }
+    // ¡CORREGIDO! Se eliminó el filtro user_id para la vista de admin
     const { data, error } = await supabaseAxios.get(
-      `/proveedores_contabilidad?select=*,profiles(nombre, area)&user_id=eq.${user_id}&order=created_at.desc`
+      `/proveedores_contabilidad?select=*,profiles(nombre, area)&order=created_at.desc`
     );
     if (error) throw error;
     res.status(200).json(data || []);
@@ -48,7 +53,8 @@ export const getHistorialProveedoresAdmin = async (req, res) => {
 
 /**
  * @route GET /api/trazabilidad/admin/historial-clientes
- * Obtiene TODO el historial de clientes, uniendo el nombre del creador.
+ * Obtiene TODO el historial de clientes.
+ * (Vista de Admin - sin filtrar por user_id)
  */
 export const getHistorialClientesAdmin = async (req, res) => {
   try {
@@ -56,8 +62,9 @@ export const getHistorialClientesAdmin = async (req, res) => {
     if (!user_id) {
       return res.status(401).json({ message: "Usuario no autenticado." });
     }
+    // ¡CORREGIDO! Se eliminó el filtro user_id para la vista de admin
     const { data, error } = await supabaseAxios.get(
-      `/clientes_contabilidad?select=*,profiles(nombre, area)&user_id=eq.${user_id}&order=created_at.desc`
+      `/clientes_contabilidad?select=*,profiles(nombre, area)&order=created_at.desc`
     );
     if (error) throw error;
     res.status(200).json(data || []);
@@ -72,6 +79,7 @@ export const getHistorialClientesAdmin = async (req, res) => {
 /**
  * @route GET /api/trazabilidad/admin/dashboard-stats
  * Obtiene estadísticas para el dashboard.
+ * (Vista de Admin - sin filtrar por user_id)
  */
 export const getDashboardStats = async (req, res) => {
   try {
@@ -79,21 +87,24 @@ export const getDashboardStats = async (req, res) => {
     if (!user_id) {
       return res.status(401).json({ message: "Usuario no autenticado." });
     }
+    
+    // ¡CORREGIDO! Se eliminó el filtro user_id para la vista de admin
     const [empleadosResponse, proveedoresResponse, clientesResponse] =
       await Promise.all([
         supabaseAxios.get(
-          `/empleados_contabilidad?select=count&user_id=eq.${user_id}`,
+          `/empleados_contabilidad?select=count`, // Filtro user_id eliminado
           { headers: { Prefer: "count=exact" } }
         ),
         supabaseAxios.get(
-          `/proveedores_contabilidad?select=count&user_id=eq.${user_id}`,
+          `/proveedores_contabilidad?select=count`, // Filtro user_id eliminado
           { headers: { Prefer: "count=exact" } }
         ),
         supabaseAxios.get(
-          `/clientes_contabilidad?select=count&user_id=eq.${user_id}`,
+          `/clientes_contabilidad?select=count`, // Filtro user_id eliminado
           { headers: { Prefer: "count=exact" } }
         ),
       ]);
+      
     const stats = {
       totalEmpleados: empleadosResponse.headers["content-range"]
         ? parseInt(empleadosResponse.headers["content-range"].split("/")[1])
