@@ -1,6 +1,6 @@
 // src/controllers/empleadosContabilidadController.js
 
-// ¡ADICIÓN! Importar 'storageClient'
+// Importar 'storageClient'
 import { supabaseAxios, storageClient } from "../services/supabaseClient.js";
 
 /**
@@ -31,7 +31,6 @@ export const createEmpleadoContabilidad = async (req, res) => {
       url_certificado_bancario,
     } = req.body;
 
-    // ... (Validaciones de campos de texto y URLs se mantienen) ...
     if (!nombre || !apellidos || !cedula) {
       return res
         .status(400)
@@ -58,7 +57,6 @@ export const createEmpleadoContabilidad = async (req, res) => {
       url_certificado_bancario,
     };
 
-    // ... (Lógica de inserción en Supabase se mantiene) ...
     const { data, error } = await supabaseAxios.post(
       "/empleados_contabilidad",
       payload,
@@ -128,6 +126,7 @@ export const getExpedienteEmpleadoAdmin = async (req, res) => {
   try {
     const { id } = req.params; // ID del empleado
     const BUCKET_NAME = "documentos_contabilidad"; // El bucket que usas
+    const FOLDER_BASE = "empleados"; // Carpeta base
 
     // 1. Obtener datos del empleado de la DB (usando tu cliente Axios)
     const { data: empleadoData, error: dbError } = await supabaseAxios.get(
@@ -141,11 +140,18 @@ export const getExpedienteEmpleadoAdmin = async (req, res) => {
 
     const empleado = empleadoData[0]; // PostgREST siempre devuelve un array
 
-    // 2. Construir el path de la carpeta (EXACTAMENTE como en tu frontend)
-    const folderPath = `empleados/CC${empleado.cedula}_${empleado.nombre}_${empleado.apellidos}`
-      .replace(/[^a-zA-Z0-9 ]/g, "")
-      .replace(/ /g, "_")
+    // 2. --- ¡LÓGICA CORREGIDA! ---
+    // Primero, creamos el nombre seguro de la carpeta (idéntico al frontend)
+    const safeFolderName = `CC${empleado.cedula}_${empleado.nombre}_${empleado.apellidos}`
+      .replace(/[^a-zA-Z0-9 ]/g, "") // 1. Quita tildes, ñ, etc.
+      .replace(/ /g, "_") // 2. Reemplaza espacios
       .toUpperCase();
+
+    // Segundo, concatenamos la carpeta base (sin que sea afectada por el replace)
+    const folderPath = `${FOLDER_BASE}/${safeFolderName}`;
+    // folderPath ahora será: "empleados/CC123_ANA_PEREZ" (correcto)
+    // y no "EMPLEADOSCC123_ANA_PEREZ" (incorrecto)
+    // -----------------------------
 
     // 3. Listar archivos de Supabase Storage (usando el cliente JS)
     const { data: files, error: storageError } = await storageClient.storage
