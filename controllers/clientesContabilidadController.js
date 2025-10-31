@@ -1,6 +1,5 @@
+// src/controllers/clientesContabilidadController.js
 import { supabaseAxios } from "../services/supabaseClient.js";
-
-// === LÓGICA DE SUBIDA DE ARCHIVOS ELIMINADA. EL FRONTEND ENVÍA LAS URLS. ===
 
 /**
  * @route POST /api/trazabilidad/clientes
@@ -21,21 +20,30 @@ export const createClienteContabilidad = async (req, res) => {
       url_rut,
       created_at: new Date().toISOString(),
     };
-    const { data, error } = await supabaseAxios.post(
+    
+    // Se elimina 'error' de la desestructuración
+    const { data } = await supabaseAxios.post(
       "/clientes_contabilidad",
       payload,
       { headers: { Prefer: "return=representation" } }
     );
-    if (error) {
-      console.error("Error al guardar cliente en Supabase:", error);
-      return res.status(400).json({
-        message: error.message || "Error al guardar en la base de datos",
-        details: error.details || error,
+
+    res.status(201).json(data[0]);
+
+  } catch (error) {
+    // --- ¡LÓGICA DE ERROR CORREGIDA! ---
+    console.error("Error en createClienteContabilidad:", error);
+    
+    if (error.response) {
+      // Error específico de Supabase
+      return res.status(error.response.status || 400).json({
+        message:
+          error.response.data?.message || "Error al guardar en la base de datos",
+        details: error.response.data?.details || error,
       });
     }
-    res.status(201).json(data[0]);
-  } catch (error) {
-    console.error("Error en createClienteContabilidad:", error);
+
+    // Error genérico
     res.status(500).json({
       message: "Error interno del servidor.",
       error: error.message,
@@ -45,7 +53,7 @@ export const createClienteContabilidad = async (req, res) => {
 
 /**
  * @route GET /api/trazabilidad/clientes/historial
- * Obtiene el historial de clientes.
+ * (Esta función no necesita cambios)
  */
 export const getHistorialClientes = async (req, res) => {
   try {

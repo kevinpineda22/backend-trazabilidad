@@ -1,6 +1,5 @@
+// src/controllers/proveedoresContabilidadController.js
 import { supabaseAxios } from "../services/supabaseClient.js";
-
-// === LÓGICA DE SUBIDA DE ARCHIVOS ELIMINADA. EL FRONTEND ENVÍA LAS URLS. ===
 
 /**
  * @route POST /api/trazabilidad/proveedores
@@ -35,23 +34,31 @@ export const createProveedorContabilidad = async (req, res) => {
       url_formato_vinculacion: url_formato_vinculacion || null,
       url_composicion_accionaria: url_composicion_accionaria || null,
     };
-    const { data, error } = await supabaseAxios.post(
+    
+    // Se elimina 'error' de la desestructuración
+    const { data } = await supabaseAxios.post(
       "/proveedores_contabilidad",
       payload,
       { headers: { Prefer: "return=representation" } }
     );
-    if (error) {
-      console.error("Error al guardar proveedor en Supabase:", error);
+
+    res.status(201).json(data[0]);
+
+  } catch (error) {
+    // --- ¡LÓGICA DE ERROR CORREGIDA! ---
+    console.error("Error en createProveedorContabilidad:", error);
+
+    if (error.response) {
+       // Error específico de Supabase
       return res
-        .status(400)
+        .status(error.response.status || 400)
         .json({
-          message: error.message || "Error al guardar en la base de datos",
-          details: error.details,
+          message: error.response.data?.message || "Error al guardar en la base de datos",
+          details: error.response.data?.details,
         });
     }
-    res.status(201).json(data[0]);
-  } catch (error) {
-    console.error("Error en createProveedorContabilidad:", error);
+    
+    // Error genérico
     res
       .status(500)
       .json({ message: "Error interno del servidor.", error: error.message });
@@ -60,7 +67,7 @@ export const createProveedorContabilidad = async (req, res) => {
 
 /**
  * @route GET /api/trazabilidad/proveedores/historial
- * Obtiene el historial de proveedores.
+ * (Esta función no necesita cambios)
  */
 export const getHistorialProveedores = async (req, res) => {
   try {
