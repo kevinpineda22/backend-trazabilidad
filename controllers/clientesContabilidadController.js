@@ -32,7 +32,7 @@ export const createClienteContabilidad = async (req, res) => {
 
   } catch (error) {
     // --- ¡LÓGICA DE ERROR CORREGIDA! ---
-    console.error("Error en createClienteContabilidad:", error);
+    console.error("Error en createClienteContabilidad:", error.response ? error.response.data : error.message);
     
     if (error.response) {
       // Error específico de Supabase

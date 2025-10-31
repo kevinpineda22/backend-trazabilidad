@@ -46,7 +46,7 @@ export const createProveedorContabilidad = async (req, res) => {
 
   } catch (error) {
     // --- ¡LÓGICA DE ERROR CORREGIDA! ---
-    console.error("Error en createProveedorContabilidad:", error);
+    console.error("Error en createProveedorContabilidad:", error.response ? error.response.data : error.message);
 
     if (error.response) {
        // Error específico de Supabase
