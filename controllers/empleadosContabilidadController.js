@@ -9,10 +9,8 @@ import { supabaseAxios, storageClient } from "../services/supabaseClient.js";
  */
 export const createEmpleadoContabilidad = async (req, res) => {
   try {
-    // Obtenemos el user_id del token verificado por authMiddleware
     const user_id = req.user?.id;
     if (!user_id) {
-      // Este check es un fallback, authMiddleware debería atrapar esto.
       return res
         .status(401)
         .json({ message: "Usuario no autenticado para trazar la creación." });
@@ -29,6 +27,7 @@ export const createEmpleadoContabilidad = async (req, res) => {
       url_hoja_de_vida,
       url_cedula,
       url_certificado_bancario,
+      url_habeas_data, // --- ¡AÑADIDO! ---
     } = req.body;
 
     if (!nombre || !apellidos || !cedula) {
@@ -36,10 +35,12 @@ export const createEmpleadoContabilidad = async (req, res) => {
         .status(400)
         .json({ message: "Nombre, Apellidos y Cédula son obligatorios." });
     }
-    if (!url_hoja_de_vida || !url_cedula || !url_certificado_bancario) {
+    
+    // --- ¡VALIDACIÓN ACTUALIZADA! ---
+    if (!url_hoja_de_vida || !url_cedula || !url_certificado_bancario || !url_habeas_data) {
       return res.status(400).json({
         message:
-          "Faltan URLs de documentos obligatorios (CV, Cédula, Cert. Bancario).",
+          "Faltan URLs de documentos obligatorios (CV, Cédula, Cert. Bancario y Habeas Data).",
       });
     }
 
@@ -55,6 +56,7 @@ export const createEmpleadoContabilidad = async (req, res) => {
       url_hoja_de_vida,
       url_cedula,
       url_certificado_bancario,
+      url_habeas_data, // --- ¡AÑADIDO! ---
     };
 
     const { data, error } = await supabaseAxios.post(
@@ -149,9 +151,6 @@ export const getExpedienteEmpleadoAdmin = async (req, res) => {
 
     // Segundo, concatenamos la carpeta base (sin que sea afectada por el replace)
     const folderPath = `${FOLDER_BASE}/${safeFolderName}`;
-    // folderPath ahora será: "empleados/CC123_ANA_PEREZ" (correcto)
-    // y no "EMPLEADOSCC123_ANA_PEREZ" (incorrecto)
-    // -----------------------------
 
     // 3. Listar archivos de Supabase Storage (usando el cliente JS)
     const { data: files, error: storageError } = await storageClient.storage
