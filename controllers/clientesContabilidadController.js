@@ -3,48 +3,52 @@ import { supabaseAxios } from "../services/supabaseClient.js";
 
 /**
  * @route POST /api/trazabilidad/clientes
- * (Esta función no se modifica)
+ * Crea un nuevo registro de cliente (RECIBE SOLO URL y datos de texto)
  */
 export const createClienteContabilidad = async (req, res) => {
   try {
-    const {
-      url_rut,
-      cupo,
-      plazo,
-      url_camara_comercio,
-      url_formato_merkahorro,
-      url_cedula,
+    // --- ¡CAMPOS ACTUALIZADOS! ---
+    const { 
+      url_rut, 
+      cupo, 
+      plazo, 
+      url_camara_comercio, 
+      url_formato_sangrilaft, // Renombrado
+      url_cedula 
     } = req.body;
-
+    
     const user_id = req.user?.id;
     if (!user_id) {
       return res.status(401).json({ message: "Usuario no autenticado." });
     }
-
+    
+    // --- ¡VALIDACIÓN ACTUALIZADA! ---
+    // Asumiendo que todos son obligatorios
     if (
-      !url_rut ||
-      !cupo ||
-      !plazo ||
-      !url_camara_comercio ||
-      !url_formato_merkahorro ||
+      !url_rut || 
+      !cupo || 
+      !plazo || 
+      !url_camara_comercio || 
+      !url_formato_sangrilaft || 
       !url_cedula
     ) {
-      return res.status(400).json({
-        message: "Todos los campos de texto y documentos son obligatorios.",
+      return res.status(400).json({ 
+        message: "Todos los campos de texto y documentos son obligatorios." 
       });
     }
-
+    
+    // --- ¡PAYLOAD ACTUALIZADO! ---
     const payload = {
       user_id,
       cupo,
       plazo,
       url_rut,
       url_camara_comercio,
-      url_formato_merkahorro,
+      url_formato_sangrilaft, // Renombrado
       url_cedula,
       created_at: new Date().toISOString(),
     };
-
+    
     const { data } = await supabaseAxios.post(
       "/clientes_contabilidad",
       payload,
@@ -52,11 +56,9 @@ export const createClienteContabilidad = async (req, res) => {
     );
 
     res.status(201).json(data[0]);
+
   } catch (error) {
-    console.error(
-      "Error en createClienteContabilidad:",
-      error.response ? error.response.data : error.message
-    );
+    console.error("Error en createClienteContabilidad:", error.response ? error.response.data : error.message);
     if (error.response) {
       return res.status(error.response.status || 400).json({
         message:
@@ -73,7 +75,7 @@ export const createClienteContabilidad = async (req, res) => {
 
 /**
  * @route GET /api/trazabilidad/clientes/historial
- * (Esta función no se modifica)
+ * (Esta función no necesita cambios, el 'select=*' tomará las nuevas columnas)
  */
 export const getHistorialClientes = async (req, res) => {
   try {
@@ -96,7 +98,7 @@ export const getHistorialClientes = async (req, res) => {
 
 /**
  * @route PATCH /api/trazabilidad/clientes/:id
- * ¡NUEVA FUNCIÓN! Actualiza un registro de cliente.
+ * ¡Función ACTUALIZADA!
  */
 export const updateClienteContabilidad = async (req, res) => {
   try {
@@ -110,13 +112,13 @@ export const updateClienteContabilidad = async (req, res) => {
       return res.status(400).json({ message: "No se proporcionó un ID para actualizar." });
     }
 
-    // Obtenemos campos del body
+    // --- ¡CAMPOS ACTUALIZADOS! ---
     const {
       cupo,
       plazo,
       url_rut,
       url_camara_comercio,
-      url_formato_merkahorro,
+      url_formato_sangrilaft, // Renombrado
       url_cedula,
     } = req.body;
 
@@ -126,7 +128,7 @@ export const updateClienteContabilidad = async (req, res) => {
     if (plazo !== undefined) payload.plazo = plazo;
     if (url_rut !== undefined) payload.url_rut = url_rut;
     if (url_camara_comercio !== undefined) payload.url_camara_comercio = url_camara_comercio;
-    if (url_formato_merkahorro !== undefined) payload.url_formato_merkahorro = url_formato_merkahorro;
+    if (url_formato_sangrilaft !== undefined) payload.url_formato_sangrilaft = url_formato_sangrilaft; // Renombrado
     if (url_cedula !== undefined) payload.url_cedula = url_cedula;
 
     if (Object.keys(payload).length === 0) {
