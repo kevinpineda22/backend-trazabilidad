@@ -53,7 +53,7 @@ const RegistroPublico = () => {
   const validarToken = async () => {
     try {
       const response = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/trazabilidad/tokens/validar/${token}`
+        `${import.meta.env.VITE_BACKEND_TRAZABILIDAD_URL}/api/trazabilidad/tokens/validar/${token}`
       );
       
       if (response.data.valido && response.data.tipo === tipo) {
@@ -78,7 +78,7 @@ const RegistroPublico = () => {
 
     try {
       await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/trazabilidad/registro-publico/empleado/${token}`,
+        `${import.meta.env.VITE_BACKEND_TRAZABILIDAD_URL}/api/trazabilidad/registro-publico/empleado/${token}`,
         formEmpleado
       );
       setRegistroExitoso(true);
@@ -98,7 +98,7 @@ const RegistroPublico = () => {
 
     try {
       await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/trazabilidad/registro-publico/cliente/${token}`,
+        `${import.meta.env.VITE_BACKEND_TRAZABILIDAD_URL}/api/trazabilidad/registro-publico/cliente/${token}`,
         formCliente
       );
       setRegistroExitoso(true);
@@ -118,7 +118,7 @@ const RegistroPublico = () => {
 
     try {
       await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/trazabilidad/registro-publico/proveedor/${token}`,
+        `${import.meta.env.VITE_BACKEND_TRAZABILIDAD_URL}/api/trazabilidad/registro-publico/proveedor/${token}`,
         formProveedor
       );
       setRegistroExitoso(true);

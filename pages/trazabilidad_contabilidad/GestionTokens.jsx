@@ -18,16 +18,36 @@ const GestionTokens = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
+      
+      if (!token) {
+        mostrarMensaje('No se encontró token de autenticación.', 'error');
+        setTokens([]);
+        return;
+      }
+
       const response = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/trazabilidad/tokens/listar`,
+        `${import.meta.env.VITE_BACKEND_TRAZABILIDAD_URL}/api/trazabilidad/tokens/listar`,
         {
           headers: { Authorization: `Bearer ${token}` }
         }
       );
-      setTokens(response.data);
+      
+      // Validar que la respuesta sea un array
+      if (Array.isArray(response.data)) {
+        setTokens(response.data);
+      } else {
+        console.error('La respuesta no es un array:', response.data);
+        setTokens([]);
+        mostrarMensaje('Error: Respuesta inválida del servidor.', 'error');
+      }
     } catch (error) {
       console.error('Error al cargar tokens:', error);
-      mostrarMensaje('Error al cargar los tokens.', 'error');
+      setTokens([]); // Asegurar que tokens sea un array vacío
+      if (error.response?.status === 401) {
+        mostrarMensaje('Sesión expirada. Por favor, inicia sesión nuevamente.', 'error');
+      } else {
+        mostrarMensaje('Error al cargar los tokens.', 'error');
+      }
     } finally {
       setLoading(false);
     }
@@ -38,7 +58,7 @@ const GestionTokens = () => {
       setLoading(true);
       const token = localStorage.getItem('token');
       const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/trazabilidad/tokens/generar`,
+        `${import.meta.env.VITE_BACKEND_TRAZABILIDAD_URL}/api/trazabilidad/tokens/generar`,
         { tipo },
         {
           headers: { Authorization: `Bearer ${token}` }

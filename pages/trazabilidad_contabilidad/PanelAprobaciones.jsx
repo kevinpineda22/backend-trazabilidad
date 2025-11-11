@@ -29,15 +29,18 @@ const PanelAprobaciones = () => {
       setLoading(true);
       const token = localStorage.getItem('token');
       const response = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/trazabilidad/aprobaciones/pendientes`,
+        `${import.meta.env.VITE_BACKEND_TRAZABILIDAD_URL}/api/trazabilidad/aprobaciones/pendientes`,
         {
           headers: { Authorization: `Bearer ${token}` }
         }
       );
-      setRegistrosPendientes(response.data);
+      // Asegurar que siempre sea un array
+      const data = Array.isArray(response.data) ? response.data : [];
+      setRegistrosPendientes(data);
     } catch (error) {
       console.error('Error al cargar pendientes:', error);
       mostrarMensaje('Error al cargar registros pendientes.', 'error');
+      setRegistrosPendientes([]); // Establecer array vacío en caso de error
     } finally {
       setLoading(false);
     }
@@ -48,15 +51,18 @@ const PanelAprobaciones = () => {
       setLoading(true);
       const token = localStorage.getItem('token');
       const response = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/trazabilidad/aprobaciones/historial`,
+        `${import.meta.env.VITE_BACKEND_TRAZABILIDAD_URL}/api/trazabilidad/aprobaciones/historial`,
         {
           headers: { Authorization: `Bearer ${token}` }
         }
       );
-      setHistorial(response.data);
+      // Asegurar que siempre sea un array
+      const data = Array.isArray(response.data) ? response.data : [];
+      setHistorial(data);
     } catch (error) {
       console.error('Error al cargar historial:', error);
       mostrarMensaje('Error al cargar historial.', 'error');
+      setHistorial([]); // Establecer array vacío en caso de error
     } finally {
       setLoading(false);
     }
@@ -69,7 +75,7 @@ const PanelAprobaciones = () => {
       setLoading(true);
       const token = localStorage.getItem('token');
       await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/trazabilidad/aprobaciones/aprobar/${id}`,
+        `${import.meta.env.VITE_BACKEND_TRAZABILIDAD_URL}/api/trazabilidad/aprobaciones/aprobar/${id}`,
         {},
         {
           headers: { Authorization: `Bearer ${token}` }
@@ -100,7 +106,7 @@ const PanelAprobaciones = () => {
       setLoading(true);
       const token = localStorage.getItem('token');
       await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/trazabilidad/aprobaciones/rechazar/${registroSeleccionado.id}`,
+        `${import.meta.env.VITE_BACKEND_TRAZABILIDAD_URL}/api/trazabilidad/aprobaciones/rechazar/${registroSeleccionado.id}`,
         { motivo: motivoRechazo },
         {
           headers: { Authorization: `Bearer ${token}` }
