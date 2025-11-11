@@ -116,6 +116,16 @@ const GestionTokens = () => {
     }
   };
 
+  // Generar URL hacia los formularios existentes con parámetro token
+  const generarUrlRegistro = (tipo, token) => {
+    const rutas = {
+      'empleado': '/trazabilidad/creacion-empleado',
+      'cliente': '/trazabilidad/creacion-cliente',
+      'proveedor': '/trazabilidad/creacion-proveedor'
+    };
+    return `${window.location.origin}${rutas[tipo]}?token=${token}`;
+  };
+
   return (
     <div className="gestion-tokens-container">
       <h1>Gestión de Links de Registro</h1>
@@ -193,14 +203,14 @@ const GestionTokens = () => {
                     </td>
                     <td className="celda-link">
                       <code className="link-code">
-                        {token.url_registro || `${window.location.origin}/registro/${token.tipo}/${token.token}`}
+                        {generarUrlRegistro(token.tipo, token.token)}
                       </code>
                     </td>
                     <td>
                       <button
                         className="btn-copiar"
                         onClick={() => copiarAlPortapapeles(
-                          token.url_registro || `${window.location.origin}/registro/${token.tipo}/${token.token}`
+                          generarUrlRegistro(token.tipo, token.token)
                         )}
                         disabled={estado !== 'activo'}
                         title={estado === 'activo' ? 'Copiar link' : 'Link no disponible'}

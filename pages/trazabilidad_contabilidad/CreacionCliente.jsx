@@ -7,6 +7,8 @@ import {
 import { format, parseISO } from "date-fns";
 import Swal from "sweetalert2";
 import { toast } from "react-toastify";
+import { useSearchParams } from "react-router-dom";
+import axios from "axios";
     
 import { apiTrazabilidad } from "../../services/apiTrazabilidad";
 import { uploadFileToBucket } from "../../supabaseClient"; 
@@ -246,10 +248,14 @@ const TrazabilidadPageLayout = ({ title, icon, subtitle, formContent, historialT
                 <p className="tc-subtitle">{subtitle}</p>
                 {formContent}
             </motion.div>
-            <motion.div className="tc-card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-                <h2 className="tc-title"><FaHistory />{historialTitle}</h2>
-                {historialContent}
-            </motion.div>
+            
+            {/* Ocultar historial en modo público */}
+            {!modoPublico && (
+                <motion.div className="tc-card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+                    <h2 className="tc-title"><FaHistory />{historialTitle}</h2>
+                    {historialContent}
+                </motion.div>
+            )}
         </div>
     );
 };
@@ -277,6 +283,11 @@ const parseApiError = (error) => {
 // 3. COMPONENTE PRINCIPAL (¡ACTUALIZADO!)
 //==================================================================
 const CreacionCliente = () => {
+    // Detectar si hay token en la URL (modo público)
+    const [searchParams] = useSearchParams();
+    const tokenPublico = searchParams.get('token');
+    const modoPublico = !!tokenPublico;
+
     // --- ¡NUEVO ESTADO DE EDICIÓN! ---
     const [idParaEditar, setIdParaEditar] = useState(null);
     const enModoEdicion = idParaEditar !== null;
@@ -322,11 +333,14 @@ const CreacionCliente = () => {
     }, []);
     
     useEffect(() => {
-        fetchHistorial();
+        // Solo cargar historial si NO está en modo público
+        if (!modoPublico) {
+            fetchHistorial();
+        }
         return () => {
             if (submitTimeoutRef.current) clearTimeout(submitTimeoutRef.current);
         };
-    }, [fetchHistorial]);
+    }, [fetchHistorial, modoPublico]);
 
     // --- ¡FUNCIÓN resetForm ACTUALIZADA! ---
     const resetForm = () => {
@@ -430,29 +444,53 @@ const CreacionCliente = () => {
             };
 
             // 3. Enviar JSON al Backend (POST o PATCH)
-            if (enModoEdicion) {
-                await apiTrazabilidad.patch(`/trazabilidad/clientes/${idParaEditar}`, finalPayload, {
-                    headers: { "Content-Type": "application/json" },
-                });
-            } else {
-                await apiTrazabilidad.post("/trazabilidad/clientes", finalPayload, {
-                    headers: { "Content-Type": "application/json" },
-                });
+            // Modo público: enviar a registro-publico
+            if (modoPublico) {
+                await axios.post(
+                    `${import.meta.env.VITE_API_URL}/api/trazabilidad/registro-publico/cliente/${tokenPublico}`,
+                    finalPayload,
+                    { headers: { "Content-Type": "application/json" } }
+                );
+            } 
+            // Modo normal: enviar directo a clientes
+            else {
+                if (enModoEdicion) {
+                    await apiTrazabilidad.patch(`/trazabilidad/clientes/${idParaEditar}`, finalPayload, {
+                        headers: { "Content-Type": "application/json" },
+                    });
+                } else {
+                    await apiTrazabilidad.post("/trazabilidad/clientes", finalPayload, {
+                        headers: { "Content-Type": "application/json" },
+                    });
+                }
             }
     
             // --- ¡ALERTA DE ÉXITO ACTUALIZADA! ---
             toast.dismiss(savingToast);
-            Swal.fire({
-                title: enModoEdicion ? "¡Actualizado!" : "¡Creado!",
-                text: successMessage, 
-                icon: "success",
-                customClass: SWAL_CUSTOM_CLASSES,
-                confirmButtonText: "✅ Entendido"
-            });
+            
+            if (modoPublico) {
+                Swal.fire({
+                    title: "¡Registro Enviado!",
+                    text: "Tu registro ha sido enviado y está pendiente de aprobación. Serás notificado una vez sea revisado.", 
+                    icon: "success",
+                    customClass: SWAL_CUSTOM_CLASSES,
+                    confirmButtonText: "✅ Entendido"
+                });
+            } else {
+                Swal.fire({
+                    title: enModoEdicion ? "¡Actualizado!" : "¡Creado!",
+                    text: successMessage, 
+                    icon: "success",
+                    customClass: SWAL_CUSTOM_CLASSES,
+                    confirmButtonText: "✅ Entendido"
+                });
+            }
             // ------------------------------------
 
             resetForm();
-            fetchHistorial();
+            if (!modoPublico) {
+                fetchHistorial();
+            }
         } catch (error) {
             console.error(`Error al ${enModoEdicion ? "actualizar" : "crear"} cliente:`, error);
             const errorMsg = parseApiError(error);
