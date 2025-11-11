@@ -134,7 +134,7 @@ export const listarTokens = async (req, res) => {
     }
 
     const { data } = await supabaseAxios.get(
-      `/tokens_registro?select=*,profiles(nombre)&generado_por=eq.${user_id}&order=created_at.desc`
+      `/tokens_registro?select=*&generado_por=eq.${user_id}&order=created_at.desc`
     );
 
     res.status(200).json(data || []);
