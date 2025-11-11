@@ -1,0 +1,265 @@
+/* src/pages/trazabilidad_contabilidad/views/ExpedienteEmpleadoView.css 
+  (Reemplaza el contenido si ya lo habías creado)
+*/
+
+/* Variables */
+:root {
+  --admin-cont-primary-dark: #210d65;
+  --admin-cont-primary-medium: #3b1a9a;
+  --admin-cont-text-dark: #1f2933;
+  --admin-cont-text-muted: #64748b;
+  --admin-cont-card-bg: #ffffff;
+  --admin-cont-border: #d9e2ec;
+  --admin-cont-shadow: 0 8px 24px rgba(18, 38, 63, 0.06);
+}
+
+/* --- ¡ELIMINADO! 'expediente-container' ya no necesita padding, 
+   'admin-cont-content' (el padre) ya lo proporciona --- */
+.expediente-container-inner {
+  width: 100%;
+  max-width: 1000px; /* Máximo ancho dentro del contenedor */
+  margin: 0 auto; /* Centrado */
+  font-family: "Poppins", sans-serif;
+  min-height: auto; /* Ya no controla la altura de la vh */
+}
+
+/* Contenedor para centrar el loader */
+.expediente-loader-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+.expediente-loader-container .admin-cont-loader {
+    border: none;
+    background: none;
+    padding: 2rem;
+}
+
+
+.expediente-back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--admin-cont-text-muted);
+  text-decoration: none;
+  margin-bottom: 1.5rem; /* Reducido */
+  transition: color 0.2s ease;
+  /* --- ¡AÑADIDO! Estilos de botón --- */
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+.expediente-back-button:hover {
+  color: var(--admin-cont-primary-medium);
+}
+
+.expediente-header {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 2rem;
+  background-color: var(--admin-cont-card-bg);
+  border-radius: 12px;
+  border: 1px solid var(--admin-cont-border);
+  box-shadow: var(--admin-cont-shadow);
+  margin-bottom: 2rem;
+}
+
+.header-icon {
+  font-size: 4rem;
+  color: var(--admin-cont-primary-dark);
+  flex-shrink: 0;
+}
+
+.header-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.header-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--admin-cont-text-dark);
+  margin: 0;
+}
+
+.header-subtitle {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--admin-cont-primary-medium);
+  margin: 0.25rem 0;
+}
+
+.header-meta {
+  font-size: 0.85rem;
+  color: var(--admin-cont-text-muted);
+  margin-top: 0.5rem;
+}
+
+.expediente-file-list {
+  background-color: var(--admin-cont-card-bg);
+  border-radius: 12px;
+  border: 1px solid var(--admin-cont-border);
+  box-shadow: var(--admin-cont-shadow);
+  padding: 1.5rem 2rem;
+}
+
+.file-list-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--admin-cont-text-dark);
+  margin: 0 0 1.5rem 0;
+  border-bottom: 1px solid var(--admin-cont-border);
+  padding-bottom: 1rem;
+}
+
+.expediente-file-list ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.file-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+  flex-wrap: wrap; /* Para responsividad en móviles */
+  gap: 0.5rem; /* Espacio si se envuelven */
+}
+.file-item:hover {
+  background-color: #f8f9ff;
+}
+.file-item:not(:last-child) {
+    border-bottom: 1px solid #f0f2f5;
+}
+
+.file-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 200px; /* Evita que el texto se comprima mucho */
+  flex-grow: 1;
+}
+
+.file-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+.file-icon.pdf { color: #E53E3E; }
+.file-icon.image { color: #38A169; }
+.file-icon.other { color: #64748b; }
+
+.file-name {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--admin-cont-text-dark);
+  word-break: break-all; /* Evita desbordamiento */
+}
+
+.file-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0; /* Evita que los botones se encojan */
+}
+
+.file-action-btn {
+  font-family: "Poppins", sans-serif;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.file-action-btn.preview {
+  background-color: #f1f5f9;
+  color: var(--admin-cont-text-muted);
+  border-color: #e2e8f0;
+}
+.file-action-btn.preview:hover {
+  background-color: #e2e8f0;
+  color: var(--admin-cont-text-dark);
+}
+
+.file-action-btn.download {
+  background-color: var(--admin-cont-primary-medium);
+  color: #ffffff;
+}
+.file-action-btn.download:hover {
+  background-color: var(--admin-cont-primary-dark);
+}
+
+/* --- Tarjeta de Información del Empleado --- */
+.expediente-info-card {
+  background-color: var(--admin-cont-card-bg);
+  border-radius: 12px;
+  border: 1px solid var(--admin-cont-border);
+  box-shadow: var(--admin-cont-shadow);
+  padding: 1.5rem 2rem;
+  margin-bottom: 2rem; /* Separación de la lista de archivos */
+}
+
+.info-card-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--admin-cont-text-dark);
+  margin: 0 0 1.5rem 0;
+  border-bottom: 1px solid var(--admin-cont-border);
+  padding-bottom: 1rem;
+}
+
+.info-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.25rem;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.info-label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--admin-cont-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.info-value {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--admin-cont-text-dark);
+  word-break: break-word; /* Para correos largos */
+}
+
+/* --- Ajuste al encabezado (ya no tiene meta) --- */
+.expediente-header .header-info {
+  flex-grow: 1;
+}
+
+.expediente-header .header-meta {
+  /* Este estilo ya no se usa, pero lo dejamos por si acaso */
+  font-size: 0.85rem;
+  color: var(--admin-cont-text-muted);
+  margin-top: 0.5rem;
+}

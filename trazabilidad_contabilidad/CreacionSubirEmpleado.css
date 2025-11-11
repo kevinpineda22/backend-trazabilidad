@@ -1,0 +1,557 @@
+/* src/pages/trazabilidad_contabilidad/CreacionSubirEmpleado.css (Minimalista & Adaptable) */
+
+/* --- Variables de Color (Tema Contabilidad) --- */
+:root {
+  --tc-primary: #210d65; /* Morado Oscuro */
+  --tc-primary-light: #4f46e5; /* Índigo */
+  --tc-text: #1f2933;
+  --tc-text-muted: #64748b;
+  --tc-surface: #ffffff;
+  --tc-background: #f4f6fb;
+  --tc-border: #e5e7eb;
+  --tc-error: #dc3545;
+  --tc-success: #16a34a;
+  --tc-shadow: 0 4px 10px rgba(18, 38, 63, 0.04);
+}
+
+/* --- Contenedor de Página y Tarjetas (tc-page, tc-card) --- */
+.tc-page-container {
+  /* Nuevo wrapper principal */
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  font-family: "Poppins", sans-serif;
+}
+
+.tc-card {
+  background: var(--tc-surface);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: var(--tc-shadow);
+  border: 1px solid var(--tc-border);
+}
+
+.tc-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--tc-primary);
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+}
+
+.tc-subtitle {
+  font-size: 0.9rem;
+  color: var(--tc-text-muted);
+  margin: 0 0 1rem 0;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--tc-border);
+}
+
+/* --- Estilos de Formulario (tc-form) --- */
+.tc-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.tc-form-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.tc-form-grid.grid-2-cols {
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+}
+
+.tc-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.tc-form-group label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--tc-text);
+  margin-bottom: 0.2rem;
+}
+
+.tc-form-group .required {
+  color: var(--tc-error);
+  margin-left: 0.25rem;
+}
+
+/* Input Styles */
+.tc-form-input {
+  width: 100%;
+  padding: 0.7rem 0.9rem;
+  font-size: 0.9rem;
+  border: 1px solid var(--tc-border);
+  border-radius: 6px;
+  background: #ffffff;
+  color: var(--tc-text);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+  box-sizing: border-box;
+  transition: all 0.15s ease-in-out;
+}
+
+.tc-form-input:focus {
+  outline: none;
+  border-color: var(--tc-primary-light);
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.15);
+}
+
+.tc-readonly-input {
+  background: #f1f5f9;
+  color: var(--tc-text-muted);
+  font-weight: 600;
+  cursor: not-allowed;
+}
+
+/* --- Validación Inline --- */
+.tc-form-input.is-invalid {
+  border-color: var(--tc-error);
+  background: #fff5f5;
+}
+
+.tc-validation-error {
+  font-size: 0.75rem;
+  color: var(--tc-error);
+  font-weight: 500;
+  margin-top: -0.1rem;
+}
+
+.tc-error-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.5rem 1rem;
+  background: #fff5f5;
+  border: 1px solid var(--tc-error);
+  border-radius: 6px;
+  margin-top: -0.5rem;
+}
+
+/* --- File Input (tc-file-input) --- */
+.tc-file-input-wrapper input[type="file"] {
+  display: none;
+}
+.tc-file-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  border: 1px solid var(--tc-border);
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--tc-text-muted);
+  height: 100%;
+  box-sizing: border-box;
+  min-height: 80px;
+  transition: background 0.15s ease-in-out;
+}
+.tc-file-label:hover {
+  border-color: var(--tc-primary-light);
+  color: var(--tc-primary);
+  background: #f8f9ff;
+}
+.tc-file-label svg {
+  font-size: 1.3rem;
+}
+
+/* File Preview */
+.tc-file-selected .tc-file-label {
+  display: none;
+}
+.tc-file-preview {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--tc-success);
+  background: #f0fdf4;
+  border-radius: 6px;
+  color: var(--tc-success);
+  height: 100%;
+  min-height: 80px;
+}
+.tc-file-preview svg {
+  flex-shrink: 0;
+}
+.tc-file-name {
+  flex-grow: 1;
+  font-size: 0.85rem;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tc-file-remove-btn {
+  background: none;
+  border: none;
+  color: var(--tc-error);
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0.2rem;
+  transition: transform 0.15s ease;
+}
+.tc-file-remove-btn:hover {
+  transform: scale(1.1);
+}
+
+/* --- Separador y Botones --- */
+.tc-form-separator {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  color: var(--tc-text-muted);
+  font-weight: 500;
+  font-size: 0.85rem;
+  margin: 1rem 0 0.5rem;
+}
+.tc-form-separator::before,
+.tc-form-separator::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid var(--tc-border);
+}
+.tc-form-separator:not(:empty)::before {
+  margin-right: 0.75em;
+}
+.tc-form-separator:not(:empty)::after {
+  margin-left: 0.75em;
+}
+
+.tc-form-actions {
+  display: flex;
+  justify-content: flex-end; /* Alineado a la derecha */
+  margin-top: 1rem;
+}
+
+.tc-submit-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  background: var(--tc-primary);
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease-in-out, box-shadow 0.15s ease;
+}
+
+.tc-submit-btn:hover:not(:disabled) {
+  background: var(--tc-primary-light);
+  box-shadow: 0 4px 8px rgba(33, 13, 101, 0.2); /* Sombra ligera y elegante */
+}
+
+.tc-submit-btn:disabled {
+  background: #b7c2d0;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.tc-spinner {
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* --- Historial y Tablas --- */
+.tc-historial-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1.5rem;
+  font-size: 0.9rem;
+  color: var(--tc-text-muted);
+  font-weight: 500;
+}
+.tc-historial-table-wrapper {
+  overflow-x: auto;
+  border: 1px solid var(--tc-border);
+  border-radius: 8px;
+}
+.tc-historial-table-wrapper table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+.tc-historial-table-wrapper th,
+.tc-historial-table-wrapper td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--tc-border);
+  white-space: nowrap;
+}
+.tc-historial-table-wrapper th {
+  background: #f8fafc;
+  font-weight: 500;
+  color: var(--tc-text-muted);
+}
+
+.tc-sortable-header {
+  cursor: pointer;
+  position: relative;
+  padding-right: 1.5rem;
+  transition: color 0.15s ease;
+}
+.tc-sortable-header:hover {
+  color: var(--tc-primary);
+  background: #f8f9ff;
+}
+.tc-sort-icon {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0.4;
+  font-size: 0.8em;
+}
+.tc-sort-icon.active {
+  opacity: 1;
+  color: var(--tc-primary-light);
+}
+
+.tc-doc-links-cell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.tc-doc-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  color: var(--tc-text-muted);
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.tc-doc-button:hover {
+  background: #eef2ff;
+  border-color: var(--tc-primary-light);
+  color: var(--tc-primary);
+}
+
+/* SweetAlert2 Customization for minimal design */
+.tc-swal-container {
+  font-family: "Poppins", sans-serif !important;
+}
+
+.tc-swal-title {
+  color: var(--tc-primary) !important;
+  font-weight: 600 !important;
+}
+
+.tc-swal-confirm {
+  background-color: var(--tc-primary) !important;
+  border: 1px solid var(--tc-primary) !important;
+  border-radius: 6px !important;
+  box-shadow: none !important;
+  transition: background-color 0.15s ease;
+}
+
+.tc-swal-confirm:hover {
+  background-color: var(--tc-primary-light) !important;
+}
+
+.tc-swal-cancel {
+  background-color: #f1f5f9 !important;
+  color: var(--tc-text-muted) !important;
+  border: 1px solid var(--tc-border) !important;
+  border-radius: 6px !important;
+  box-shadow: none !important;
+  transition: background-color 0.15s ease;
+}
+
+.tc-swal-cancel:hover {
+  background-color: #e2e8f0 !important;
+}
+
+/* Centra el contenido de las celdas marcadas */
+.tc-centered-cell {
+  text-align: center !important;
+  vertical-align: middle;
+}
+
+/* Asegura que los encabezados de la tabla también estén centrados */
+.tc-historial-table-wrapper table th {
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* Estilo del contenedor de la lista de documentos en la celda */
+.tc-doc-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 15px;
+  justify-content: center; /* Centra horizontalmente la lista de documentos */
+  align-items: center;
+}
+
+/* Estilo para cada par (etiqueta + botón) */
+.tc-doc-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+/* Estilo para el nombre explícito del documento */
+.tc-doc-label {
+  font-weight: 600;
+  color: #4a5568;
+}
+
+/* Ajuste para la columna de links para que quepa todo */
+.tc-doc-links-cell {
+  min-width: 280px; /* Asegura un ancho mínimo para que se vean todos los documentos */
+}
+
+/* --- Responsividad --- */
+@media (max-width: 900px) {
+  .tc-page-container {
+    padding: 1.5rem;
+    gap: 1.5rem;
+  }
+  .tc-card {
+    padding: 1.25rem;
+  }
+  .tc-form-grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+  .tc-form-grid.grid-2-cols {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+}
+@media (max-width: 600px) {
+  .tc-page-container {
+    padding: 1rem 0.5rem;
+  }
+  .tc-form-grid,
+  .tc-form-grid.grid-2-cols {
+    grid-template-columns: 1fr;
+  }
+  .tc-form-actions {
+    justify-content: center;
+  }
+  .tc-submit-btn {
+    width: 100%;
+  }
+}
+
+/* --- Estilos para el NUEVO FileInput (Estado Existente) --- */
+.tc-file-preview.tc-file-existing {
+  background: #f0fdf4; /* Verde muy claro */
+  border: 1px solid #16a34a;
+  color: #15803d;
+  justify-content: space-between;
+}
+
+.tc-file-preview.tc-file-new {
+  /* Estilo para el archivo nuevo (el que ya tenías) */
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: var(--tc-text);
+}
+
+.tc-file-name {
+  flex-grow: 1;
+  font-size: 0.85rem;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 5px;
+}
+
+.tc-file-change-btn {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: var(--tc-text-muted);
+  padding: 0.2rem 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  margin-left: auto; /* Empuja el botón a la derecha */
+  margin-right: 0.5rem;
+  flex-shrink: 0;
+}
+.tc-file-change-btn:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+/* --- Estilos para Botones de Acción --- */
+
+/* Botón de Editar en la Tabla */
+.tc-action-btn-edit {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: var(--tc-text-muted);
+  padding: 0.4rem 0.6rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-size: 0.85rem;
+}
+.tc-action-btn-edit:hover {
+  background: var(--tc-primary-light);
+  color: #ffffff;
+  border-color: var(--tc-primary-light);
+}
+
+/* Botón de Cancelar en el Formulario */
+.tc-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center; /* Alinear verticalmente */
+  gap: 0.75rem; /* Espacio entre botones */
+  margin-top: 1rem;
+}
+
+.tc-cancel-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0.75rem 1.5rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #ffffff;
+  color: var(--tc-text-muted);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.tc-cancel-btn:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+}
