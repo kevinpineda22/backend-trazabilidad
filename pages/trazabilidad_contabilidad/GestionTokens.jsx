@@ -119,9 +119,9 @@ const GestionTokens = () => {
   // Generar URL hacia los formularios existentes con parámetro token
   const generarUrlRegistro = (tipo, token) => {
     const rutas = {
-      'empleado': '/trazabilidad/creacion-empleado',
-      'cliente': '/trazabilidad/creacion-cliente',
-      'proveedor': '/trazabilidad/creacion-proveedor'
+      'empleado': '/trazabilidad/crear-empleado',
+      'cliente': '/trazabilidad/crear-cliente',
+      'proveedor': '/trazabilidad/crear-proveedor'
     };
     return `${window.location.origin}${rutas[tipo]}?token=${token}`;
   };

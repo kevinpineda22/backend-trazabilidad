@@ -43,8 +43,16 @@ export const generarToken = async (req, res) => {
       { headers: { Prefer: "return=representation" } }
     );
 
-    // Construir URL completa (ajusta el dominio según tu frontend)
-    const urlRegistro = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/registro/${tipo}/${token}`;
+    // Mapeo de tipos a rutas del frontend
+    const rutasPorTipo = {
+      'empleado': '/trazabilidad/crear-empleado',
+      'cliente': '/trazabilidad/crear-cliente',
+      'proveedor': '/trazabilidad/crear-proveedor'
+    };
+
+    // Construir URL completa con query param token
+    const baseUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const urlRegistro = `${baseUrl}${rutasPorTipo[tipo]}?token=${token}`;
 
     res.status(201).json({
       ...data[0],
