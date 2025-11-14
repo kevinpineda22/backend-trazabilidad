@@ -156,16 +156,28 @@ export const listarTokens = async (req, res) => {
 
     // PostgREST no permite la relación directa porque no hay FK, así que traemos los perfiles aparte.
     const filtroIds = generadores.map((id) => `"${id}"`).join(",");
-    const { data: perfiles } = await supabaseAxios.get("/profiles", {
-      params: {
-        select: "id,nombre",
-        id: `in.(${filtroIds})`,
-      },
-    });
+    let perfilesPorId = {};
 
-    const perfilesPorId = Object.fromEntries(
-      (perfiles || []).map((perfil) => [perfil.id, { nombre: perfil.nombre }])
-    );
+    try {
+      const { data: perfiles } = await supabaseAxios.get("/profiles", {
+        params: {
+          select: "user_id,nombre",
+          user_id: `in.(${filtroIds})`,
+        },
+      });
+
+      perfilesPorId = Object.fromEntries(
+        (perfiles || []).map((perfil) => [
+          perfil.user_id || perfil.id,
+          { nombre: perfil.nombre },
+        ])
+      );
+    } catch (profileError) {
+      console.warn(
+        "No se pudo obtener perfiles para los tokens:",
+        profileError.response?.data || profileError.message
+      );
+    }
 
     const tokensConPerfil = tokens.map((token) => ({
       ...token,
