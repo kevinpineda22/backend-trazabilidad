@@ -19,12 +19,11 @@ export const obtenerPendientes = async (req, res) => {
     );
 
     res.status(200).json(data || []);
-
   } catch (error) {
     console.error("Error al obtener registros pendientes:", error);
-    res.status(500).json({ 
-      message: "Error al obtener registros pendientes.", 
-      error: error.message 
+    res.status(500).json({
+      message: "Error al obtener registros pendientes.",
+      error: error.message,
     });
   }
 };
@@ -54,56 +53,104 @@ export const aprobarRegistro = async (req, res) => {
     const registro = registroPendiente[0];
 
     if (registro.estado !== "pendiente") {
-      return res.status(400).json({ message: "Este registro ya fue procesado." });
+      return res
+        .status(400)
+        .json({ message: "Este registro ya fue procesado." });
     }
 
-    // Determinar tabla destino según el tipo
-    let tablaDestino = "";
-    switch (registro.tipo) {
-      case "empleado":
-        tablaDestino = "empleados_contabilidad";
-        break;
-      case "cliente":
-        tablaDestino = "clientes_contabilidad";
-        break;
-      case "proveedor":
-        tablaDestino = "proveedores_contabilidad";
-        break;
-      default:
-        return res.status(400).json({ message: "Tipo de registro inválido." });
-    }
-
-    // Insertar en tabla correspondiente
-    const { data: nuevoRegistro } = await supabaseAxios.post(
-      `/${tablaDestino}`,
-      {
-        ...registro.datos,
-        user_id: registro.user_id || user_id, // Usar el user_id del registro o el aprobador
+    const construirPayload = () => {
+      const basePayload = {
+        user_id: registro.user_id || user_id,
         created_at: new Date().toISOString(),
-      },
+      };
+
+      switch (registro.tipo) {
+        case "empleado": {
+          const datos = registro.datos || {};
+          return {
+            tablaDestino: "empleados_contabilidad",
+            payload: {
+              ...basePayload,
+              nombre: datos.nombre,
+              apellidos: datos.apellidos,
+              cedula: datos.cedula,
+              contacto: datos.contacto || null,
+              correo_electronico: datos.correo_electronico || null,
+              direccion: datos.direccion || null,
+              codigo_ciudad: datos.codigo_ciudad || null,
+              url_hoja_de_vida: datos.url_hoja_de_vida,
+              url_cedula: datos.url_cedula,
+              url_certificado_bancario: datos.url_certificado_bancario,
+              url_habeas_data: datos.url_habeas_data,
+            },
+          };
+        }
+        case "cliente": {
+          const datos = registro.datos || {};
+          return {
+            tablaDestino: "clientes_contabilidad",
+            payload: {
+              ...basePayload,
+              cupo: datos.cupo,
+              plazo: datos.plazo,
+              url_rut: datos.url_rut,
+              url_camara_comercio: datos.url_camara_comercio,
+              url_formato_sangrilaft: datos.url_formato_sangrilaft,
+              url_cedula: datos.url_cedula,
+            },
+          };
+        }
+        case "proveedor": {
+          const datos = registro.datos || {};
+          return {
+            tablaDestino: "proveedores_contabilidad",
+            payload: {
+              ...basePayload,
+              url_rut: datos.url_rut,
+              url_camara_comercio: datos.url_camara_comercio || null,
+              url_certificacion_bancaria: datos.url_certificacion_bancaria,
+              url_doc_identidad_rep_legal: datos.url_doc_identidad_rep_legal,
+              url_composicion_accionaria: datos.url_composicion_accionaria,
+              url_certificado_sagrilaft: datos.url_certificado_sagrilaft,
+            },
+          };
+        }
+        default:
+          return null;
+      }
+    };
+
+    const infoInsercion = construirPayload();
+
+    if (!infoInsercion) {
+      return res.status(400).json({ message: "Tipo de registro inválido." });
+    }
+
+    const { data: nuevoRegistro } = await supabaseAxios.post(
+      `/${infoInsercion.tablaDestino}`,
+      infoInsercion.payload,
       { headers: { Prefer: "return=representation" } }
     );
 
     // Actualizar estado del registro pendiente
-    await supabaseAxios.patch(
-      `/registros_pendientes?id=eq.${id}`,
-      { 
-        estado: "aprobado",
-        aprobado_por: user_id,
-        fecha_aprobacion: new Date().toISOString()
-      }
-    );
-
-    res.status(200).json({ 
-      message: "Registro aprobado exitosamente.", 
-      data: nuevoRegistro[0] 
+    await supabaseAxios.patch(`/registros_pendientes?id=eq.${id}`, {
+      estado: "aprobado",
+      aprobado_por: user_id,
+      fecha_aprobacion: new Date().toISOString(),
     });
 
+    res.status(200).json({
+      message: "Registro aprobado exitosamente.",
+      data: nuevoRegistro[0],
+    });
   } catch (error) {
-    console.error("Error al aprobar registro:", error.response?.data || error.message);
-    res.status(500).json({ 
-      message: "Error al aprobar registro.", 
-      error: error.message 
+    console.error(
+      "Error al aprobar registro:",
+      error.response?.data || error.message
+    );
+    res.status(500).json({
+      message: "Error al aprobar registro.",
+      error: error.message,
     });
   }
 };
@@ -134,31 +181,32 @@ export const rechazarRegistro = async (req, res) => {
     const registro = registroPendiente[0];
 
     if (registro.estado !== "pendiente") {
-      return res.status(400).json({ message: "Este registro ya fue procesado." });
+      return res
+        .status(400)
+        .json({ message: "Este registro ya fue procesado." });
     }
 
     // Actualizar estado del registro pendiente
     const { data } = await supabaseAxios.patch(
       `/registros_pendientes?id=eq.${id}`,
-      { 
+      {
         estado: "rechazado",
         rechazado_por: user_id,
         motivo_rechazo: motivo || "Sin motivo especificado",
-        fecha_rechazo: new Date().toISOString()
+        fecha_rechazo: new Date().toISOString(),
       },
       { headers: { Prefer: "return=representation" } }
     );
 
-    res.status(200).json({ 
-      message: "Registro rechazado.", 
-      data: data[0] 
+    res.status(200).json({
+      message: "Registro rechazado.",
+      data: data[0],
     });
-
   } catch (error) {
     console.error("Error al rechazar registro:", error);
-    res.status(500).json({ 
-      message: "Error al rechazar registro.", 
-      error: error.message 
+    res.status(500).json({
+      message: "Error al rechazar registro.",
+      error: error.message,
     });
   }
 };
@@ -180,12 +228,11 @@ export const obtenerHistorial = async (req, res) => {
     );
 
     res.status(200).json(data || []);
-
   } catch (error) {
     console.error("Error al obtener historial:", error);
-    res.status(500).json({ 
-      message: "Error al obtener historial.", 
-      error: error.message 
+    res.status(500).json({
+      message: "Error al obtener historial.",
+      error: error.message,
     });
   }
 };
