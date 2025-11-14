@@ -226,6 +226,7 @@ export const registrarProveedorPublico = async (req, res) => {
       url_doc_identidad_rep_legal,
       url_composicion_accionaria,
       url_certificado_sagrilaft,
+      ...datosProveedorBrutos
     } = req.body;
 
     const { data: tokenData } = await supabaseAxios.get(
@@ -261,19 +262,43 @@ export const registrarProveedorPublico = async (req, res) => {
       });
     }
 
+    const normalizarValor = (valor) => {
+      if (valor === undefined || valor === null) return null;
+      if (typeof valor === "string") {
+        const trimmed = valor.trim();
+        return trimmed.length === 0 ? null : trimmed;
+      }
+      return valor;
+    };
+
+    const {
+      estado, // se ignora en el payload del registro pendiente
+      ...restoDatos
+    } = datosProveedorBrutos;
+
+    const datosProveedor = Object.fromEntries(
+      Object.entries(restoDatos).map(([clave, valor]) => [
+        clave,
+        normalizarValor(valor),
+      ])
+    );
+
+    const datosConDocumentos = {
+      ...datosProveedor,
+      url_rut,
+      url_camara_comercio: normalizarValor(url_camara_comercio),
+      url_certificacion_bancaria,
+      url_doc_identidad_rep_legal,
+      url_composicion_accionaria,
+      url_certificado_sagrilaft,
+    };
+
     const payload = {
       tipo: "proveedor",
       estado: "pendiente",
       user_id: tokenInfo.generado_por,
       token,
-      datos: {
-        url_rut,
-        url_camara_comercio: url_camara_comercio || null,
-        url_certificacion_bancaria,
-        url_doc_identidad_rep_legal,
-        url_composicion_accionaria,
-        url_certificado_sagrilaft,
-      },
+      datos: datosConDocumentos,
       created_at: new Date().toISOString(),
     };
 
