@@ -16,14 +16,14 @@ export const generarToken = async (req, res) => {
     }
 
     if (!tipo || !["empleado", "cliente", "proveedor"].includes(tipo)) {
-      return res.status(400).json({ 
-        message: "Tipo inválido. Debe ser: empleado, cliente o proveedor." 
+      return res.status(400).json({
+        message: "Tipo inválido. Debe ser: empleado, cliente o proveedor.",
       });
     }
 
     // Generar token único (32 caracteres hexadecimales)
     const token = crypto.randomBytes(32).toString("hex");
-    
+
     // Fecha de expiración: 3 días desde ahora
     const expiracion = new Date();
     expiracion.setDate(expiracion.getDate() + 3);
@@ -37,33 +37,33 @@ export const generarToken = async (req, res) => {
       created_at: new Date().toISOString(),
     };
 
-    const { data } = await supabaseAxios.post(
-      "/tokens_registro",
-      payload,
-      { headers: { Prefer: "return=representation" } }
-    );
+    const { data } = await supabaseAxios.post("/tokens_registro", payload, {
+      headers: { Prefer: "return=representation" },
+    });
 
     // Mapeo de tipos a rutas del frontend
     const rutasPorTipo = {
-      'empleado': '/trazabilidad/crear-empleado',
-      'cliente': '/trazabilidad/crear-cliente',
-      'proveedor': '/trazabilidad/crear-proveedor'
+      empleado: "/trazabilidad/crear-empleado",
+      cliente: "/trazabilidad/crear-cliente",
+      proveedor: "/trazabilidad/crear-proveedor",
     };
 
     // Construir URL completa con query param token
-    const baseUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const baseUrl = process.env.FRONTEND_URL || "http://localhost:5173";
     const urlRegistro = `${baseUrl}${rutasPorTipo[tipo]}?token=${token}`;
 
     res.status(201).json({
       ...data[0],
-      url_registro: urlRegistro
+      url_registro: urlRegistro,
     });
-
   } catch (error) {
-    console.error("Error al generar token:", error.response?.data || error.message);
-    res.status(500).json({ 
-      message: "Error al generar token.", 
-      error: error.message 
+    console.error(
+      "Error al generar token:",
+      error.response?.data || error.message
+    );
+    res.status(500).json({
+      message: "Error al generar token.",
+      error: error.message,
     });
   }
 };
@@ -86,9 +86,9 @@ export const validarToken = async (req, res) => {
     );
 
     if (!data || data.length === 0) {
-      return res.status(404).json({ 
-        valido: false, 
-        message: "Token no encontrado." 
+      return res.status(404).json({
+        valido: false,
+        message: "Token no encontrado.",
       });
     }
 
@@ -96,35 +96,34 @@ export const validarToken = async (req, res) => {
 
     // Verificar si ya fue usado
     if (tokenData.usado) {
-      return res.status(400).json({ 
-        valido: false, 
-        message: "Este token ya ha sido utilizado." 
+      return res.status(400).json({
+        valido: false,
+        message: "Este token ya ha sido utilizado.",
       });
     }
 
     // Verificar si expiró
     const ahora = new Date();
     const fechaExpiracion = new Date(tokenData.expiracion);
-    
+
     if (ahora > fechaExpiracion) {
-      return res.status(400).json({ 
-        valido: false, 
-        message: "Este token ha expirado." 
+      return res.status(400).json({
+        valido: false,
+        message: "Este token ha expirado.",
       });
     }
 
     // Token válido
-    res.status(200).json({ 
-      valido: true, 
+    res.status(200).json({
+      valido: true,
       tipo: tokenData.tipo,
-      message: "Token válido." 
+      message: "Token válido.",
     });
-
   } catch (error) {
     console.error("Error al validar token:", error);
-    res.status(500).json({ 
-      message: "Error al validar token.", 
-      error: error.message 
+    res.status(500).json({
+      message: "Error al validar token.",
+      error: error.message,
     });
   }
 };
@@ -135,23 +134,20 @@ export const validarToken = async (req, res) => {
  */
 export const listarTokens = async (req, res) => {
   try {
-    const user_id = req.user?.id;
-
-    if (!user_id) {
+    if (!req.user?.id) {
       return res.status(401).json({ message: "Usuario no autenticado." });
     }
 
     const { data } = await supabaseAxios.get(
-      `/tokens_registro?select=*&generado_por=eq.${user_id}&order=created_at.desc`
+      `/tokens_registro?select=*,profiles(nombre)&order=created_at.desc`
     );
 
     res.status(200).json(data || []);
-
   } catch (error) {
     console.error("Error al listar tokens:", error);
-    res.status(500).json({ 
-      message: "Error al listar tokens.", 
-      error: error.message 
+    res.status(500).json({
+      message: "Error al listar tokens.",
+      error: error.message,
     });
   }
 };
