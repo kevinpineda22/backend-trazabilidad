@@ -138,13 +138,46 @@ export const listarTokens = async (req, res) => {
       return res.status(401).json({ message: "Usuario no autenticado." });
     }
 
-    const { data } = await supabaseAxios.get(
-      `/tokens_registro?select=*,profiles(nombre)&order=created_at.desc`
+    const { data: tokens } = await supabaseAxios.get(
+      `/tokens_registro?select=*&order=created_at.desc`
     );
 
-    res.status(200).json(data || []);
+    if (!tokens?.length) {
+      return res.status(200).json([]);
+    }
+
+    const generadores = [
+      ...new Set(tokens.map((token) => token.generado_por).filter(Boolean)),
+    ];
+
+    if (generadores.length === 0) {
+      return res.status(200).json(tokens);
+    }
+
+    // PostgREST no permite la relación directa porque no hay FK, así que traemos los perfiles aparte.
+    const filtroIds = generadores.map((id) => `"${id}"`).join(",");
+    const { data: perfiles } = await supabaseAxios.get("/profiles", {
+      params: {
+        select: "id,nombre",
+        id: `in.(${filtroIds})`,
+      },
+    });
+
+    const perfilesPorId = Object.fromEntries(
+      (perfiles || []).map((perfil) => [perfil.id, { nombre: perfil.nombre }])
+    );
+
+    const tokensConPerfil = tokens.map((token) => ({
+      ...token,
+      profiles: perfilesPorId[token.generado_por] || null,
+    }));
+
+    res.status(200).json(tokensConPerfil);
   } catch (error) {
-    console.error("Error al listar tokens:", error);
+    console.error(
+      "Error al listar tokens:",
+      error.response?.data || error.message || error
+    );
     res.status(500).json({
       message: "Error al listar tokens.",
       error: error.message,
