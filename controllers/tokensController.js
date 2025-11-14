@@ -2,6 +2,23 @@
 import { supabaseAxios } from "../services/supabaseClient.js";
 import crypto from "crypto";
 
+export const TOKEN_DISABLED_MESSAGES = {
+  usado:
+    "Este formulario ya no está disponible porque el enlace ya fue utilizado. Si necesitas otro, comunícate con la persona encargada de generar estos enlaces.",
+  expirado:
+    "Este formulario ya no está disponible porque el enlace ha expirado. Si necesitas otro, comunícate con la persona encargada de generar estos enlaces.",
+};
+
+export const TOKEN_NOT_FOUND_MESSAGE =
+  "Este formulario no está disponible porque el enlace es inválido. Solicita uno nuevo a la persona encargada de generar estos enlaces.";
+
+export const respondTokenDisabled = (res, motivo) =>
+  res.status(410).json({
+    valido: false,
+    motivo,
+    message: TOKEN_DISABLED_MESSAGES[motivo],
+  });
+
 /**
  * @route POST /api/trazabilidad/tokens/generar
  * Genera un token único para registro (empleado, cliente o proveedor)
@@ -88,7 +105,7 @@ export const validarToken = async (req, res) => {
     if (!data || data.length === 0) {
       return res.status(404).json({
         valido: false,
-        message: "Token no encontrado.",
+        message: TOKEN_NOT_FOUND_MESSAGE,
       });
     }
 
@@ -96,10 +113,7 @@ export const validarToken = async (req, res) => {
 
     // Verificar si ya fue usado
     if (tokenData.usado) {
-      return res.status(400).json({
-        valido: false,
-        message: "Este token ya ha sido utilizado.",
-      });
+      return respondTokenDisabled(res, "usado");
     }
 
     // Verificar si expiró
@@ -107,10 +121,7 @@ export const validarToken = async (req, res) => {
     const fechaExpiracion = new Date(tokenData.expiracion);
 
     if (ahora > fechaExpiracion) {
-      return res.status(400).json({
-        valido: false,
-        message: "Este token ha expirado.",
-      });
+      return respondTokenDisabled(res, "expirado");
     }
 
     // Token válido

@@ -1,6 +1,16 @@
 // controllers/registroPublicoController.js
 import { supabaseAxios } from "../services/supabaseClient.js";
-import { marcarTokenUsado } from "./tokensController.js";
+import {
+  marcarTokenUsado,
+  TOKEN_DISABLED_MESSAGES,
+  TOKEN_NOT_FOUND_MESSAGE,
+} from "./tokensController.js";
+
+const sendTokenDisabled = (res, motivo) =>
+  res.status(410).json({
+    motivo,
+    message: TOKEN_DISABLED_MESSAGES[motivo],
+  });
 
 /**
  * @route POST /api/trazabilidad/registro-publico/empleado/:token
@@ -28,23 +38,19 @@ export const registrarEmpleadoPublico = async (req, res) => {
     );
 
     if (!tokenData || tokenData.length === 0) {
-      return res
-        .status(404)
-        .json({ message: "Token no encontrado o inválido." });
+      return res.status(404).json({ message: TOKEN_NOT_FOUND_MESSAGE });
     }
 
     const tokenInfo = tokenData[0];
 
     if (tokenInfo.usado) {
-      return res
-        .status(400)
-        .json({ message: "Este token ya ha sido utilizado." });
+      return sendTokenDisabled(res, "usado");
     }
 
     const ahora = new Date();
     const fechaExpiracion = new Date(tokenInfo.expiracion);
     if (ahora > fechaExpiracion) {
-      return res.status(400).json({ message: "Este token ha expirado." });
+      return sendTokenDisabled(res, "expirado");
     }
 
     if (!nombre || !apellidos || !cedula) {
@@ -138,23 +144,19 @@ export const registrarClientePublico = async (req, res) => {
     );
 
     if (!tokenData || tokenData.length === 0) {
-      return res
-        .status(404)
-        .json({ message: "Token no encontrado o inválido." });
+      return res.status(404).json({ message: TOKEN_NOT_FOUND_MESSAGE });
     }
 
     const tokenInfo = tokenData[0];
 
     if (tokenInfo.usado) {
-      return res
-        .status(400)
-        .json({ message: "Este token ya ha sido utilizado." });
+      return sendTokenDisabled(res, "usado");
     }
 
     const ahora = new Date();
     const fechaExpiracion = new Date(tokenInfo.expiracion);
     if (ahora > fechaExpiracion) {
-      return res.status(400).json({ message: "Este token ha expirado." });
+      return sendTokenDisabled(res, "expirado");
     }
 
     if (
@@ -231,23 +233,19 @@ export const registrarProveedorPublico = async (req, res) => {
     );
 
     if (!tokenData || tokenData.length === 0) {
-      return res
-        .status(404)
-        .json({ message: "Token no encontrado o inválido." });
+      return res.status(404).json({ message: TOKEN_NOT_FOUND_MESSAGE });
     }
 
     const tokenInfo = tokenData[0];
 
     if (tokenInfo.usado) {
-      return res
-        .status(400)
-        .json({ message: "Este token ya ha sido utilizado." });
+      return sendTokenDisabled(res, "usado");
     }
 
     const ahora = new Date();
     const fechaExpiracion = new Date(tokenInfo.expiracion);
     if (ahora > fechaExpiracion) {
-      return res.status(400).json({ message: "Este token ha expirado." });
+      return sendTokenDisabled(res, "expirado");
     }
 
     if (
