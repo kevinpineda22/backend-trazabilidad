@@ -58,6 +58,17 @@ export const aprobarRegistro = async (req, res) => {
         .json({ message: "Este registro ya fue procesado." });
     }
 
+    const normalizar = (valor) => {
+      if (valor === undefined || valor === null) {
+        return null;
+      }
+      if (typeof valor === "string") {
+        const trimmed = valor.trim();
+        return trimmed.length === 0 ? null : trimmed;
+      }
+      return valor;
+    };
+
     const construirPayload = () => {
       const basePayload = {
         user_id: registro.user_id || user_id,
@@ -71,17 +82,19 @@ export const aprobarRegistro = async (req, res) => {
             tablaDestino: "empleados_contabilidad",
             payload: {
               ...basePayload,
-              nombre: datos.nombre,
-              apellidos: datos.apellidos,
-              cedula: datos.cedula,
-              contacto: datos.contacto || null,
-              correo_electronico: datos.correo_electronico || null,
-              direccion: datos.direccion || null,
-              codigo_ciudad: datos.codigo_ciudad || null,
-              url_hoja_de_vida: datos.url_hoja_de_vida,
-              url_cedula: datos.url_cedula,
-              url_certificado_bancario: datos.url_certificado_bancario,
-              url_habeas_data: datos.url_habeas_data,
+              nombre: normalizar(datos.nombre),
+              apellidos: normalizar(datos.apellidos),
+              cedula: normalizar(datos.cedula),
+              contacto: normalizar(datos.contacto),
+              correo_electronico: normalizar(datos.correo_electronico),
+              direccion: normalizar(datos.direccion),
+              codigo_ciudad: normalizar(datos.codigo_ciudad),
+              url_hoja_de_vida: normalizar(datos.url_hoja_de_vida),
+              url_cedula: normalizar(datos.url_cedula),
+              url_certificado_bancario: normalizar(
+                datos.url_certificado_bancario
+              ),
+              url_habeas_data: normalizar(datos.url_habeas_data),
             },
           };
         }
@@ -91,12 +104,12 @@ export const aprobarRegistro = async (req, res) => {
             tablaDestino: "clientes_contabilidad",
             payload: {
               ...basePayload,
-              cupo: datos.cupo,
-              plazo: datos.plazo,
-              url_rut: datos.url_rut,
-              url_camara_comercio: datos.url_camara_comercio,
-              url_formato_sangrilaft: datos.url_formato_sangrilaft,
-              url_cedula: datos.url_cedula,
+              cupo: normalizar(datos.cupo),
+              plazo: normalizar(datos.plazo),
+              url_rut: normalizar(datos.url_rut),
+              url_camara_comercio: normalizar(datos.url_camara_comercio),
+              url_formato_sangrilaft: normalizar(datos.url_formato_sangrilaft),
+              url_cedula: normalizar(datos.url_cedula),
             },
           };
         }
@@ -106,12 +119,48 @@ export const aprobarRegistro = async (req, res) => {
             tablaDestino: "proveedores_contabilidad",
             payload: {
               ...basePayload,
-              url_rut: datos.url_rut,
-              url_camara_comercio: datos.url_camara_comercio || null,
-              url_certificacion_bancaria: datos.url_certificacion_bancaria,
-              url_doc_identidad_rep_legal: datos.url_doc_identidad_rep_legal,
-              url_composicion_accionaria: datos.url_composicion_accionaria,
-              url_certificado_sagrilaft: datos.url_certificado_sagrilaft,
+              fecha_diligenciamiento: normalizar(datos.fecha_diligenciamiento),
+              tipo_regimen: normalizar(datos.tipo_regimen),
+              tipo_documento: normalizar(datos.tipo_documento),
+              nit: normalizar(datos.nit),
+              dv: normalizar(datos.dv),
+              razon_social: normalizar(datos.razon_social),
+              nombre_establecimiento: normalizar(datos.nombre_establecimiento),
+              codigo_ciiu: normalizar(datos.codigo_ciiu),
+              direccion_domicilio: normalizar(datos.direccion_domicilio),
+              departamento: normalizar(datos.departamento),
+              ciudad: normalizar(datos.ciudad),
+              email_factura_electronica: normalizar(
+                datos.email_factura_electronica
+              ),
+              nombre_contacto: normalizar(datos.nombre_contacto),
+              email_contacto: normalizar(datos.email_contacto),
+              telefono_contacto: normalizar(datos.telefono_contacto),
+              rep_legal_nombre: normalizar(datos.rep_legal_nombre),
+              rep_legal_apellidos: normalizar(datos.rep_legal_apellidos),
+              rep_legal_tipo_doc: normalizar(datos.rep_legal_tipo_doc),
+              rep_legal_num_doc: normalizar(datos.rep_legal_num_doc),
+              declara_pep: normalizar(datos.declara_pep),
+              declara_recursos_publicos: normalizar(
+                datos.declara_recursos_publicos
+              ),
+              declara_obligaciones_tributarias: normalizar(
+                datos.declara_obligaciones_tributarias
+              ),
+              url_rut: normalizar(datos.url_rut),
+              url_camara_comercio: normalizar(datos.url_camara_comercio),
+              url_certificacion_bancaria: normalizar(
+                datos.url_certificacion_bancaria
+              ),
+              url_doc_identidad_rep_legal: normalizar(
+                datos.url_doc_identidad_rep_legal
+              ),
+              url_composicion_accionaria: normalizar(
+                datos.url_composicion_accionaria
+              ),
+              url_certificado_sagrilaft: normalizar(
+                datos.url_certificado_sagrilaft
+              ),
             },
           };
         }
