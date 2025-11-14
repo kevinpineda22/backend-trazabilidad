@@ -1,0 +1,2497 @@
+[
+  {
+    "code": "0111",
+    "description": "Cultivo de cereales (excepto arroz), legumbres y semillas oleaginosas",
+    "label": "0111 - Cultivo de cereales (excepto arroz), legumbres y semillas oleaginosas"
+  },
+  {
+    "code": "0112",
+    "description": "Cultivo de arroz",
+    "label": "0112 - Cultivo de arroz"
+  },
+  {
+    "code": "0113",
+    "description": "Cultivo de hortalizas, raíces y tubérculos",
+    "label": "0113 - Cultivo de hortalizas, raíces y tubérculos"
+  },
+  {
+    "code": "0114",
+    "description": "Cultivo de tabaco",
+    "label": "0114 - Cultivo de tabaco"
+  },
+  {
+    "code": "0115",
+    "description": "Cultivo de plantas textiles",
+    "label": "0115 - Cultivo de plantas textiles"
+  },
+  {
+    "code": "0119",
+    "description": "Otros cultivos transitorios n.c.p.",
+    "label": "0119 - Otros cultivos transitorios n.c.p."
+  },
+  {
+    "code": "0121",
+    "description": "Cultivo de frutas tropicales y subtropicales",
+    "label": "0121 - Cultivo de frutas tropicales y subtropicales"
+  },
+  {
+    "code": "0122",
+    "description": "Cultivo de plátano y banano",
+    "label": "0122 - Cultivo de plátano y banano"
+  },
+  {
+    "code": "0123",
+    "description": "Cultivo de café",
+    "label": "0123 - Cultivo de café"
+  },
+  {
+    "code": "0124",
+    "description": "Cultivo de caña de azúcar",
+    "label": "0124 - Cultivo de caña de azúcar"
+  },
+  {
+    "code": "0125",
+    "description": "Cultivo de flor de corte",
+    "label": "0125 - Cultivo de flor de corte"
+  },
+  {
+    "code": "0126",
+    "description": "Cultivo de palma para aceite (palma africana) y otros frutos oleaginosos",
+    "label": "0126 - Cultivo de palma para aceite (palma africana) y otros frutos oleaginosos"
+  },
+  {
+    "code": "0127",
+    "description": "Cultivo de plantas con las que se preparan bebidas",
+    "label": "0127 - Cultivo de plantas con las que se preparan bebidas"
+  },
+  {
+    "code": "0128",
+    "description": "Cultivo de especias y de plantas aromáticas y medicinales",
+    "label": "0128 - Cultivo de especias y de plantas aromáticas y medicinales"
+  },
+  {
+    "code": "0129",
+    "description": "Otros cultivos permanentes n.c.p.",
+    "label": "0129 - Otros cultivos permanentes n.c.p."
+  },
+  {
+    "code": "0130",
+    "description": "Propagación de plantas (actividades de los viveros, excepto viveros forestales)",
+    "label": "0130 - Propagación de plantas (actividades de los viveros, excepto viveros forestales)"
+  },
+  {
+    "code": "0141",
+    "description": "Cría de ganado bovino y bufalino",
+    "label": "0141 - Cría de ganado bovino y bufalino"
+  },
+  {
+    "code": "0142",
+    "description": "Cría de caballos y otros equinos",
+    "label": "0142 - Cría de caballos y otros equinos"
+  },
+  {
+    "code": "0143",
+    "description": "Cría de ovejas y cabras",
+    "label": "0143 - Cría de ovejas y cabras"
+  },
+  {
+    "code": "0144",
+    "description": "Cría de ganado porcino",
+    "label": "0144 - Cría de ganado porcino"
+  },
+  {
+    "code": "0145",
+    "description": "Cría de aves de corral",
+    "label": "0145 - Cría de aves de corral"
+  },
+  {
+    "code": "0149",
+    "description": "Cría de otros animales n.c.p.",
+    "label": "0149 - Cría de otros animales n.c.p."
+  },
+  {
+    "code": "0150",
+    "description": "Explotación mixta (agrícola y pecuaria)",
+    "label": "0150 - Explotación mixta (agrícola y pecuaria)"
+  },
+  {
+    "code": "0161",
+    "description": "Actividades de apoyo a la agricultura",
+    "label": "0161 - Actividades de apoyo a la agricultura"
+  },
+  {
+    "code": "0162",
+    "description": "Actividades de apoyo a la ganadería",
+    "label": "0162 - Actividades de apoyo a la ganadería"
+  },
+  {
+    "code": "0163",
+    "description": "Actividades posteriores a la cosecha",
+    "label": "0163 - Actividades posteriores a la cosecha"
+  },
+  {
+    "code": "0164",
+    "description": "Tratamiento de semillas para propagación",
+    "label": "0164 - Tratamiento de semillas para propagación"
+  },
+  {
+    "code": "0170",
+    "description": "Caza ordinaria y mediante trampas y actividades de servicios conexas",
+    "label": "0170 - Caza ordinaria y mediante trampas y actividades de servicios conexas"
+  },
+  {
+    "code": "0210",
+    "description": "Silvicultura y otras actividades forestales",
+    "label": "0210 - Silvicultura y otras actividades forestales"
+  },
+  {
+    "code": "0220",
+    "description": "Extracción de madera",
+    "label": "0220 - Extracción de madera"
+  },
+  {
+    "code": "0230",
+    "description": "Recolección de productos forestales diferentes a la madera",
+    "label": "0230 - Recolección de productos forestales diferentes a la madera"
+  },
+  {
+    "code": "0240",
+    "description": "Servicios de apoyo a la silvicultura",
+    "label": "0240 - Servicios de apoyo a la silvicultura"
+  },
+  {
+    "code": "0311",
+    "description": "Pesca marítima",
+    "label": "0311 - Pesca marítima"
+  },
+  {
+    "code": "0312",
+    "description": "Pesca de agua dulce",
+    "label": "0312 - Pesca de agua dulce"
+  },
+  {
+    "code": "0321",
+    "description": "Acuicultura marítima",
+    "label": "0321 - Acuicultura marítima"
+  },
+  {
+    "code": "0322",
+    "description": "Acuicultura de agua dulce",
+    "label": "0322 - Acuicultura de agua dulce"
+  },
+  {
+    "code": "0510",
+    "description": "Extracción de hulla (carbón de piedra)",
+    "label": "0510 - Extracción de hulla (carbón de piedra)"
+  },
+  {
+    "code": "0520",
+    "description": "Extracción de carbón lignito",
+    "label": "0520 - Extracción de carbón lignito"
+  },
+  {
+    "code": "0610",
+    "description": "Extracción de petróleo crudo",
+    "label": "0610 - Extracción de petróleo crudo"
+  },
+  {
+    "code": "0620",
+    "description": "Extracción de gas natural",
+    "label": "0620 - Extracción de gas natural"
+  },
+  {
+    "code": "0710",
+    "description": "Extracción de minerales de hierro",
+    "label": "0710 - Extracción de minerales de hierro"
+  },
+  {
+    "code": "0721",
+    "description": "Extracción de minerales de uranio y de torio",
+    "label": "0721 - Extracción de minerales de uranio y de torio"
+  },
+  {
+    "code": "0722",
+    "description": "Extracción de oro y otros metales preciosos",
+    "label": "0722 - Extracción de oro y otros metales preciosos"
+  },
+  {
+    "code": "0723",
+    "description": "Extracción de minerales de níquel",
+    "label": "0723 - Extracción de minerales de níquel"
+  },
+  {
+    "code": "0729",
+    "description": "Extracción de otros minerales metalíferos no ferrosos n.c.p.",
+    "label": "0729 - Extracción de otros minerales metalíferos no ferrosos n.c.p."
+  },
+  {
+    "code": "0811",
+    "description": "Extracción de piedra, arena, arcillas comunes, yeso y anhidrita",
+    "label": "0811 - Extracción de piedra, arena, arcillas comunes, yeso y anhidrita"
+  },
+  {
+    "code": "0812",
+    "description": "Extracción de arcillas de uso industrial, Caliza, Caolín y Bentonitas",
+    "label": "0812 - Extracción de arcillas de uso industrial, Caliza, Caolín y Bentonitas"
+  },
+  {
+    "code": "0820",
+    "description": "Extracción de esmeraldas, piedras preciosas y semipreciosas",
+    "label": "0820 - Extracción de esmeraldas, piedras preciosas y semipreciosas"
+  },
+  {
+    "code": "0891",
+    "description": "Extracción de minerales para la fabricación de abonos y productos químicos",
+    "label": "0891 - Extracción de minerales para la fabricación de abonos y productos químicos"
+  },
+  {
+    "code": "0892",
+    "description": "Extracción de halita (sal)",
+    "label": "0892 - Extracción de halita (sal)"
+  },
+  {
+    "code": "0899",
+    "description": "Extracción de otros minerales no metálicos n.c.p.",
+    "label": "0899 - Extracción de otros minerales no metálicos n.c.p."
+  },
+  {
+    "code": "0910",
+    "description": "Actividades de apoyo para la extracción de petróleo y de gas natural",
+    "label": "0910 - Actividades de apoyo para la extracción de petróleo y de gas natural"
+  },
+  {
+    "code": "0990",
+    "description": "Actividades de apoyo para otras actividades de explotación de minas y canteras",
+    "label": "0990 - Actividades de apoyo para otras actividades de explotación de minas y canteras"
+  },
+  {
+    "code": "1011",
+    "description": "Procesamiento y conservación de carne y productos cárnicos",
+    "label": "1011 - Procesamiento y conservación de carne y productos cárnicos"
+  },
+  {
+    "code": "1012",
+    "description": "Procesamiento y conservación de pescados, crustáceos y moluscos",
+    "label": "1012 - Procesamiento y conservación de pescados, crustáceos y moluscos"
+  },
+  {
+    "code": "1020",
+    "description": "Procesamiento y conservación de frutas, legumbres, hortalizas y tubérculos",
+    "label": "1020 - Procesamiento y conservación de frutas, legumbres, hortalizas y tubérculos"
+  },
+  {
+    "code": "1030",
+    "description": "Elaboración de aceites y grasas de origen vegetal y animal",
+    "label": "1030 - Elaboración de aceites y grasas de origen vegetal y animal"
+  },
+  {
+    "code": "1040",
+    "description": "Elaboración de productos lácteos",
+    "label": "1040 - Elaboración de productos lácteos"
+  },
+  {
+    "code": "1051",
+    "description": "Elaboración de productos de molinería",
+    "label": "1051 - Elaboración de productos de molinería"
+  },
+  {
+    "code": "1052",
+    "description": "Elaboración de almidones y productos derivados del almidón",
+    "label": "1052 - Elaboración de almidones y productos derivados del almidón"
+  },
+  {
+    "code": "1061",
+    "description": "Trilla de café",
+    "label": "1061 - Trilla de café"
+  },
+  {
+    "code": "1062",
+    "description": "Descafeinado, tostión y molienda del café",
+    "label": "1062 - Descafeinado, tostión y molienda del café"
+  },
+  {
+    "code": "1063",
+    "description": "Otros derivados del café",
+    "label": "1063 - Otros derivados del café"
+  },
+  {
+    "code": "1071",
+    "description": "Elaboración y refinación de azúcar",
+    "label": "1071 - Elaboración y refinación de azúcar"
+  },
+  {
+    "code": "1072",
+    "description": "Elaboración de panela",
+    "label": "1072 - Elaboración de panela"
+  },
+  {
+    "code": "1081",
+    "description": "Elaboración de productos de panadería",
+    "label": "1081 - Elaboración de productos de panadería"
+  },
+  {
+    "code": "1082",
+    "description": "Elaboración de cacao, chocolate y productos de confitería",
+    "label": "1082 - Elaboración de cacao, chocolate y productos de confitería"
+  },
+  {
+    "code": "1083",
+    "description": "Elaboración de macarrones, fideos, alcuzcuz y productos farináceos similares",
+    "label": "1083 - Elaboración de macarrones, fideos, alcuzcuz y productos farináceos similares"
+  },
+  {
+    "code": "1084",
+    "description": "Elaboración de comidas y platos preparados",
+    "label": "1084 - Elaboración de comidas y platos preparados"
+  },
+  {
+    "code": "1089",
+    "description": "Elaboración de otros productos alimenticios n.c.p.",
+    "label": "1089 - Elaboración de otros productos alimenticios n.c.p."
+  },
+  {
+    "code": "1090",
+    "description": "Elaboración de alimentos preparados para animales",
+    "label": "1090 - Elaboración de alimentos preparados para animales"
+  },
+  {
+    "code": "1101",
+    "description": "Destilación, rectificación y mezcla de bebidas alcohólicas",
+    "label": "1101 - Destilación, rectificación y mezcla de bebidas alcohólicas"
+  },
+  {
+    "code": "1102",
+    "description": "Elaboración de bebidas fermentadas no destiladas",
+    "label": "1102 - Elaboración de bebidas fermentadas no destiladas"
+  },
+  {
+    "code": "1103",
+    "description": "Producción de malta, elaboración de cervezas y otras bebidas malteadas",
+    "label": "1103 - Producción de malta, elaboración de cervezas y otras bebidas malteadas"
+  },
+  {
+    "code": "1104",
+    "description": "Elaboración de bebidas no alcohólicas, producción de aguas minerales y de otras aguas embotelladas",
+    "label": "1104 - Elaboración de bebidas no alcohólicas, producción de aguas minerales y de otras aguas embotelladas"
+  },
+  {
+    "code": "1200",
+    "description": "Elaboración de productos de tabaco",
+    "label": "1200 - Elaboración de productos de tabaco"
+  },
+  {
+    "code": "1311",
+    "description": "Preparación e Hilatura de fibras textiles",
+    "label": "1311 - Preparación e Hilatura de fibras textiles"
+  },
+  {
+    "code": "1312",
+    "description": "Tejeduría de productos textiles",
+    "label": "1312 - Tejeduría de productos textiles"
+  },
+  {
+    "code": "1313",
+    "description": "Acabado de productos textiles",
+    "label": "1313 - Acabado de productos textiles"
+  },
+  {
+    "code": "1391",
+    "description": "Fabricación de tejidos de punto y ganchillo",
+    "label": "1391 - Fabricación de tejidos de punto y ganchillo"
+  },
+  {
+    "code": "1392",
+    "description": "Confección de artículos con materiales textiles, excepto prendas de vestir",
+    "label": "1392 - Confección de artículos con materiales textiles, excepto prendas de vestir"
+  },
+  {
+    "code": "1393",
+    "description": "Fabricación de tapetes y alfombras para pisos",
+    "label": "1393 - Fabricación de tapetes y alfombras para pisos"
+  },
+  {
+    "code": "1394",
+    "description": "Fabricación de cuerdas, cordeles, cables, bramantes y redes",
+    "label": "1394 - Fabricación de cuerdas, cordeles, cables, bramantes y redes"
+  },
+  {
+    "code": "1399",
+    "description": "Fabricación de otros artículos textiles n.c.p.",
+    "label": "1399 - Fabricación de otros artículos textiles n.c.p."
+  },
+  {
+    "code": "1410",
+    "description": "Confección de prendas de vestir, excepto prendas de piel",
+    "label": "1410 - Confección de prendas de vestir, excepto prendas de piel"
+  },
+  {
+    "code": "1420",
+    "description": "Fabricación de artículos de piel",
+    "label": "1420 - Fabricación de artículos de piel"
+  },
+  {
+    "code": "1430",
+    "description": "Fabricación de artículos de punto y ganchillo",
+    "label": "1430 - Fabricación de artículos de punto y ganchillo"
+  },
+  {
+    "code": "1511",
+    "description": "Curtido y recurtido de cueros; recurtido y teñido de pieles",
+    "label": "1511 - Curtido y recurtido de cueros; recurtido y teñido de pieles"
+  },
+  {
+    "code": "1512",
+    "description": "Fabricación de artículos de viaje, bolsos de mano y artículos similares elaborados en cuero, y fabricación de artículos de talabartería y guarnicionería",
+    "label": "1512 - Fabricación de artículos de viaje, bolsos de mano y artículos similares elaborados en cuero, y fabricación de artículos de talabartería y guarnicionería"
+  },
+  {
+    "code": "1513",
+    "description": "Fabricación de artículos de viaje, bolsos de mano y artículos similares; artículos de talabartería y guarnicionería elaborados en otros materiales",
+    "label": "1513 - Fabricación de artículos de viaje, bolsos de mano y artículos similares; artículos de talabartería y guarnicionería elaborados en otros materiales"
+  },
+  {
+    "code": "1521",
+    "description": "Fabricación de calzado de cuero y piel, con cualquier tipo de suela",
+    "label": "1521 - Fabricación de calzado de cuero y piel, con cualquier tipo de suela"
+  },
+  {
+    "code": "1522",
+    "description": "Fabricación de otros tipos de calzado, excepto calzado de cuero y piel",
+    "label": "1522 - Fabricación de otros tipos de calzado, excepto calzado de cuero y piel"
+  },
+  {
+    "code": "1523",
+    "description": "Fabricación de partes del calzado",
+    "label": "1523 - Fabricación de partes del calzado"
+  },
+  {
+    "code": "1610",
+    "description": "Aserrado, acepillado e impregnación de la madera",
+    "label": "1610 - Aserrado, acepillado e impregnación de la madera"
+  },
+  {
+    "code": "1620",
+    "description": "Fabricación de hojas de madera para enchapado; fabricación de tableros contrachapados, tableros laminados, tableros de partículas y otros tableros y paneles",
+    "label": "1620 - Fabricación de hojas de madera para enchapado; fabricación de tableros contrachapados, tableros laminados, tableros de partículas y otros tableros y paneles"
+  },
+  {
+    "code": "1630",
+    "description": "Fabricación de partes y piezas de madera, de carpintería y ebanistería para la construcción",
+    "label": "1630 - Fabricación de partes y piezas de madera, de carpintería y ebanistería para la construcción"
+  },
+  {
+    "code": "1640",
+    "description": "Fabricación de recipientes de madera",
+    "label": "1640 - Fabricación de recipientes de madera"
+  },
+  {
+    "code": "1690",
+    "description": "Fabricación de otros productos de madera; fabricación de artículos de corcho, cestería y espartería",
+    "label": "1690 - Fabricación de otros productos de madera; fabricación de artículos de corcho, cestería y espartería"
+  },
+  {
+    "code": "1701",
+    "description": "Fabricación de pulpas (pastas) celulósicas; papel y cartón",
+    "label": "1701 - Fabricación de pulpas (pastas) celulósicas; papel y cartón"
+  },
+  {
+    "code": "1702",
+    "description": "Fabricación de papel y cartón ondulado (corrugado); fabricación de envases, empaques y de embalajes de papel y cartón",
+    "label": "1702 - Fabricación de papel y cartón ondulado (corrugado); fabricación de envases, empaques y de embalajes de papel y cartón"
+  },
+  {
+    "code": "1709",
+    "description": "Fabricación de otros artículos de papel y cartón",
+    "label": "1709 - Fabricación de otros artículos de papel y cartón"
+  },
+  {
+    "code": "1811",
+    "description": "Actividades de impresión",
+    "label": "1811 - Actividades de impresión"
+  },
+  {
+    "code": "1812",
+    "description": "Actividades de servicios relacionados con la impresión",
+    "label": "1812 - Actividades de servicios relacionados con la impresión"
+  },
+  {
+    "code": "1820",
+    "description": "Producción de copias a partir de grabaciones originales",
+    "label": "1820 - Producción de copias a partir de grabaciones originales"
+  },
+  {
+    "code": "1910",
+    "description": "Fabricación de productos de hornos de coque",
+    "label": "1910 - Fabricación de productos de hornos de coque"
+  },
+  {
+    "code": "1921",
+    "description": "Fabricación de productos de la refinación del petróleo",
+    "label": "1921 - Fabricación de productos de la refinación del petróleo"
+  },
+  {
+    "code": "1922",
+    "description": "Actividad de mezcla de combustibles.",
+    "label": "1922 - Actividad de mezcla de combustibles."
+  },
+  {
+    "code": "2011",
+    "description": "Fabricación de sustancias y productos químicos básicos",
+    "label": "2011 - Fabricación de sustancias y productos químicos básicos"
+  },
+  {
+    "code": "2012",
+    "description": "Fabricación de abonos y compuestos inorgánicos nitrogenados",
+    "label": "2012 - Fabricación de abonos y compuestos inorgánicos nitrogenados"
+  },
+  {
+    "code": "2013",
+    "description": "Fabricación de plásticos en formas primarias",
+    "label": "2013 - Fabricación de plásticos en formas primarias"
+  },
+  {
+    "code": "2014",
+    "description": "Fabricación de caucho sintético en formas primarias",
+    "label": "2014 - Fabricación de caucho sintético en formas primarias"
+  },
+  {
+    "code": "2021",
+    "description": "Fabricación de plaguicidas y otros productos químicos de uso agropecuario",
+    "label": "2021 - Fabricación de plaguicidas y otros productos químicos de uso agropecuario"
+  },
+  {
+    "code": "2022",
+    "description": "Fabricación de pinturas, barnices y revestimientos similares, tintas para impresión y masillas",
+    "label": "2022 - Fabricación de pinturas, barnices y revestimientos similares, tintas para impresión y masillas"
+  },
+  {
+    "code": "2023",
+    "description": "Fabricación de jabones y detergentes, preparados para limpiar y pulir; perfumes y preparados de tocador",
+    "label": "2023 - Fabricación de jabones y detergentes, preparados para limpiar y pulir; perfumes y preparados de tocador"
+  },
+  {
+    "code": "2029",
+    "description": "Fabricación de otros productos químicos n.c.p.",
+    "label": "2029 - Fabricación de otros productos químicos n.c.p."
+  },
+  {
+    "code": "2030",
+    "description": "Fabricación de fibras sintéticas y artificiales",
+    "label": "2030 - Fabricación de fibras sintéticas y artificiales"
+  },
+  {
+    "code": "2100",
+    "description": "Fabricación de productos farmacéuticos, sustancias químicas medicinales y productos botánicos de uso farmacéutico",
+    "label": "2100 - Fabricación de productos farmacéuticos, sustancias químicas medicinales y productos botánicos de uso farmacéutico"
+  },
+  {
+    "code": "2211",
+    "description": "Fabricación de llantas y neumáticos de caucho",
+    "label": "2211 - Fabricación de llantas y neumáticos de caucho"
+  },
+  {
+    "code": "2212",
+    "description": "Reencauche de llantas usadas",
+    "label": "2212 - Reencauche de llantas usadas"
+  },
+  {
+    "code": "2219",
+    "description": "Fabricación de formas básicas de caucho y otros productos de caucho n.c.p.",
+    "label": "2219 - Fabricación de formas básicas de caucho y otros productos de caucho n.c.p."
+  },
+  {
+    "code": "2221",
+    "description": "Fabricación de formas básicas de plástico",
+    "label": "2221 - Fabricación de formas básicas de plástico"
+  },
+  {
+    "code": "2229",
+    "description": "Fabricación de artículos de plástico n.c.p.",
+    "label": "2229 - Fabricación de artículos de plástico n.c.p."
+  },
+  {
+    "code": "2310",
+    "description": "Fabricación de vidrio y productos de vidrio",
+    "label": "2310 - Fabricación de vidrio y productos de vidrio"
+  },
+  {
+    "code": "2391",
+    "description": "Fabricación de productos refractarios",
+    "label": "2391 - Fabricación de productos refractarios"
+  },
+  {
+    "code": "2392",
+    "description": "Fabricación de materiales de arcilla para la construcción",
+    "label": "2392 - Fabricación de materiales de arcilla para la construcción"
+  },
+  {
+    "code": "2393",
+    "description": "Fabricación de otros productos de cerámica y porcelana",
+    "label": "2393 - Fabricación de otros productos de cerámica y porcelana"
+  },
+  {
+    "code": "2394",
+    "description": "Fabricación de cemento, cal y yeso",
+    "label": "2394 - Fabricación de cemento, cal y yeso"
+  },
+  {
+    "code": "2395",
+    "description": "Fabricación de artículos de hormigón, cemento y yeso",
+    "label": "2395 - Fabricación de artículos de hormigón, cemento y yeso"
+  },
+  {
+    "code": "2396",
+    "description": "Corte, tallado y acabado de la piedra",
+    "label": "2396 - Corte, tallado y acabado de la piedra"
+  },
+  {
+    "code": "2399",
+    "description": "Fabricación de otros productos minerales no metálicos n.c.p.",
+    "label": "2399 - Fabricación de otros productos minerales no metálicos n.c.p."
+  },
+  {
+    "code": "2410",
+    "description": "Industrias básicas de hierro y de acero",
+    "label": "2410 - Industrias básicas de hierro y de acero"
+  },
+  {
+    "code": "2421",
+    "description": "Industrias básicas de metales preciosos",
+    "label": "2421 - Industrias básicas de metales preciosos"
+  },
+  {
+    "code": "2429",
+    "description": "Industrias básicas de otros metales no ferrosos",
+    "label": "2429 - Industrias básicas de otros metales no ferrosos"
+  },
+  {
+    "code": "2431",
+    "description": "Fundición de hierro y de acero",
+    "label": "2431 - Fundición de hierro y de acero"
+  },
+  {
+    "code": "2432",
+    "description": "Fundición de metales no ferrosos",
+    "label": "2432 - Fundición de metales no ferrosos"
+  },
+  {
+    "code": "2511",
+    "description": "Fabricación de productos metálicos para uso estructural",
+    "label": "2511 - Fabricación de productos metálicos para uso estructural"
+  },
+  {
+    "code": "2512",
+    "description": "Fabricación de tanques, depósitos y recipientes de metal, excepto los utilizados para el envase o transporte de mercancías",
+    "label": "2512 - Fabricación de tanques, depósitos y recipientes de metal, excepto los utilizados para el envase o transporte de mercancías"
+  },
+  {
+    "code": "2513",
+    "description": "Fabricación de generadores de vapor, excepto calderas de agua caliente para calefacción central",
+    "label": "2513 - Fabricación de generadores de vapor, excepto calderas de agua caliente para calefacción central"
+  },
+  {
+    "code": "2520",
+    "description": "Fabricación de armas y municiones",
+    "label": "2520 - Fabricación de armas y municiones"
+  },
+  {
+    "code": "2591",
+    "description": "Forja, prensado, estampado y laminado de metal; pulvimetalurgia",
+    "label": "2591 - Forja, prensado, estampado y laminado de metal; pulvimetalurgia"
+  },
+  {
+    "code": "2592",
+    "description": "Tratamiento y revestimiento de metales; mecanizado",
+    "label": "2592 - Tratamiento y revestimiento de metales; mecanizado"
+  },
+  {
+    "code": "2593",
+    "description": "Fabricación de artículos de cuchillería, herramientas de mano y artículos de ferretería",
+    "label": "2593 - Fabricación de artículos de cuchillería, herramientas de mano y artículos de ferretería"
+  },
+  {
+    "code": "2599",
+    "description": "Fabricación de otros productos elaborados de metal n.c.p.",
+    "label": "2599 - Fabricación de otros productos elaborados de metal n.c.p."
+  },
+  {
+    "code": "2610",
+    "description": "Fabricación de componentes y tableros electrónicos",
+    "label": "2610 - Fabricación de componentes y tableros electrónicos"
+  },
+  {
+    "code": "2620",
+    "description": "Fabricación de computadoras y de equipo periférico",
+    "label": "2620 - Fabricación de computadoras y de equipo periférico"
+  },
+  {
+    "code": "2630",
+    "description": "Fabricación de equipos de comunicación",
+    "label": "2630 - Fabricación de equipos de comunicación"
+  },
+  {
+    "code": "2640",
+    "description": "Fabricación de aparatos electrónicos de consumo",
+    "label": "2640 - Fabricación de aparatos electrónicos de consumo"
+  },
+  {
+    "code": "2651",
+    "description": "Fabricación de equipo de medición, prueba, navegación y control",
+    "label": "2651 - Fabricación de equipo de medición, prueba, navegación y control"
+  },
+  {
+    "code": "2652",
+    "description": "Fabricación de relojes",
+    "label": "2652 - Fabricación de relojes"
+  },
+  {
+    "code": "2660",
+    "description": "Fabricación de equipo de irradiación y equipo electrónico de uso médico y terapéutico",
+    "label": "2660 - Fabricación de equipo de irradiación y equipo electrónico de uso médico y terapéutico"
+  },
+  {
+    "code": "2670",
+    "description": "Fabricación de instrumentos ópticos y equipo fotográfico",
+    "label": "2670 - Fabricación de instrumentos ópticos y equipo fotográfico"
+  },
+  {
+    "code": "2680",
+    "description": "Fabricación de medios magnéticos y ópticos para almacenamiento de datos",
+    "label": "2680 - Fabricación de medios magnéticos y ópticos para almacenamiento de datos"
+  },
+  {
+    "code": "2711",
+    "description": "Fabricación de motores, generadores y transformadores eléctricos",
+    "label": "2711 - Fabricación de motores, generadores y transformadores eléctricos"
+  },
+  {
+    "code": "2712",
+    "description": "Fabricación de aparatos de distribución y control de la energía eléctrica",
+    "label": "2712 - Fabricación de aparatos de distribución y control de la energía eléctrica"
+  },
+  {
+    "code": "2720",
+    "description": "Fabricación de pilas, baterías y acumuladores eléctricos",
+    "label": "2720 - Fabricación de pilas, baterías y acumuladores eléctricos"
+  },
+  {
+    "code": "2731",
+    "description": "Fabricación de hilos y cables eléctricos y de fibra óptica",
+    "label": "2731 - Fabricación de hilos y cables eléctricos y de fibra óptica"
+  },
+  {
+    "code": "2732",
+    "description": "Fabricación de dispositivos de cableado",
+    "label": "2732 - Fabricación de dispositivos de cableado"
+  },
+  {
+    "code": "2740",
+    "description": "Fabricación de equipos eléctricos de iluminación",
+    "label": "2740 - Fabricación de equipos eléctricos de iluminación"
+  },
+  {
+    "code": "2750",
+    "description": "Fabricación de aparatos de uso doméstico",
+    "label": "2750 - Fabricación de aparatos de uso doméstico"
+  },
+  {
+    "code": "2790",
+    "description": "Fabricación de otros tipos de equipo eléctrico n.c.p.",
+    "label": "2790 - Fabricación de otros tipos de equipo eléctrico n.c.p."
+  },
+  {
+    "code": "2811",
+    "description": "Fabricación de motores, turbinas, y partes para motores de combustión interna",
+    "label": "2811 - Fabricación de motores, turbinas, y partes para motores de combustión interna"
+  },
+  {
+    "code": "2812",
+    "description": "Fabricación de equipos de potencia hidráulica y neumática",
+    "label": "2812 - Fabricación de equipos de potencia hidráulica y neumática"
+  },
+  {
+    "code": "2813",
+    "description": "Fabricación de otras bombas, compresores, grifos y válvulas",
+    "label": "2813 - Fabricación de otras bombas, compresores, grifos y válvulas"
+  },
+  {
+    "code": "2814",
+    "description": "Fabricación de cojinetes, engranajes, trenes de engranajes y piezas de transmisión",
+    "label": "2814 - Fabricación de cojinetes, engranajes, trenes de engranajes y piezas de transmisión"
+  },
+  {
+    "code": "2815",
+    "description": "Fabricación de hornos, hogares y quemadores industriales",
+    "label": "2815 - Fabricación de hornos, hogares y quemadores industriales"
+  },
+  {
+    "code": "2816",
+    "description": "Fabricación de equipo de elevación y manipulación",
+    "label": "2816 - Fabricación de equipo de elevación y manipulación"
+  },
+  {
+    "code": "2817",
+    "description": "Fabricación de maquinaria y equipo de oficina (excepto computadoras y equipo periférico)",
+    "label": "2817 - Fabricación de maquinaria y equipo de oficina (excepto computadoras y equipo periférico)"
+  },
+  {
+    "code": "2818",
+    "description": "Fabricación de herramientas manuales con motor",
+    "label": "2818 - Fabricación de herramientas manuales con motor"
+  },
+  {
+    "code": "2819",
+    "description": "Fabricación de otros tipos de maquinaria y equipo de uso general n.c.p..",
+    "label": "2819 - Fabricación de otros tipos de maquinaria y equipo de uso general n.c.p.."
+  },
+  {
+    "code": "2821",
+    "description": "Fabricación de maquinaria agropecuaria y forestal",
+    "label": "2821 - Fabricación de maquinaria agropecuaria y forestal"
+  },
+  {
+    "code": "2822",
+    "description": "Fabricación de máquinas formadoras de metal y de máquinas herramienta",
+    "label": "2822 - Fabricación de máquinas formadoras de metal y de máquinas herramienta"
+  },
+  {
+    "code": "2823",
+    "description": "Fabricación de maquinaria para la metalurgia",
+    "label": "2823 - Fabricación de maquinaria para la metalurgia"
+  },
+  {
+    "code": "2824",
+    "description": "Fabricación de maquinaria para explotación de minas y canteras y para obras de construcción",
+    "label": "2824 - Fabricación de maquinaria para explotación de minas y canteras y para obras de construcción"
+  },
+  {
+    "code": "2825",
+    "description": "Fabricación de maquinaria para la elaboración de alimentos, bebidas y tabaco",
+    "label": "2825 - Fabricación de maquinaria para la elaboración de alimentos, bebidas y tabaco"
+  },
+  {
+    "code": "2826",
+    "description": "Fabricación de maquinaria para la elaboración de productos textiles, prendas de vestir y cueros",
+    "label": "2826 - Fabricación de maquinaria para la elaboración de productos textiles, prendas de vestir y cueros"
+  },
+  {
+    "code": "2829",
+    "description": "Fabricación de otros tipos de maquinaria y equipo de uso especial n.c.p.",
+    "label": "2829 - Fabricación de otros tipos de maquinaria y equipo de uso especial n.c.p."
+  },
+  {
+    "code": "2910",
+    "description": "Fabricación de vehículos automotores y sus motores",
+    "label": "2910 - Fabricación de vehículos automotores y sus motores"
+  },
+  {
+    "code": "2920",
+    "description": "Fabricación de carrocerías para vehículos automotores; fabricación de remolques y semirremolques",
+    "label": "2920 - Fabricación de carrocerías para vehículos automotores; fabricación de remolques y semirremolques"
+  },
+  {
+    "code": "2930",
+    "description": "Fabricación de partes, piezas (autopartes) y accesorios (lujos) para vehículos automotores",
+    "label": "2930 - Fabricación de partes, piezas (autopartes) y accesorios (lujos) para vehículos automotores"
+  },
+  {
+    "code": "3011",
+    "description": "Construcción de barcos y de estructuras flotantes",
+    "label": "3011 - Construcción de barcos y de estructuras flotantes"
+  },
+  {
+    "code": "3012",
+    "description": "Construcción de embarcaciones de recreo y deporte",
+    "label": "3012 - Construcción de embarcaciones de recreo y deporte"
+  },
+  {
+    "code": "3020",
+    "description": "Fabricación de locomotoras y de material rodante para ferrocarriles",
+    "label": "3020 - Fabricación de locomotoras y de material rodante para ferrocarriles"
+  },
+  {
+    "code": "3030",
+    "description": "Fabricación de aeronaves, naves espaciales y de maquinaria conexa",
+    "label": "3030 - Fabricación de aeronaves, naves espaciales y de maquinaria conexa"
+  },
+  {
+    "code": "3040",
+    "description": "Fabricación de vehículos militares de combate",
+    "label": "3040 - Fabricación de vehículos militares de combate"
+  },
+  {
+    "code": "3091",
+    "description": "Fabricación de motocicletas",
+    "label": "3091 - Fabricación de motocicletas"
+  },
+  {
+    "code": "3092",
+    "description": "Fabricación de bicicletas y de sillas de ruedas para personas con discapacidad",
+    "label": "3092 - Fabricación de bicicletas y de sillas de ruedas para personas con discapacidad"
+  },
+  {
+    "code": "3099",
+    "description": "Fabricación de otros tipos de equipo de transporte n.c.p.",
+    "label": "3099 - Fabricación de otros tipos de equipo de transporte n.c.p."
+  },
+  {
+    "code": "3110",
+    "description": "Fabricación de muebles",
+    "label": "3110 - Fabricación de muebles"
+  },
+  {
+    "code": "3120",
+    "description": "Fabricación de colchones y somieres",
+    "label": "3120 - Fabricación de colchones y somieres"
+  },
+  {
+    "code": "3210",
+    "description": "Fabricación de joyas, bisutería y artículos conexos",
+    "label": "3210 - Fabricación de joyas, bisutería y artículos conexos"
+  },
+  {
+    "code": "3220",
+    "description": "Fabricación de instrumentos musicales",
+    "label": "3220 - Fabricación de instrumentos musicales"
+  },
+  {
+    "code": "3230",
+    "description": "Fabricación de artículos y equipo para la práctica del deporte",
+    "label": "3230 - Fabricación de artículos y equipo para la práctica del deporte"
+  },
+  {
+    "code": "3240",
+    "description": "Fabricación de juegos, juguetes y rompecabezas",
+    "label": "3240 - Fabricación de juegos, juguetes y rompecabezas"
+  },
+  {
+    "code": "3250",
+    "description": "Fabricación de instrumentos, aparatos y materiales médicos y odontológicos (incluido mobiliario)",
+    "label": "3250 - Fabricación de instrumentos, aparatos y materiales médicos y odontológicos (incluido mobiliario)"
+  },
+  {
+    "code": "3290",
+    "description": "Otras industrias manufactureras n.c.p.",
+    "label": "3290 - Otras industrias manufactureras n.c.p."
+  },
+  {
+    "code": "3311",
+    "description": "Mantenimiento y reparación especializado de productos elaborados en metal",
+    "label": "3311 - Mantenimiento y reparación especializado de productos elaborados en metal"
+  },
+  {
+    "code": "3312",
+    "description": "Mantenimiento y reparación especializado de maquinaria y equipo",
+    "label": "3312 - Mantenimiento y reparación especializado de maquinaria y equipo"
+  },
+  {
+    "code": "3313",
+    "description": "Mantenimiento y reparación especializado de equipo electrónico y óptico",
+    "label": "3313 - Mantenimiento y reparación especializado de equipo electrónico y óptico"
+  },
+  {
+    "code": "3314",
+    "description": "Mantenimiento y reparación especializado de equipo eléctrico",
+    "label": "3314 - Mantenimiento y reparación especializado de equipo eléctrico"
+  },
+  {
+    "code": "3315",
+    "description": "Mantenimiento y reparación especializado de equipo de transporte, excepto los vehículos automotores, motocicletas y bicicletas",
+    "label": "3315 - Mantenimiento y reparación especializado de equipo de transporte, excepto los vehículos automotores, motocicletas y bicicletas"
+  },
+  {
+    "code": "3319",
+    "description": "Mantenimiento y reparación de otros tipos de equipos y sus componentes n.c.p.",
+    "label": "3319 - Mantenimiento y reparación de otros tipos de equipos y sus componentes n.c.p."
+  },
+  {
+    "code": "3320",
+    "description": "Instalación especializada de maquinaria y equipo industrial",
+    "label": "3320 - Instalación especializada de maquinaria y equipo industrial"
+  },
+  {
+    "code": "3511",
+    "description": "Generación de energía eléctrica",
+    "label": "3511 - Generación de energía eléctrica"
+  },
+  {
+    "code": "3512",
+    "description": "Transmisión de energía eléctrica",
+    "label": "3512 - Transmisión de energía eléctrica"
+  },
+  {
+    "code": "3513",
+    "description": "Distribución de energía eléctrica",
+    "label": "3513 - Distribución de energía eléctrica"
+  },
+  {
+    "code": "3514",
+    "description": "Comercialización de energía eléctrica",
+    "label": "3514 - Comercialización de energía eléctrica"
+  },
+  {
+    "code": "3520",
+    "description": "Producción de gas; distribución de combustibles gaseosos por tuberías.",
+    "label": "3520 - Producción de gas; distribución de combustibles gaseosos por tuberías."
+  },
+  {
+    "code": "3530",
+    "description": "Suministro de vapor y aire acondicionado",
+    "label": "3530 - Suministro de vapor y aire acondicionado"
+  },
+  {
+    "code": "3600",
+    "description": "Captación, tratamiento y distribución de agua",
+    "label": "3600 - Captación, tratamiento y distribución de agua"
+  },
+  {
+    "code": "3700",
+    "description": "Evacuación y tratamiento de aguas residuales",
+    "label": "3700 - Evacuación y tratamiento de aguas residuales"
+  },
+  {
+    "code": "3811",
+    "description": "Recolección de desechos no peligrosos",
+    "label": "3811 - Recolección de desechos no peligrosos"
+  },
+  {
+    "code": "3812",
+    "description": "Recolección de desechos peligrosos",
+    "label": "3812 - Recolección de desechos peligrosos"
+  },
+  {
+    "code": "3821",
+    "description": "Tratamiento y disposición de desechos no peligrosos",
+    "label": "3821 - Tratamiento y disposición de desechos no peligrosos"
+  },
+  {
+    "code": "3822",
+    "description": "Tratamiento y disposición de desechos peligrosos",
+    "label": "3822 - Tratamiento y disposición de desechos peligrosos"
+  },
+  {
+    "code": "3830",
+    "description": "Recuperación de materiales",
+    "label": "3830 - Recuperación de materiales"
+  },
+  {
+    "code": "3900",
+    "description": "Actividades de saneamiento ambiental y otros servicios de gestión de desechos",
+    "label": "3900 - Actividades de saneamiento ambiental y otros servicios de gestión de desechos"
+  },
+  {
+    "code": "4111",
+    "description": "Construcción de edificios residenciales",
+    "label": "4111 - Construcción de edificios residenciales"
+  },
+  {
+    "code": "4112",
+    "description": "Construcción de edificios no residenciales",
+    "label": "4112 - Construcción de edificios no residenciales"
+  },
+  {
+    "code": "4210",
+    "description": "Construcción de carreteras y vías de ferrocarril",
+    "label": "4210 - Construcción de carreteras y vías de ferrocarril"
+  },
+  {
+    "code": "4220",
+    "description": "Construcción de proyectos de servicio público",
+    "label": "4220 - Construcción de proyectos de servicio público"
+  },
+  {
+    "code": "4290",
+    "description": "Construcción de otras obras de ingeniería civil",
+    "label": "4290 - Construcción de otras obras de ingeniería civil"
+  },
+  {
+    "code": "4311",
+    "description": "Demolición",
+    "label": "4311 - Demolición"
+  },
+  {
+    "code": "4312",
+    "description": "Preparación del terreno",
+    "label": "4312 - Preparación del terreno"
+  },
+  {
+    "code": "4321",
+    "description": "Instalaciones eléctricas",
+    "label": "4321 - Instalaciones eléctricas"
+  },
+  {
+    "code": "4322",
+    "description": "Instalaciones de fontanería, calefacción y aire acondicionado",
+    "label": "4322 - Instalaciones de fontanería, calefacción y aire acondicionado"
+  },
+  {
+    "code": "4329",
+    "description": "Otras instalaciones especializadas",
+    "label": "4329 - Otras instalaciones especializadas"
+  },
+  {
+    "code": "4330",
+    "description": "Terminación y acabado de edificios y obras de ingeniería civil",
+    "label": "4330 - Terminación y acabado de edificios y obras de ingeniería civil"
+  },
+  {
+    "code": "4390",
+    "description": "Otras actividades especializadas para la construcción de edificios y obras de ingeniería civil",
+    "label": "4390 - Otras actividades especializadas para la construcción de edificios y obras de ingeniería civil"
+  },
+  {
+    "code": "4511",
+    "description": "Comercio de vehículos automotores nuevos",
+    "label": "4511 - Comercio de vehículos automotores nuevos"
+  },
+  {
+    "code": "4512",
+    "description": "Comercio de vehículos automotores usados",
+    "label": "4512 - Comercio de vehículos automotores usados"
+  },
+  {
+    "code": "4520",
+    "description": "Mantenimiento y reparación de vehículos automotores",
+    "label": "4520 - Mantenimiento y reparación de vehículos automotores"
+  },
+  {
+    "code": "4530",
+    "description": "Comercio de partes, piezas (autopartes) y accesorios (lujos) para vehículos automotores",
+    "label": "4530 - Comercio de partes, piezas (autopartes) y accesorios (lujos) para vehículos automotores"
+  },
+  {
+    "code": "4541",
+    "description": "Comercio de motocicletas y de sus partes, piezas y accesorios",
+    "label": "4541 - Comercio de motocicletas y de sus partes, piezas y accesorios"
+  },
+  {
+    "code": "4542",
+    "description": "Mantenimiento y reparación de motocicletas y de sus partes y piezas",
+    "label": "4542 - Mantenimiento y reparación de motocicletas y de sus partes y piezas"
+  },
+  {
+    "code": "4610",
+    "description": "Comercio al por mayor a cambio de una retribución o por contrata",
+    "label": "4610 - Comercio al por mayor a cambio de una retribución o por contrata"
+  },
+  {
+    "code": "4620",
+    "description": "Comercio al por mayor de materias primas agropecuarias; animales vivos.",
+    "label": "4620 - Comercio al por mayor de materias primas agropecuarias; animales vivos."
+  },
+  {
+    "code": "4631",
+    "description": "Comercio al por mayor de productos alimenticios",
+    "label": "4631 - Comercio al por mayor de productos alimenticios"
+  },
+  {
+    "code": "4632",
+    "description": "Comercio al por mayor de bebidas y tabaco",
+    "label": "4632 - Comercio al por mayor de bebidas y tabaco"
+  },
+  {
+    "code": "4641",
+    "description": "Comercio al por mayor de productos textiles; productos confeccionados para uso doméstico",
+    "label": "4641 - Comercio al por mayor de productos textiles; productos confeccionados para uso doméstico"
+  },
+  {
+    "code": "4642",
+    "description": "Comercio al por mayor de prendas de vestir",
+    "label": "4642 - Comercio al por mayor de prendas de vestir"
+  },
+  {
+    "code": "4643",
+    "description": "Comercio al por mayor de calzado",
+    "label": "4643 - Comercio al por mayor de calzado"
+  },
+  {
+    "code": "4644",
+    "description": "Comercio al por mayor de aparatos y equipo de uso doméstico",
+    "label": "4644 - Comercio al por mayor de aparatos y equipo de uso doméstico"
+  },
+  {
+    "code": "4645",
+    "description": "Comercio al por mayor de productos farmacéuticos, medicinales, cosméticos y de tocador",
+    "label": "4645 - Comercio al por mayor de productos farmacéuticos, medicinales, cosméticos y de tocador"
+  },
+  {
+    "code": "4649",
+    "description": "Comercio al por mayor de otros utensilios domésticos n.c.p.",
+    "label": "4649 - Comercio al por mayor de otros utensilios domésticos n.c.p."
+  },
+  {
+    "code": "4651",
+    "description": "Comercio al por mayor de computadores, equipo periférico y programas de informática",
+    "label": "4651 - Comercio al por mayor de computadores, equipo periférico y programas de informática"
+  },
+  {
+    "code": "4652",
+    "description": "Comercio al por mayor de equipo, partes y piezas electrónicos y de telecomunicaciones",
+    "label": "4652 - Comercio al por mayor de equipo, partes y piezas electrónicos y de telecomunicaciones"
+  },
+  {
+    "code": "4653",
+    "description": "Comercio al por mayor de maquinaria y equipo agropecuarios",
+    "label": "4653 - Comercio al por mayor de maquinaria y equipo agropecuarios"
+  },
+  {
+    "code": "4659",
+    "description": "Comercio al por mayor de otros tipos de maquinaria y equipo n.c.p.",
+    "label": "4659 - Comercio al por mayor de otros tipos de maquinaria y equipo n.c.p."
+  },
+  {
+    "code": "4661",
+    "description": "Comercio al por mayor de combustibles sólidos, líquidos, gaseosos y productos conexos",
+    "label": "4661 - Comercio al por mayor de combustibles sólidos, líquidos, gaseosos y productos conexos"
+  },
+  {
+    "code": "4662",
+    "description": "Comercio al por mayor de metales y productos metalíferos",
+    "label": "4662 - Comercio al por mayor de metales y productos metalíferos"
+  },
+  {
+    "code": "4663",
+    "description": "Comercio al por mayor de materiales de construcción, artículos de ferretería, pinturas, productos de vidrio, equipo y materiales de fontanería y calefacción",
+    "label": "4663 - Comercio al por mayor de materiales de construcción, artículos de ferretería, pinturas, productos de vidrio, equipo y materiales de fontanería y calefacción"
+  },
+  {
+    "code": "4664",
+    "description": "Comercio al por mayor de productos químicos básicos, cauchos y plásticos en formas primarias y productos químicos de uso agropecuario",
+    "label": "4664 - Comercio al por mayor de productos químicos básicos, cauchos y plásticos en formas primarias y productos químicos de uso agropecuario"
+  },
+  {
+    "code": "4665",
+    "description": "Comercio al por mayor de desperdicios, desechos y chatarra",
+    "label": "4665 - Comercio al por mayor de desperdicios, desechos y chatarra"
+  },
+  {
+    "code": "4669",
+    "description": "Comercio al por mayor de otros productos n.c.p.",
+    "label": "4669 - Comercio al por mayor de otros productos n.c.p."
+  },
+  {
+    "code": "4690",
+    "description": "Comercio al por mayor no especializado",
+    "label": "4690 - Comercio al por mayor no especializado"
+  },
+  {
+    "code": "4711",
+    "description": "Comercio al por menor en establecimientos no especializados con surtido compuesto principalmente por alimentos, bebidas o tabaco",
+    "label": "4711 - Comercio al por menor en establecimientos no especializados con surtido compuesto principalmente por alimentos, bebidas o tabaco"
+  },
+  {
+    "code": "4719",
+    "description": "Comercio a por menor en establecimientos no especializados, con surtido compuesto principalmente por productos diferentes de alimentos (víveres en general), bebidas y tabaco",
+    "label": "4719 - Comercio a por menor en establecimientos no especializados, con surtido compuesto principalmente por productos diferentes de alimentos (víveres en general), bebidas y tabaco"
+  },
+  {
+    "code": "4721",
+    "description": "Comercio al por menor de productos agrícolas para el consumo en establecimientos especializados",
+    "label": "4721 - Comercio al por menor de productos agrícolas para el consumo en establecimientos especializados"
+  },
+  {
+    "code": "4722",
+    "description": "Comercio al por menor de leche, productos lácteos y huevos en establecimientos especializados",
+    "label": "4722 - Comercio al por menor de leche, productos lácteos y huevos en establecimientos especializados"
+  },
+  {
+    "code": "4723",
+    "description": "Comercio al por menor de carnes (incluye aves de corral), productos cárnicos, pescados y productos de mar en establecimientos especializados",
+    "label": "4723 - Comercio al por menor de carnes (incluye aves de corral), productos cárnicos, pescados y productos de mar en establecimientos especializados"
+  },
+  {
+    "code": "4724",
+    "description": "Comercio al por menor de bebidas y productos de tabaco, en establecimientos especializados",
+    "label": "4724 - Comercio al por menor de bebidas y productos de tabaco, en establecimientos especializados"
+  },
+  {
+    "code": "4729",
+    "description": "Comercio al por menor de otros productos alimenticios n.c.p., en establecimientos especializados",
+    "label": "4729 - Comercio al por menor de otros productos alimenticios n.c.p., en establecimientos especializados"
+  },
+  {
+    "code": "4731",
+    "description": "Comercio al por menor de combustible para automotores",
+    "label": "4731 - Comercio al por menor de combustible para automotores"
+  },
+  {
+    "code": "4732",
+    "description": "Comercio al por menor de lubricantes (aceites y grasas) aditivos y productos de limpieza para vehículos automotores",
+    "label": "4732 - Comercio al por menor de lubricantes (aceites y grasas) aditivos y productos de limpieza para vehículos automotores"
+  },
+  {
+    "code": "4741",
+    "description": "Comercio al por menor de computadores, equipos periféricos, programas de informática y equipos de telecomunicaciones en establecimientos especializados",
+    "label": "4741 - Comercio al por menor de computadores, equipos periféricos, programas de informática y equipos de telecomunicaciones en establecimientos especializados"
+  },
+  {
+    "code": "4742",
+    "description": "Comercio al por menor de equipos y aparatos de sonido y de video, en establecimientos especializados",
+    "label": "4742 - Comercio al por menor de equipos y aparatos de sonido y de video, en establecimientos especializados"
+  },
+  {
+    "code": "4751",
+    "description": "Comercio al por menor de productos textiles en establecimientos especializados",
+    "label": "4751 - Comercio al por menor de productos textiles en establecimientos especializados"
+  },
+  {
+    "code": "4752",
+    "description": "Comercio al por menor de artículos de ferretería, pinturas y productos de vidrio en establecimientos especializados",
+    "label": "4752 - Comercio al por menor de artículos de ferretería, pinturas y productos de vidrio en establecimientos especializados"
+  },
+  {
+    "code": "4753",
+    "description": "Comercio al por menor de tapices, alfombras y recubrimientos para paredes y pisos en establecimientos especializados",
+    "label": "4753 - Comercio al por menor de tapices, alfombras y recubrimientos para paredes y pisos en establecimientos especializados"
+  },
+  {
+    "code": "4754",
+    "description": "Comercio al por menor de electrodomésticos y gasodomesticos de uso doméstico, muebles y equipos de iluminación",
+    "label": "4754 - Comercio al por menor de electrodomésticos y gasodomesticos de uso doméstico, muebles y equipos de iluminación"
+  },
+  {
+    "code": "4755",
+    "description": "Comercio al por menor de artículos y utensilios de uso doméstico",
+    "label": "4755 - Comercio al por menor de artículos y utensilios de uso doméstico"
+  },
+  {
+    "code": "4759",
+    "description": "Comercio al por menor de otros artículos domésticos en establecimientos especializados",
+    "label": "4759 - Comercio al por menor de otros artículos domésticos en establecimientos especializados"
+  },
+  {
+    "code": "4761",
+    "description": "Comercio al por menor de libros, periódicos, materiales y artículos de papelería y escritorio, en establecimientos especializados",
+    "label": "4761 - Comercio al por menor de libros, periódicos, materiales y artículos de papelería y escritorio, en establecimientos especializados"
+  },
+  {
+    "code": "4762",
+    "description": "Comercio al por menor de artículos deportivos, en establecimientos especializados",
+    "label": "4762 - Comercio al por menor de artículos deportivos, en establecimientos especializados"
+  },
+  {
+    "code": "4769",
+    "description": "Comercio al por menor de otros artículos culturales y de entretenimiento n.c.p. en establecimientos especializados",
+    "label": "4769 - Comercio al por menor de otros artículos culturales y de entretenimiento n.c.p. en establecimientos especializados"
+  },
+  {
+    "code": "4771",
+    "description": "Comercio al por menor de prendas de vestir y sus accesorios (incluye artículos de piel) en establecimientos especializados",
+    "label": "4771 - Comercio al por menor de prendas de vestir y sus accesorios (incluye artículos de piel) en establecimientos especializados"
+  },
+  {
+    "code": "4772",
+    "description": "Comercio al por menor de todo tipo de calzado y artículos de cuero y sucedáneos del cuero en establecimientos especializados.",
+    "label": "4772 - Comercio al por menor de todo tipo de calzado y artículos de cuero y sucedáneos del cuero en establecimientos especializados."
+  },
+  {
+    "code": "4773",
+    "description": "Comercio al por menor de productos farmacéuticos y medicinales, cosméticos y artículos de tocador en establecimientos especializados",
+    "label": "4773 - Comercio al por menor de productos farmacéuticos y medicinales, cosméticos y artículos de tocador en establecimientos especializados"
+  },
+  {
+    "code": "4774",
+    "description": "Comercio al por menor de otros productos nuevos, en establecimientos especializados",
+    "label": "4774 - Comercio al por menor de otros productos nuevos, en establecimientos especializados"
+  },
+  {
+    "code": "4775",
+    "description": "Comercio al por menor de artículos de segunda mano",
+    "label": "4775 - Comercio al por menor de artículos de segunda mano"
+  },
+  {
+    "code": "4781",
+    "description": "Comercio al por menor de alimentos, bebidas y tabaco en puestos de venta móviles",
+    "label": "4781 - Comercio al por menor de alimentos, bebidas y tabaco en puestos de venta móviles"
+  },
+  {
+    "code": "4782",
+    "description": "Comercio al por menor de productos textiles, prendas de vestir y calzado, en puestos de venta móviles",
+    "label": "4782 - Comercio al por menor de productos textiles, prendas de vestir y calzado, en puestos de venta móviles"
+  },
+  {
+    "code": "4789",
+    "description": "Comercio al por menor de otros productos, en puestos de venta móviles",
+    "label": "4789 - Comercio al por menor de otros productos, en puestos de venta móviles"
+  },
+  {
+    "code": "4791",
+    "description": "Comercio al por menor realizado a través de Internet",
+    "label": "4791 - Comercio al por menor realizado a través de Internet"
+  },
+  {
+    "code": "4792",
+    "description": "Comercio al por menor realizado a través de casas de venta o por correo",
+    "label": "4792 - Comercio al por menor realizado a través de casas de venta o por correo"
+  },
+  {
+    "code": "4799",
+    "description": "Otros tipos de comercio al por menor no realizado en establecimientos, puestos de venta o mercados",
+    "label": "4799 - Otros tipos de comercio al por menor no realizado en establecimientos, puestos de venta o mercados"
+  },
+  {
+    "code": "4911",
+    "description": "Transporte férreo de pasajeros",
+    "label": "4911 - Transporte férreo de pasajeros"
+  },
+  {
+    "code": "4912",
+    "description": "Transporte férreo de carga",
+    "label": "4912 - Transporte férreo de carga"
+  },
+  {
+    "code": "4921",
+    "description": "Transporte de pasajeros",
+    "label": "4921 - Transporte de pasajeros"
+  },
+  {
+    "code": "4922",
+    "description": "Transporte mixto",
+    "label": "4922 - Transporte mixto"
+  },
+  {
+    "code": "4923",
+    "description": "Transporte de carga por carretera",
+    "label": "4923 - Transporte de carga por carretera"
+  },
+  {
+    "code": "4930",
+    "description": "Transporte por tuberías",
+    "label": "4930 - Transporte por tuberías"
+  },
+  {
+    "code": "5011",
+    "description": "Transporte de pasajeros marítimo y de cabotaje",
+    "label": "5011 - Transporte de pasajeros marítimo y de cabotaje"
+  },
+  {
+    "code": "5012",
+    "description": "Transporte de carga marítimo y de cabotaje",
+    "label": "5012 - Transporte de carga marítimo y de cabotaje"
+  },
+  {
+    "code": "5021",
+    "description": "Transporte fluvial de pasajeros",
+    "label": "5021 - Transporte fluvial de pasajeros"
+  },
+  {
+    "code": "5022",
+    "description": "Transporte fluvial de carga",
+    "label": "5022 - Transporte fluvial de carga"
+  },
+  {
+    "code": "5111",
+    "description": "Transporte aéreo nacional de pasajeros",
+    "label": "5111 - Transporte aéreo nacional de pasajeros"
+  },
+  {
+    "code": "5112",
+    "description": "Transporte aéreo internacional de pasajeros",
+    "label": "5112 - Transporte aéreo internacional de pasajeros"
+  },
+  {
+    "code": "5121",
+    "description": "Transporte aéreo nacional de carga",
+    "label": "5121 - Transporte aéreo nacional de carga"
+  },
+  {
+    "code": "5122",
+    "description": "Transporte aéreo internacional de carga",
+    "label": "5122 - Transporte aéreo internacional de carga"
+  },
+  {
+    "code": "5210",
+    "description": "Almacenamiento y depósito",
+    "label": "5210 - Almacenamiento y depósito"
+  },
+  {
+    "code": "5221",
+    "description": "Actividades de estaciones, vías y servicios complementarios para el transporte terrestre",
+    "label": "5221 - Actividades de estaciones, vías y servicios complementarios para el transporte terrestre"
+  },
+  {
+    "code": "5222",
+    "description": "Actividades de puertos y servicios complementarios para el transporte acuático",
+    "label": "5222 - Actividades de puertos y servicios complementarios para el transporte acuático"
+  },
+  {
+    "code": "5223",
+    "description": "Actividades de aeropuertos, servicios de navegación aérea y demás actividades conexas al transporte aéreo",
+    "label": "5223 - Actividades de aeropuertos, servicios de navegación aérea y demás actividades conexas al transporte aéreo"
+  },
+  {
+    "code": "5224",
+    "description": "Manipulación de carga",
+    "label": "5224 - Manipulación de carga"
+  },
+  {
+    "code": "5229",
+    "description": "Otras actividades complementarias al transporte",
+    "label": "5229 - Otras actividades complementarias al transporte"
+  },
+  {
+    "code": "5310",
+    "description": "Actividades postales nacionales",
+    "label": "5310 - Actividades postales nacionales"
+  },
+  {
+    "code": "5320",
+    "description": "Actividades de mensajería",
+    "label": "5320 - Actividades de mensajería"
+  },
+  {
+    "code": "5511",
+    "description": "Alojamiento en hoteles",
+    "label": "5511 - Alojamiento en hoteles"
+  },
+  {
+    "code": "5512",
+    "description": "Alojamiento en aparta-hoteles",
+    "label": "5512 - Alojamiento en aparta-hoteles"
+  },
+  {
+    "code": "5513",
+    "description": "Alojamiento en centros vacacionales",
+    "label": "5513 - Alojamiento en centros vacacionales"
+  },
+  {
+    "code": "5514",
+    "description": "Alojamiento rural",
+    "label": "5514 - Alojamiento rural"
+  },
+  {
+    "code": "5519",
+    "description": "Otros tipos de alojamientos para visitantes",
+    "label": "5519 - Otros tipos de alojamientos para visitantes"
+  },
+  {
+    "code": "5520",
+    "description": "Actividades de zonas de camping y parques para vehículos recreacionales",
+    "label": "5520 - Actividades de zonas de camping y parques para vehículos recreacionales"
+  },
+  {
+    "code": "5530",
+    "description": "Servicios por horas",
+    "label": "5530 - Servicios por horas"
+  },
+  {
+    "code": "5590",
+    "description": "Otros tipos de alojamiento n.c.p.",
+    "label": "5590 - Otros tipos de alojamiento n.c.p."
+  },
+  {
+    "code": "5611",
+    "description": "Expendio a la mesa de comidas preparadas",
+    "label": "5611 - Expendio a la mesa de comidas preparadas"
+  },
+  {
+    "code": "5612",
+    "description": "Expendio por autoservicio de comidas preparadas",
+    "label": "5612 - Expendio por autoservicio de comidas preparadas"
+  },
+  {
+    "code": "5613",
+    "description": "Expendio de comidas preparadas en cafeterías",
+    "label": "5613 - Expendio de comidas preparadas en cafeterías"
+  },
+  {
+    "code": "5619",
+    "description": "Otros tipos de expendio de comidas preparadas n.c.p.",
+    "label": "5619 - Otros tipos de expendio de comidas preparadas n.c.p."
+  },
+  {
+    "code": "5621",
+    "description": "Catering para eventos",
+    "label": "5621 - Catering para eventos"
+  },
+  {
+    "code": "5629",
+    "description": "Actividades de otros servicios de comidas",
+    "label": "5629 - Actividades de otros servicios de comidas"
+  },
+  {
+    "code": "5630",
+    "description": "Expendio de bebidas alcohólicas para el consumo dentro del establecimiento",
+    "label": "5630 - Expendio de bebidas alcohólicas para el consumo dentro del establecimiento"
+  },
+  {
+    "code": "5811",
+    "description": "Edición de libros",
+    "label": "5811 - Edición de libros"
+  },
+  {
+    "code": "5812",
+    "description": "Edición de directorios y listas de correo",
+    "label": "5812 - Edición de directorios y listas de correo"
+  },
+  {
+    "code": "5813",
+    "description": "Edición de periódicos, revistas y otras publicaciones periódicas",
+    "label": "5813 - Edición de periódicos, revistas y otras publicaciones periódicas"
+  },
+  {
+    "code": "5819",
+    "description": "Otros trabajos de edición",
+    "label": "5819 - Otros trabajos de edición"
+  },
+  {
+    "code": "5820",
+    "description": "Edición de programas de informática (software)",
+    "label": "5820 - Edición de programas de informática (software)"
+  },
+  {
+    "code": "5911",
+    "description": "Actividades de producción de películas cinematográficas, videos, programas, anuncios y comerciales de televisión",
+    "label": "5911 - Actividades de producción de películas cinematográficas, videos, programas, anuncios y comerciales de televisión"
+  },
+  {
+    "code": "5912",
+    "description": "Actividades de postproducción de películas cinematográficas, videos, programas, anuncios y comerciales de televisión",
+    "label": "5912 - Actividades de postproducción de películas cinematográficas, videos, programas, anuncios y comerciales de televisión"
+  },
+  {
+    "code": "5913",
+    "description": "Actividades de distribución de películas cinematográficas, videos, programas, anuncios y comerciales de televisión",
+    "label": "5913 - Actividades de distribución de películas cinematográficas, videos, programas, anuncios y comerciales de televisión"
+  },
+  {
+    "code": "5914",
+    "description": "Actividades de exhibición de películas cinematográficas y videos",
+    "label": "5914 - Actividades de exhibición de películas cinematográficas y videos"
+  },
+  {
+    "code": "5920",
+    "description": "Actividades de grabación de sonido y edición de música",
+    "label": "5920 - Actividades de grabación de sonido y edición de música"
+  },
+  {
+    "code": "6010",
+    "description": "Actividades de programación y transmisión en el servicio de radiodifusión sonora",
+    "label": "6010 - Actividades de programación y transmisión en el servicio de radiodifusión sonora"
+  },
+  {
+    "code": "6020",
+    "description": "Actividades de programación y transmisión de televisión",
+    "label": "6020 - Actividades de programación y transmisión de televisión"
+  },
+  {
+    "code": "6110",
+    "description": "Actividades de telecomunicaciones alámbricas",
+    "label": "6110 - Actividades de telecomunicaciones alámbricas"
+  },
+  {
+    "code": "6120",
+    "description": "Actividades de telecomunicaciones inalámbricas",
+    "label": "6120 - Actividades de telecomunicaciones inalámbricas"
+  },
+  {
+    "code": "6130",
+    "description": "Actividades de telecomunicación satelital",
+    "label": "6130 - Actividades de telecomunicación satelital"
+  },
+  {
+    "code": "6190",
+    "description": "Otras actividades de telecomunicaciones",
+    "label": "6190 - Otras actividades de telecomunicaciones"
+  },
+  {
+    "code": "6201",
+    "description": "Actividades de desarrollo de sistemas informáticos (planificación, análisis, diseño, programación, pruebas).",
+    "label": "6201 - Actividades de desarrollo de sistemas informáticos (planificación, análisis, diseño, programación, pruebas)."
+  },
+  {
+    "code": "6202",
+    "description": "Actividades de consultoría informática y actividades de administración de instalaciones informáticas",
+    "label": "6202 - Actividades de consultoría informática y actividades de administración de instalaciones informáticas"
+  },
+  {
+    "code": "6209",
+    "description": "Otras actividades de tecnologías de información y actividades de servicios informáticos",
+    "label": "6209 - Otras actividades de tecnologías de información y actividades de servicios informáticos"
+  },
+  {
+    "code": "6311",
+    "description": "Procesamiento de datos, alojamiento (hosting) y actividades relacionadas",
+    "label": "6311 - Procesamiento de datos, alojamiento (hosting) y actividades relacionadas"
+  },
+  {
+    "code": "6312",
+    "description": "Portales Web",
+    "label": "6312 - Portales Web"
+  },
+  {
+    "code": "6391",
+    "description": "Actividades de agencias de noticias",
+    "label": "6391 - Actividades de agencias de noticias"
+  },
+  {
+    "code": "6399",
+    "description": "Otras actividades de servicio de información n.c.p.",
+    "label": "6399 - Otras actividades de servicio de información n.c.p."
+  },
+  {
+    "code": "6411",
+    "description": "Banco Central",
+    "label": "6411 - Banco Central"
+  },
+  {
+    "code": "6412",
+    "description": "Bancos comerciales",
+    "label": "6412 - Bancos comerciales"
+  },
+  {
+    "code": "6421",
+    "description": "Actividades de las corporaciones financieras",
+    "label": "6421 - Actividades de las corporaciones financieras"
+  },
+  {
+    "code": "6422",
+    "description": "Actividades de las compañías de financiamiento",
+    "label": "6422 - Actividades de las compañías de financiamiento"
+  },
+  {
+    "code": "6423",
+    "description": "Banca de segundo piso",
+    "label": "6423 - Banca de segundo piso"
+  },
+  {
+    "code": "6424",
+    "description": "Actividades de las cooperativas financieras",
+    "label": "6424 - Actividades de las cooperativas financieras"
+  },
+  {
+    "code": "6431",
+    "description": "Fideicomisos, fondos y entidades financieras similares",
+    "label": "6431 - Fideicomisos, fondos y entidades financieras similares"
+  },
+  {
+    "code": "6432",
+    "description": "Fondos de cesantías",
+    "label": "6432 - Fondos de cesantías"
+  },
+  {
+    "code": "6491",
+    "description": "Leasing financiero (arrendamiento financiero)",
+    "label": "6491 - Leasing financiero (arrendamiento financiero)"
+  },
+  {
+    "code": "6492",
+    "description": "Actividades financieras de fondos de empleados y otras formas asociativas del sector solidario",
+    "label": "6492 - Actividades financieras de fondos de empleados y otras formas asociativas del sector solidario"
+  },
+  {
+    "code": "6493",
+    "description": "Actividades de compra de cartera o factoring",
+    "label": "6493 - Actividades de compra de cartera o factoring"
+  },
+  {
+    "code": "6494",
+    "description": "Otras actividades de distribución de fondos",
+    "label": "6494 - Otras actividades de distribución de fondos"
+  },
+  {
+    "code": "6495",
+    "description": "Instituciones especiales oficiales",
+    "label": "6495 - Instituciones especiales oficiales"
+  },
+  {
+    "code": "6496",
+    "description": "Capitalización",
+    "label": "6496 - Capitalización"
+  },
+  {
+    "code": "6499",
+    "description": "Otras actividades de servicio financiero, excepto las de seguros y pensiones n.c.p.",
+    "label": "6499 - Otras actividades de servicio financiero, excepto las de seguros y pensiones n.c.p."
+  },
+  {
+    "code": "6511",
+    "description": "Seguros generales",
+    "label": "6511 - Seguros generales"
+  },
+  {
+    "code": "6512",
+    "description": "Seguros de vida",
+    "label": "6512 - Seguros de vida"
+  },
+  {
+    "code": "6513",
+    "description": "Reaseguros",
+    "label": "6513 - Reaseguros"
+  },
+  {
+    "code": "6515",
+    "description": "Seguros de salud.",
+    "label": "6515 - Seguros de salud."
+  },
+  {
+    "code": "6521",
+    "description": "Servicios de seguros sociales de salud",
+    "label": "6521 - Servicios de seguros sociales de salud"
+  },
+  {
+    "code": "6522",
+    "description": "Servicios de seguros sociales de riesgos profesionales",
+    "label": "6522 - Servicios de seguros sociales de riesgos profesionales"
+  },
+  {
+    "code": "6523",
+    "description": "Servicios de seguros sociales en riesgos familia.",
+    "label": "6523 - Servicios de seguros sociales en riesgos familia."
+  },
+  {
+    "code": "6531",
+    "description": "Régimen de prima media con prestación definida (RPM)",
+    "label": "6531 - Régimen de prima media con prestación definida (RPM)"
+  },
+  {
+    "code": "6532",
+    "description": "Régimen de ahorro individual (RAI).",
+    "label": "6532 - Régimen de ahorro individual (RAI)."
+  },
+  {
+    "code": "6611",
+    "description": "Administración de mercados financieros",
+    "label": "6611 - Administración de mercados financieros"
+  },
+  {
+    "code": "6612",
+    "description": "Corretaje de valores y de contratos de productos básicos",
+    "label": "6612 - Corretaje de valores y de contratos de productos básicos"
+  },
+  {
+    "code": "6613",
+    "description": "Otras actividades relacionadas con el mercado de valores",
+    "label": "6613 - Otras actividades relacionadas con el mercado de valores"
+  },
+  {
+    "code": "6614",
+    "description": "Actividades de las casas de cambio",
+    "label": "6614 - Actividades de las casas de cambio"
+  },
+  {
+    "code": "6615",
+    "description": "Actividades de los profesionales de compra y venta de divisas",
+    "label": "6615 - Actividades de los profesionales de compra y venta de divisas"
+  },
+  {
+    "code": "6619",
+    "description": "Otras actividades auxiliares de las actividades de servicios financieros n.c.p",
+    "label": "6619 - Otras actividades auxiliares de las actividades de servicios financieros n.c.p"
+  },
+  {
+    "code": "6621",
+    "description": "Actividades de agentes y corredores de seguros",
+    "label": "6621 - Actividades de agentes y corredores de seguros"
+  },
+  {
+    "code": "6629",
+    "description": "Evaluación de riesgos y daños y otras actividades de servicios auxiliares",
+    "label": "6629 - Evaluación de riesgos y daños y otras actividades de servicios auxiliares"
+  },
+  {
+    "code": "6630",
+    "description": "Actividades de administración de fondos",
+    "label": "6630 - Actividades de administración de fondos"
+  },
+  {
+    "code": "6810",
+    "description": "Actividades inmobiliarias realizadas con bienes propios o arrendados",
+    "label": "6810 - Actividades inmobiliarias realizadas con bienes propios o arrendados"
+  },
+  {
+    "code": "6820",
+    "description": "Actividades inmobiliarias realizadas a cambio de una retribución o por contrata",
+    "label": "6820 - Actividades inmobiliarias realizadas a cambio de una retribución o por contrata"
+  },
+  {
+    "code": "6910",
+    "description": "Actividades jurídicas",
+    "label": "6910 - Actividades jurídicas"
+  },
+  {
+    "code": "6920",
+    "description": "Actividades de contabilidad, teneduría de libros, auditoria financiera y asesoría tributaria",
+    "label": "6920 - Actividades de contabilidad, teneduría de libros, auditoria financiera y asesoría tributaria"
+  },
+  {
+    "code": "7010",
+    "description": "Actividades de administración empresarial",
+    "label": "7010 - Actividades de administración empresarial"
+  },
+  {
+    "code": "7020",
+    "description": "Actividades de consultoría de gestión",
+    "label": "7020 - Actividades de consultoría de gestión"
+  },
+  {
+    "code": "7111",
+    "description": "Actividades de arquitectura.",
+    "label": "7111 - Actividades de arquitectura."
+  },
+  {
+    "code": "7112",
+    "description": "Actividades de ingeniería y otras actividades conexas de consultoría técnica.",
+    "label": "7112 - Actividades de ingeniería y otras actividades conexas de consultoría técnica."
+  },
+  {
+    "code": "7120",
+    "description": "Ensayos y análisis técnicos",
+    "label": "7120 - Ensayos y análisis técnicos"
+  },
+  {
+    "code": "7210",
+    "description": "Investigaciones y desarrollo experimental en el campo de las ciencias naturales y la ingeniería",
+    "label": "7210 - Investigaciones y desarrollo experimental en el campo de las ciencias naturales y la ingeniería"
+  },
+  {
+    "code": "7220",
+    "description": "Investigaciones y desarrollo experimental en el campo de las ciencias sociales y las humanidades",
+    "label": "7220 - Investigaciones y desarrollo experimental en el campo de las ciencias sociales y las humanidades"
+  },
+  {
+    "code": "7310",
+    "description": "Publicidad",
+    "label": "7310 - Publicidad"
+  },
+  {
+    "code": "7320",
+    "description": "Estudios de mercado y realización de encuestas de opinión pública",
+    "label": "7320 - Estudios de mercado y realización de encuestas de opinión pública"
+  },
+  {
+    "code": "7410",
+    "description": "Actividades especializadas de diseño",
+    "label": "7410 - Actividades especializadas de diseño"
+  },
+  {
+    "code": "7420",
+    "description": "Actividades de fotografía",
+    "label": "7420 - Actividades de fotografía"
+  },
+  {
+    "code": "7490",
+    "description": "Otras actividades profesionales, científicas y técnicas n.c.p.",
+    "label": "7490 - Otras actividades profesionales, científicas y técnicas n.c.p."
+  },
+  {
+    "code": "7500",
+    "description": "Actividades veterinarias",
+    "label": "7500 - Actividades veterinarias"
+  },
+  {
+    "code": "7710",
+    "description": "Alquiler y arrendamiento de vehículos automotores",
+    "label": "7710 - Alquiler y arrendamiento de vehículos automotores"
+  },
+  {
+    "code": "7721",
+    "description": "Alquiler y arrendamiento de equipo recreativo y deportivo",
+    "label": "7721 - Alquiler y arrendamiento de equipo recreativo y deportivo"
+  },
+  {
+    "code": "7722",
+    "description": "Alquiler de videos y discos",
+    "label": "7722 - Alquiler de videos y discos"
+  },
+  {
+    "code": "7729",
+    "description": "Alquiler y arrendamiento de otros efectos personales y enseres domésticos n.c.p.",
+    "label": "7729 - Alquiler y arrendamiento de otros efectos personales y enseres domésticos n.c.p."
+  },
+  {
+    "code": "7730",
+    "description": "Alquiler y arrendamiento de otros tipos de maquinaria, equipo y bienes tangibles n.c.p.",
+    "label": "7730 - Alquiler y arrendamiento de otros tipos de maquinaria, equipo y bienes tangibles n.c.p."
+  },
+  {
+    "code": "7740",
+    "description": "Arrendamiento de propiedad intelectual y productos similares, excepto obras protegidas por derechos de autor",
+    "label": "7740 - Arrendamiento de propiedad intelectual y productos similares, excepto obras protegidas por derechos de autor"
+  },
+  {
+    "code": "7810",
+    "description": "Actividades de agencias de empleo",
+    "label": "7810 - Actividades de agencias de empleo"
+  },
+  {
+    "code": "7820",
+    "description": "Actividades de agencias de empleo temporal",
+    "label": "7820 - Actividades de agencias de empleo temporal"
+  },
+  {
+    "code": "7830",
+    "description": "Otras actividades de suministro de recurso humano",
+    "label": "7830 - Otras actividades de suministro de recurso humano"
+  },
+  {
+    "code": "7911",
+    "description": "Actividades de las agencias de viajes",
+    "label": "7911 - Actividades de las agencias de viajes"
+  },
+  {
+    "code": "7912",
+    "description": "Actividades de operadores turísticos",
+    "label": "7912 - Actividades de operadores turísticos"
+  },
+  {
+    "code": "7990",
+    "description": "Otros servicios de reserva y actividades relacionadas",
+    "label": "7990 - Otros servicios de reserva y actividades relacionadas"
+  },
+  {
+    "code": "8010",
+    "description": "Actividades de seguridad privada",
+    "label": "8010 - Actividades de seguridad privada"
+  },
+  {
+    "code": "8020",
+    "description": "Actividades de servicios de sistemas de seguridad",
+    "label": "8020 - Actividades de servicios de sistemas de seguridad"
+  },
+  {
+    "code": "8030",
+    "description": "Actividades de detectives e investigadores privados",
+    "label": "8030 - Actividades de detectives e investigadores privados"
+  },
+  {
+    "code": "8110",
+    "description": "Actividades combinadas de apoyo a instalaciones",
+    "label": "8110 - Actividades combinadas de apoyo a instalaciones"
+  },
+  {
+    "code": "8121",
+    "description": "Limpieza general interior de edificios",
+    "label": "8121 - Limpieza general interior de edificios"
+  },
+  {
+    "code": "8129",
+    "description": "Otras actividades de limpieza de edificios e instalaciones industriales",
+    "label": "8129 - Otras actividades de limpieza de edificios e instalaciones industriales"
+  },
+  {
+    "code": "8130",
+    "description": "Actividades de paisajismo y servicios de mantenimiento conexos",
+    "label": "8130 - Actividades de paisajismo y servicios de mantenimiento conexos"
+  },
+  {
+    "code": "8211",
+    "description": "Actividades combinadas de servicios administrativos de oficina",
+    "label": "8211 - Actividades combinadas de servicios administrativos de oficina"
+  },
+  {
+    "code": "8219",
+    "description": "Fotocopiado, preparación de documentos y otras actividades especializadas de apoyo a oficina",
+    "label": "8219 - Fotocopiado, preparación de documentos y otras actividades especializadas de apoyo a oficina"
+  },
+  {
+    "code": "8220",
+    "description": "Actividades de centros de llamadas (Call center)",
+    "label": "8220 - Actividades de centros de llamadas (Call center)"
+  },
+  {
+    "code": "8230",
+    "description": "Organización de convenciones y eventos comerciales",
+    "label": "8230 - Organización de convenciones y eventos comerciales"
+  },
+  {
+    "code": "8291",
+    "description": "Actividades de agencias de cobranza y oficinas de calificación crediticia",
+    "label": "8291 - Actividades de agencias de cobranza y oficinas de calificación crediticia"
+  },
+  {
+    "code": "8292",
+    "description": "Actividades de envase y empaque",
+    "label": "8292 - Actividades de envase y empaque"
+  },
+  {
+    "code": "8299",
+    "description": "Otras actividades de servicio de apoyo a las empresas n.c.p.",
+    "label": "8299 - Otras actividades de servicio de apoyo a las empresas n.c.p."
+  },
+  {
+    "code": "8411",
+    "description": "Actividades legislativas de la administración publica",
+    "label": "8411 - Actividades legislativas de la administración publica"
+  },
+  {
+    "code": "8412",
+    "description": "Actividades ejecutivas de la administración publica",
+    "label": "8412 - Actividades ejecutivas de la administración publica"
+  },
+  {
+    "code": "8413",
+    "description": "Regulación de las actividades de organismos que prestan servicios de salud, educativos, culturales y otros servicios sociales, excepto servicios de seguridad social",
+    "label": "8413 - Regulación de las actividades de organismos que prestan servicios de salud, educativos, culturales y otros servicios sociales, excepto servicios de seguridad social"
+  },
+  {
+    "code": "8414",
+    "description": "Actividades reguladoras y facilitadoras de la actividad económica",
+    "label": "8414 - Actividades reguladoras y facilitadoras de la actividad económica"
+  },
+  {
+    "code": "8415",
+    "description": "Actividades de los otros órganos de control",
+    "label": "8415 - Actividades de los otros órganos de control"
+  },
+  {
+    "code": "8421",
+    "description": "Relaciones exteriores",
+    "label": "8421 - Relaciones exteriores"
+  },
+  {
+    "code": "8422",
+    "description": "Actividades de defensa",
+    "label": "8422 - Actividades de defensa"
+  },
+  {
+    "code": "8423",
+    "description": "Orden público y actividades de seguridad",
+    "label": "8423 - Orden público y actividades de seguridad"
+  },
+  {
+    "code": "8424",
+    "description": "Administración de justicia",
+    "label": "8424 - Administración de justicia"
+  },
+  {
+    "code": "8430",
+    "description": "Actividades de planes de seguridad social de afiliación obligatoria",
+    "label": "8430 - Actividades de planes de seguridad social de afiliación obligatoria"
+  },
+  {
+    "code": "8511",
+    "description": "Educación de la primera infancia.",
+    "label": "8511 - Educación de la primera infancia."
+  },
+  {
+    "code": "8512",
+    "description": "Educación preescolar",
+    "label": "8512 - Educación preescolar"
+  },
+  {
+    "code": "8513",
+    "description": "Educación básica primaria",
+    "label": "8513 - Educación básica primaria"
+  },
+  {
+    "code": "8521",
+    "description": "Educación básica secundaria",
+    "label": "8521 - Educación básica secundaria"
+  },
+  {
+    "code": "8522",
+    "description": "Educación media académica",
+    "label": "8522 - Educación media académica"
+  },
+  {
+    "code": "8523",
+    "description": "Educación media técnica y de formación laboral",
+    "label": "8523 - Educación media técnica y de formación laboral"
+  },
+  {
+    "code": "8530",
+    "description": "Establecimientos que combinan diferentes niveles de educación",
+    "label": "8530 - Establecimientos que combinan diferentes niveles de educación"
+  },
+  {
+    "code": "8541",
+    "description": "Educación técnica profesional",
+    "label": "8541 - Educación técnica profesional"
+  },
+  {
+    "code": "8542",
+    "description": "Educación tecnológica",
+    "label": "8542 - Educación tecnológica"
+  },
+  {
+    "code": "8543",
+    "description": "Educación de instituciones universitarias o de escuelas tecnológicas",
+    "label": "8543 - Educación de instituciones universitarias o de escuelas tecnológicas"
+  },
+  {
+    "code": "8544",
+    "description": "Educación de universidades",
+    "label": "8544 - Educación de universidades"
+  },
+  {
+    "code": "8551",
+    "description": "Formación académica no formal",
+    "label": "8551 - Formación académica no formal"
+  },
+  {
+    "code": "8552",
+    "description": "Enseñanza deportiva y recreativa",
+    "label": "8552 - Enseñanza deportiva y recreativa"
+  },
+  {
+    "code": "8553",
+    "description": "Enseñanza cultural",
+    "label": "8553 - Enseñanza cultural"
+  },
+  {
+    "code": "8559",
+    "description": "Otros tipos de educación n.c.p.",
+    "label": "8559 - Otros tipos de educación n.c.p."
+  },
+  {
+    "code": "8560",
+    "description": "Actividades de apoyo a la educación",
+    "label": "8560 - Actividades de apoyo a la educación"
+  },
+  {
+    "code": "8610",
+    "description": "Actividades de hospitales y clínicas, con internación",
+    "label": "8610 - Actividades de hospitales y clínicas, con internación"
+  },
+  {
+    "code": "8621",
+    "description": "Actividades de la práctica médica, sin internación",
+    "label": "8621 - Actividades de la práctica médica, sin internación"
+  },
+  {
+    "code": "8622",
+    "description": "Actividades de la práctica odontológica",
+    "label": "8622 - Actividades de la práctica odontológica"
+  },
+  {
+    "code": "8691",
+    "description": "Actividades de apoyo diagnóstico",
+    "label": "8691 - Actividades de apoyo diagnóstico"
+  },
+  {
+    "code": "8692",
+    "description": "Actividades de apoyo terapéutico",
+    "label": "8692 - Actividades de apoyo terapéutico"
+  },
+  {
+    "code": "8699",
+    "description": "Otras actividades de atención de la salud humana",
+    "label": "8699 - Otras actividades de atención de la salud humana"
+  },
+  {
+    "code": "8710",
+    "description": "Actividades de atención residencial medicalizada de tipo general",
+    "label": "8710 - Actividades de atención residencial medicalizada de tipo general"
+  },
+  {
+    "code": "8720",
+    "description": "Actividades de atención residencial, para el cuidado de pacientes con retardo mental, enfermedad mental y consumo de sustancias psicoactivas",
+    "label": "8720 - Actividades de atención residencial, para el cuidado de pacientes con retardo mental, enfermedad mental y consumo de sustancias psicoactivas"
+  },
+  {
+    "code": "8730",
+    "description": "Actividades de atención en instituciones para el cuidado de personas mayores y/o discapacitadas",
+    "label": "8730 - Actividades de atención en instituciones para el cuidado de personas mayores y/o discapacitadas"
+  },
+  {
+    "code": "8790",
+    "description": "Otras actividades de atención en instituciones con alojamiento",
+    "label": "8790 - Otras actividades de atención en instituciones con alojamiento"
+  },
+  {
+    "code": "8810",
+    "description": "Actividades de asistencia social sin alojamiento para personas mayores y discapacitadas",
+    "label": "8810 - Actividades de asistencia social sin alojamiento para personas mayores y discapacitadas"
+  },
+  {
+    "code": "8891",
+    "description": "Actividades de guarderías para niños y niñas.",
+    "label": "8891 - Actividades de guarderías para niños y niñas."
+  },
+  {
+    "code": "8899",
+    "description": "Otras actividades de asistencia social n.c.p.",
+    "label": "8899 - Otras actividades de asistencia social n.c.p."
+  },
+  {
+    "code": "9001",
+    "description": "Creación literaria",
+    "label": "9001 - Creación literaria"
+  },
+  {
+    "code": "9002",
+    "description": "Creación musical",
+    "label": "9002 - Creación musical"
+  },
+  {
+    "code": "9003",
+    "description": "Creación teatral",
+    "label": "9003 - Creación teatral"
+  },
+  {
+    "code": "9004",
+    "description": "Creación audiovisual",
+    "label": "9004 - Creación audiovisual"
+  },
+  {
+    "code": "9005",
+    "description": "Artes plásticas y visuales",
+    "label": "9005 - Artes plásticas y visuales"
+  },
+  {
+    "code": "9006",
+    "description": "Actividades teatrales",
+    "label": "9006 - Actividades teatrales"
+  },
+  {
+    "code": "9007",
+    "description": "Actividades de espectáculos musicales en vivo",
+    "label": "9007 - Actividades de espectáculos musicales en vivo"
+  },
+  {
+    "code": "9008",
+    "description": "Otras actividades de espectáculos en vivo",
+    "label": "9008 - Otras actividades de espectáculos en vivo"
+  },
+  {
+    "code": "9101",
+    "description": "Actividades de bibliotecas y archivos",
+    "label": "9101 - Actividades de bibliotecas y archivos"
+  },
+  {
+    "code": "9102",
+    "description": "Actividades y funcionamiento de museos, conservación de edificios y sitios históricos",
+    "label": "9102 - Actividades y funcionamiento de museos, conservación de edificios y sitios históricos"
+  },
+  {
+    "code": "9103",
+    "description": "Actividades de jardines botánicos, zoológicos y reservas naturales",
+    "label": "9103 - Actividades de jardines botánicos, zoológicos y reservas naturales"
+  },
+  {
+    "code": "9200",
+    "description": "Actividades de juegos de azar y apuestas",
+    "label": "9200 - Actividades de juegos de azar y apuestas"
+  },
+  {
+    "code": "9311",
+    "description": "Gestión de instalaciones deportivas",
+    "label": "9311 - Gestión de instalaciones deportivas"
+  },
+  {
+    "code": "9312",
+    "description": "Actividades de clubes deportivos",
+    "label": "9312 - Actividades de clubes deportivos"
+  },
+  {
+    "code": "9319",
+    "description": "Otras actividades deportivas",
+    "label": "9319 - Otras actividades deportivas"
+  },
+  {
+    "code": "9321",
+    "description": "Actividades de parques de atracciones y parques temáticos",
+    "label": "9321 - Actividades de parques de atracciones y parques temáticos"
+  },
+  {
+    "code": "9329",
+    "description": "Otras actividades recreativas y de esparcimiento n.c.p.",
+    "label": "9329 - Otras actividades recreativas y de esparcimiento n.c.p."
+  },
+  {
+    "code": "9411",
+    "description": "Actividades de asociaciones empresariales y de empleadores",
+    "label": "9411 - Actividades de asociaciones empresariales y de empleadores"
+  },
+  {
+    "code": "9412",
+    "description": "Actividades de asociaciones profesionales",
+    "label": "9412 - Actividades de asociaciones profesionales"
+  },
+  {
+    "code": "9420",
+    "description": "Actividades de sindicatos de empleados",
+    "label": "9420 - Actividades de sindicatos de empleados"
+  },
+  {
+    "code": "9491",
+    "description": "Actividades de asociaciones religiosas",
+    "label": "9491 - Actividades de asociaciones religiosas"
+  },
+  {
+    "code": "9492",
+    "description": "Actividades de asociaciones políticas",
+    "label": "9492 - Actividades de asociaciones políticas"
+  },
+  {
+    "code": "9499",
+    "description": "Actividades de otras asociaciones n.c.p.",
+    "label": "9499 - Actividades de otras asociaciones n.c.p."
+  },
+  {
+    "code": "9511",
+    "description": "Mantenimiento y reparación de computadoras y de equipo periférico",
+    "label": "9511 - Mantenimiento y reparación de computadoras y de equipo periférico"
+  },
+  {
+    "code": "9512",
+    "description": "Mantenimiento y reparación de equipos de comunicación",
+    "label": "9512 - Mantenimiento y reparación de equipos de comunicación"
+  },
+  {
+    "code": "9521",
+    "description": "Mantenimiento y reparación de aparatos electrónicos de consumo",
+    "label": "9521 - Mantenimiento y reparación de aparatos electrónicos de consumo"
+  },
+  {
+    "code": "9522",
+    "description": "Mantenimiento y reparación de aparatos y equipos domésticos y de jardinería",
+    "label": "9522 - Mantenimiento y reparación de aparatos y equipos domésticos y de jardinería"
+  },
+  {
+    "code": "9523",
+    "description": "Reparación de calzado y artículos de cuero",
+    "label": "9523 - Reparación de calzado y artículos de cuero"
+  },
+  {
+    "code": "9524",
+    "description": "Reparación de muebles y accesorios para el hogar",
+    "label": "9524 - Reparación de muebles y accesorios para el hogar"
+  },
+  {
+    "code": "9529",
+    "description": "Mantenimiento y reparación de otros efectos personales y enseres domésticos",
+    "label": "9529 - Mantenimiento y reparación de otros efectos personales y enseres domésticos"
+  },
+  {
+    "code": "9601",
+    "description": "Lavado y limpieza, incluso la limpieza en seco, de productos textiles y de piel",
+    "label": "9601 - Lavado y limpieza, incluso la limpieza en seco, de productos textiles y de piel"
+  },
+  {
+    "code": "9602",
+    "description": "Peluquería y otros tratamientos de belleza",
+    "label": "9602 - Peluquería y otros tratamientos de belleza"
+  },
+  {
+    "code": "9603",
+    "description": "Pompas fúnebres y actividades relacionadas",
+    "label": "9603 - Pompas fúnebres y actividades relacionadas"
+  },
+  {
+    "code": "9609",
+    "description": "Otras actividades de servicios personales n.c.p.",
+    "label": "9609 - Otras actividades de servicios personales n.c.p."
+  },
+  {
+    "code": "9700",
+    "description": "Actividades de los hogares individuales como empleadores de personal doméstico",
+    "label": "9700 - Actividades de los hogares individuales como empleadores de personal doméstico"
+  },
+  {
+    "code": "9810",
+    "description": "Actividades no diferenciadas de los hogares individuales como productores de bienes para uso propio",
+    "label": "9810 - Actividades no diferenciadas de los hogares individuales como productores de bienes para uso propio"
+  },
+  {
+    "code": "9820",
+    "description": "Actividades no diferenciadas de los hogares individuales como productores de servicios para uso propio",
+    "label": "9820 - Actividades no diferenciadas de los hogares individuales como productores de servicios para uso propio"
+  },
+  {
+    "code": "9900",
+    "description": "Actividades de organizaciones y entidades extraterritoriales",
+    "label": "9900 - Actividades de organizaciones y entidades extraterritoriales"
+  }
+]

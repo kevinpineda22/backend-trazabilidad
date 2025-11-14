@@ -24,12 +24,19 @@
   "license": "ISC",
   "dependencies": {
     "@supabase/supabase-js": "^2.39.3",
-    "axios": "^1.6.5",
+    "axios": "^1.13.2",
+    "colombia-data-social": "^1.0.1",
     "cors": "^2.8.5",
+    "date-fns": "^4.1.0",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
+    "framer-motion": "^12.23.24",
     "jsonwebtoken": "^9.0.2",
-    "multer": "^1.4.5-lts.1"
+    "multer": "^1.4.5-lts.1",
+    "react-icons": "^5.5.0",
+    "react-router-dom": "^7.9.6",
+    "react-toastify": "^11.0.5",
+    "sweetalert2": "^11.26.3"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"
