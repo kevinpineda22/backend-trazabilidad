@@ -22,6 +22,7 @@ import {
   FaSortUp,
   FaSortDown,
   FaEdit,
+  FaFileUpload,
 } from "react-icons/fa";
 import { format, parseISO } from "date-fns";
 import Swal from "sweetalert2";
@@ -467,9 +468,9 @@ const CreacionProveedor = () => {
   const [tokenMensaje, setTokenMensaje] = useState("");
 
   // --- (Estados actualizados) ---
-  const [idParaEditar, setIdParaEditar] = useState(null);
-  const enModoEdicion = idParaEditar !== null;
   const formCardRef = useRef(null);
+  // Estados de control de pasos (navegación visual)
+  const [pasoActual, setPasoActual] = useState(1); // 1: datos, 2: documentos
   const [rut, setRut] = useState(null);
   const [camaraComercio, setCamaraComercio] = useState(null);
   const [docIdentidadRepLegal, setDocIdentidadRepLegal] = useState(null);
@@ -682,13 +683,13 @@ const CreacionProveedor = () => {
   }, [modoPublico, tokenPublico]);
 
   useEffect(() => {
-    if (!enModoEdicion && formData.fecha_diligenciamiento !== todayIso) {
+    if (formData.fecha_diligenciamiento !== todayIso) {
       setFormData((prev) => ({
         ...prev,
         fecha_diligenciamiento: todayIso,
       }));
     }
-  }, [enModoEdicion, formData.fecha_diligenciamiento, todayIso]);
+  }, [formData.fecha_diligenciamiento, todayIso]);
 
   useEffect(() => {
     setFormErrors((prev) => {
@@ -727,9 +728,9 @@ const CreacionProveedor = () => {
     composicionAccionaria,
   ]);
 
-  // --- (resetForm no cambia) ---
+  // --- (resetForm actualizado) ---
   const resetForm = () => {
-    setIdParaEditar(null);
+    setPasoActual(1);
     setRut(null);
     setCamaraComercio(null);
     setDocIdentidadRepLegal(null);
@@ -754,7 +755,9 @@ const CreacionProveedor = () => {
     });
   };
 
-  // --- (handleCargarParaEditar no cambia) ---
+  // --- (handleCargarParaEditar deshabilitado en flujo de dos pasos) ---
+  // La edición no está disponible con el nuevo flujo de dos pasos
+  /*
   const handleCargarParaEditar = (item) => {
     setIdParaEditar(item.id);
     setRut(item.url_rut || null);
@@ -840,6 +843,7 @@ const CreacionProveedor = () => {
       "Modo de edición activado. Los datos han sido cargados en el formulario."
     );
   };
+  */
 
   const handleFieldChange = (event) => {
     const { name, value } = event.target;
@@ -1090,380 +1094,230 @@ const CreacionProveedor = () => {
     todayIso,
   ]);
 
-  const validateCompleteForm = useCallback(() => {
-    const errors = {};
+  const validateCompleteForm = useCallback(
+    (validarDocumentos = false) => {
+      const errors = {};
 
-    if (!rut) errors.rut = "RUT es requerido.";
-    if (!certificacionBancaria)
-      errors.certificacionBancaria = "Certificación Bancaria es requerida.";
-    if (!docIdentidadRepLegal)
-      errors.docIdentidadRepLegal =
-        "Copia del documento de identidad del representante legal es requerida.";
-    if (!certificadoSagrilaft)
-      errors.certificadoSagrilaft =
-        "Formato SAGRILAFT firmado por el oficial de cumplimiento es requerido.";
-    if (!composicionAccionaria)
-      errors.composicionAccionaria = "Composición Accionaria es requerida.";
+      // Validar documentos solo si se solicita explícitamente (paso 2)
+      if (validarDocumentos) {
+        if (!rut) errors.rut = "RUT es requerido.";
+        if (!certificacionBancaria)
+          errors.certificacionBancaria = "Certificación Bancaria es requerida.";
+        if (!docIdentidadRepLegal)
+          errors.docIdentidadRepLegal =
+            "Copia del documento de identidad del representante legal es requerida.";
+        if (!certificadoSagrilaft)
+          errors.certificadoSagrilaft =
+            "Formato SAGRILAFT firmado por el oficial de cumplimiento es requerido.";
+        if (!composicionAccionaria)
+          errors.composicionAccionaria = "Composición Accionaria es requerida.";
+      }
 
-    const fechaValor = (formData.fecha_diligenciamiento || "").trim();
-    if (!fechaValor) {
-      errors.fecha_diligenciamiento =
-        "La fecha se asigna automáticamente. Recarga el formulario si no aparece.";
-    } else {
-      const selectedDate = new Date(fechaValor);
-      const today = new Date();
-      selectedDate.setHours(0, 0, 0, 0);
-      today.setHours(0, 0, 0, 0);
-      if (Number.isNaN(selectedDate.getTime())) {
-        errors.fecha_diligenciamiento = "La fecha seleccionada no es válida.";
-      } else if (selectedDate > today) {
+      const fechaValor = (formData.fecha_diligenciamiento || "").trim();
+      if (!fechaValor) {
         errors.fecha_diligenciamiento =
-          "La fecha no puede ser posterior al día de hoy.";
-      }
-    }
-
-    if (!formData.tipo_regimen)
-      errors.tipo_regimen = "Selecciona el tipo de régimen.";
-    if (!formData.tipo_documento)
-      errors.tipo_documento = "Selecciona el tipo de documento.";
-
-    const nitValue = (formData.nit || "").trim();
-    if (!nitValue) {
-      errors.nit = "Ingresa el número de documento.";
-    } else if (!DOCUMENT_NUMBER_REGEX.test(nitValue)) {
-      errors.nit = "El número de documento debe tener entre 5 y 15 dígitos.";
-    }
-
-    if (documentoEsNit) {
-      const dvValue = (formData.dv || "").trim();
-      if (!dvValue) {
-        errors.dv = "Ingresa el dígito de verificación.";
-      } else if (!DV_REGEX.test(dvValue)) {
-        errors.dv =
-          "El dígito de verificación debe ser numérico y de un solo dígito.";
-      }
-    }
-
-    if (!formData.codigo_ciiu)
-      errors.codigo_ciiu = "Selecciona la actividad económica.";
-
-    const direccionValor = (formData.direccion_domicilio || "").trim();
-    if (!direccionValor) {
-      errors.direccion_domicilio = "Ingresa la dirección del domicilio.";
-    } else if (direccionValor.length < 5) {
-      errors.direccion_domicilio =
-        "La dirección debe tener al menos 5 caracteres.";
-    } else if (!ADDRESS_REGEX.test(direccionValor)) {
-      errors.direccion_domicilio =
-        "La dirección solo puede incluir letras, números y caracteres válidos (#, -, ., /).";
-    }
-
-    if (!formData.departamento || !formData.departamento_codigo)
-      errors.departamento = "Selecciona el departamento.";
-    if (!formData.ciudad || !formData.ciudad_codigo)
-      errors.ciudad = "Selecciona la ciudad.";
-
-    const emailFactura = (formData.email_factura_electronica || "").trim();
-    if (!emailFactura) {
-      errors.email_factura_electronica =
-        "Ingresa el correo de factura electrónica.";
-    } else if (!EMAIL_REGEX.test(emailFactura)) {
-      errors.email_factura_electronica =
-        "Correo de factura electrónica inválido.";
-    }
-
-    const emailContacto = (formData.email_contacto || "").trim();
-    if (!emailContacto) {
-      errors.email_contacto = "Ingresa el correo de contacto.";
-    } else if (!EMAIL_REGEX.test(emailContacto)) {
-      errors.email_contacto = "Correo de contacto inválido.";
-    }
-
-    const telefonoValor = (formData.telefono_contacto || "").trim();
-    if (!telefonoValor) {
-      errors.telefono_contacto = "Ingresa el teléfono de contacto.";
-    } else if (!PHONE_REGEX.test(telefonoValor)) {
-      errors.telefono_contacto = "El teléfono debe tener entre 7 y 15 dígitos.";
-    }
-
-    if (isPersonaJuridica) {
-      const razonSocialValor = (formData.razon_social || "").trim();
-      if (!razonSocialValor) {
-        errors.razon_social = "Ingresa la razón social.";
-      } else if (razonSocialValor.length < 3) {
-        errors.razon_social =
-          "La razón social debe tener al menos 3 caracteres.";
-      }
-
-      const nombreEstablecimientoValor = (
-        formData.nombre_establecimiento || ""
-      ).trim();
-      if (!nombreEstablecimientoValor) {
-        errors.nombre_establecimiento =
-          "Ingresa el nombre del establecimiento.";
-      } else if (nombreEstablecimientoValor.length < 3) {
-        errors.nombre_establecimiento =
-          "El nombre del establecimiento debe tener al menos 3 caracteres.";
-      }
-
-      const repNombreValor = (formData.rep_legal_nombre || "").trim();
-      if (!repNombreValor) {
-        errors.rep_legal_nombre = "Ingresa el nombre del representante legal.";
-      } else if (!NAME_REGEX.test(repNombreValor)) {
-        errors.rep_legal_nombre =
-          "El nombre del representante legal solo debe contener letras y espacios.";
-      }
-
-      const repApellidosValor = (formData.rep_legal_apellidos || "").trim();
-      if (!repApellidosValor) {
-        errors.rep_legal_apellidos =
-          "Ingresa los apellidos del representante legal.";
-      } else if (!NAME_REGEX.test(repApellidosValor)) {
-        errors.rep_legal_apellidos =
-          "Los apellidos del representante legal solo deben contener letras y espacios.";
-      }
-
-      if (!formData.rep_legal_tipo_doc)
-        errors.rep_legal_tipo_doc =
-          "Selecciona el tipo de documento del representante legal.";
-
-      const repDocValor = (formData.rep_legal_num_doc || "").trim();
-      if (!repDocValor) {
-        errors.rep_legal_num_doc =
-          "Ingresa el número de documento del representante legal.";
-      } else if (!DOCUMENT_NUMBER_REGEX.test(repDocValor)) {
-        errors.rep_legal_num_doc =
-          "El documento del representante legal debe tener entre 5 y 15 dígitos.";
-      }
-
-      const nombreContactoValor = (formData.nombre_contacto || "").trim();
-      if (!nombreContactoValor) {
-        errors.nombre_contacto = "Ingresa el nombre de contacto.";
-      } else if (!NAME_REGEX.test(nombreContactoValor)) {
-        errors.nombre_contacto =
-          "El nombre de contacto solo debe contener letras y espacios.";
-      }
-    }
-
-    if (isPersonaNatural) {
-      const primerNombreValor = (formData.primer_nombre || "").trim();
-      if (!primerNombreValor) {
-        errors.primer_nombre = "Ingresa el primer nombre.";
-      } else if (!NAME_REGEX.test(primerNombreValor)) {
-        errors.primer_nombre =
-          "El primer nombre solo debe contener letras y espacios.";
-      }
-
-      const segundoNombreValor = (formData.segundo_nombre || "").trim();
-      if (segundoNombreValor && !NAME_REGEX.test(segundoNombreValor)) {
-        errors.segundo_nombre =
-          "El segundo nombre solo debe contener letras y espacios.";
-      }
-
-      const primerApellidoValor = (formData.primer_apellido || "").trim();
-      if (!primerApellidoValor) {
-        errors.primer_apellido = "Ingresa el primer apellido.";
-      } else if (!NAME_REGEX.test(primerApellidoValor)) {
-        errors.primer_apellido =
-          "El primer apellido solo debe contener letras y espacios.";
-      }
-
-      const segundoApellidoValor = (formData.segundo_apellido || "").trim();
-      if (segundoApellidoValor && !NAME_REGEX.test(segundoApellidoValor)) {
-        errors.segundo_apellido =
-          "El segundo apellido solo debe contener letras y espacios.";
-      }
-
-      const nombreContactoValor = (formData.nombre_contacto || "").trim();
-      if (nombreContactoValor && !NAME_REGEX.test(nombreContactoValor)) {
-        errors.nombre_contacto =
-          "El nombre de contacto solo debe contener letras y espacios.";
-      }
-    }
-
-    if (!formData.declara_pep) errors.declara_pep = "Selecciona una opción.";
-    if (!formData.declara_recursos_publicos)
-      errors.declara_recursos_publicos = "Selecciona una opción.";
-    if (!formData.declara_obligaciones_tributarias)
-      errors.declara_obligaciones_tributarias = "Selecciona una opción.";
-
-    if (!aceptaTerminos)
-      errors.aceptaTerminos = "Debes aceptar el tratamiento de datos.";
-
-    setFormErrors(errors);
-    return Object.keys(errors).length === 0;
-  }, [
-    aceptaTerminos,
-    certificacionBancaria,
-    composicionAccionaria,
-    certificadoSagrilaft,
-    docIdentidadRepLegal,
-    documentoEsNit,
-    formData,
-    isPersonaJuridica,
-    isPersonaNatural,
-    rut,
-  ]);
-
-  // --- ¡handleApiSubmit ACTUALIZADO! ---
-  const handleApiSubmit = async (
-    confirmationDetails,
-    successMessage,
-    basePayload
-  ) => {
-    if (isSubmitting || loading) {
-      toast.warning("Ya se está procesando una solicitud. Por favor, espere.");
-      return;
-    }
-
-    const confirmResult = await Swal.fire({
-      ...confirmationDetails,
-      customClass: SWAL_CUSTOM_CLASSES,
-      showCancelButton: true,
-      confirmButtonText: `✅ Sí, ${enModoEdicion ? "actualizar" : "crear"}`,
-      cancelButtonText: "❌ Cancelar",
-    });
-
-    if (!confirmResult.isConfirmed) return;
-
-    setIsSubmitting(true);
-    setLoading(true);
-    const savingToast = toast.loading(
-      `${
-        enModoEdicion ? "Actualizando" : "Subiendo"
-      } archivos y guardando datos...`
-    );
-
-    const folderPath = `${FOLDER_BASE}/transaccion_${Date.now()}_${Math.random()
-      .toString(36)
-      .substring(2, 8)}`;
-
-    try {
-      const uploadFileOrKeepUrl = (file, fileName) => {
-        if (file instanceof File) {
-          return uploadFileToBucket({
-            bucket: BUCKET_NAME,
-            path: `${folderPath}/${fileName}.${file.name.split(".").pop()}`,
-            file,
-          });
-        }
-        return Promise.resolve(file);
-      };
-
-      const [
-        url_rut,
-        url_certificacion_bancaria,
-        url_doc_identidad_rep_legal,
-        url_certificado_sagrilaft,
-        url_composicion_accionaria,
-        url_camara_comercio,
-      ] = await Promise.all([
-        // Obligatorios
-        uploadFileOrKeepUrl(rut, "rut"),
-        uploadFileOrKeepUrl(certificacionBancaria, "certificacion_bancaria"),
-        uploadFileOrKeepUrl(docIdentidadRepLegal, "doc_identidad_rep_legal"),
-        uploadFileOrKeepUrl(certificadoSagrilaft, "certificado_sagrilaft"),
-        uploadFileOrKeepUrl(composicionAccionaria, "composicion_accionaria"),
-        // Opcional
-        uploadFileOrKeepUrl(camaraComercio, "camara_comercio"),
-      ]);
-
-      const finalPayload = {
-        ...basePayload,
-        url_rut,
-        url_camara_comercio,
-        url_certificacion_bancaria,
-        url_doc_identidad_rep_legal,
-        url_certificado_sagrilaft,
-        url_composicion_accionaria,
-      };
-
-      const payloadForRequest = modoPublico
-        ? { ...finalPayload, estado: "pendiente" }
-        : finalPayload;
-
-      // Modo público: enviar a registro-publico
-      if (modoPublico) {
-        await axios.post(
-          `${
-            import.meta.env.VITE_BACKEND_TRAZABILIDAD_URL
-          }/api/trazabilidad/registro-publico/proveedor/${tokenPublico}`,
-          payloadForRequest,
-          { headers: { "Content-Type": "application/json" } }
-        );
-      }
-      // Modo normal: enviar directo a proveedores
-      else {
-        if (enModoEdicion) {
-          await apiTrazabilidad.patch(
-            `/trazabilidad/proveedores/${idParaEditar}`,
-            payloadForRequest,
-            {
-              headers: { "Content-Type": "application/json" },
-            }
-          );
-        } else {
-          await apiTrazabilidad.post(
-            "/trazabilidad/proveedores",
-            payloadForRequest,
-            {
-              headers: { "Content-Type": "application/json" },
-            }
-          );
-        }
-      }
-
-      // --- ¡AQUÍ ESTÁ EL CAMBIO! ---
-      toast.dismiss(savingToast);
-
-      if (modoPublico) {
-        Swal.fire({
-          title: "¡Registro Enviado!",
-          text: "Tu registro ha sido enviado y está pendiente de aprobación.",
-          icon: "success",
-          customClass: SWAL_CUSTOM_CLASSES,
-          confirmButtonText: "✅ Entendido",
-        });
+          "La fecha se asigna automáticamente. Recarga el formulario si no aparece.";
       } else {
-        Swal.fire({
-          title: enModoEdicion ? "¡Actualizado!" : "¡Creado!",
-          text: successMessage,
-          icon: "success",
-          customClass: SWAL_CUSTOM_CLASSES,
-          confirmButtonText: "✅ Entendido",
-        });
+        const selectedDate = new Date(fechaValor);
+        const today = new Date();
+        selectedDate.setHours(0, 0, 0, 0);
+        today.setHours(0, 0, 0, 0);
+        if (Number.isNaN(selectedDate.getTime())) {
+          errors.fecha_diligenciamiento = "La fecha seleccionada no es válida.";
+        } else if (selectedDate > today) {
+          errors.fecha_diligenciamiento =
+            "La fecha no puede ser posterior al día de hoy.";
+        }
       }
-      // -----------------------------
 
-      resetForm();
-      if (!modoPublico) {
-        fetchHistorial();
+      if (!formData.tipo_regimen)
+        errors.tipo_regimen = "Selecciona el tipo de régimen.";
+      if (!formData.tipo_documento)
+        errors.tipo_documento = "Selecciona el tipo de documento.";
+
+      const nitValue = (formData.nit || "").trim();
+      if (!nitValue) {
+        errors.nit = "Ingresa el número de documento.";
+      } else if (!DOCUMENT_NUMBER_REGEX.test(nitValue)) {
+        errors.nit = "El número de documento debe tener entre 5 y 15 dígitos.";
       }
-    } catch (error) {
-      console.error(
-        `Error al ${enModoEdicion ? "actualizar" : "crear"} proveedor:`,
-        error
-      );
-      const errorMsg = parseApiError(error);
-      toast.update(savingToast, {
-        render: errorMsg,
-        type: "error",
-        isLoading: false,
-        autoClose: 6000,
-      });
-      Swal.fire({
-        icon: "error",
-        title: `Error de ${enModoEdicion ? "Actualización" : "Creación"}`,
-        text: errorMsg,
-        customClass: SWAL_CUSTOM_CLASSES,
-      });
-    } finally {
-      setLoading(false);
-      setIsSubmitting(false);
-    }
-  };
 
-  // --- ¡handleFormSubmit ACTUALIZADO! ---
+      if (documentoEsNit) {
+        const dvValue = (formData.dv || "").trim();
+        if (!dvValue) {
+          errors.dv = "Ingresa el dígito de verificación.";
+        } else if (!DV_REGEX.test(dvValue)) {
+          errors.dv =
+            "El dígito de verificación debe ser numérico y de un solo dígito.";
+        }
+      }
+
+      if (!formData.codigo_ciiu)
+        errors.codigo_ciiu = "Selecciona la actividad económica.";
+
+      const direccionValor = (formData.direccion_domicilio || "").trim();
+      if (!direccionValor) {
+        errors.direccion_domicilio = "Ingresa la dirección del domicilio.";
+      } else if (direccionValor.length < 5) {
+        errors.direccion_domicilio =
+          "La dirección debe tener al menos 5 caracteres.";
+      } else if (!ADDRESS_REGEX.test(direccionValor)) {
+        errors.direccion_domicilio =
+          "La dirección solo puede incluir letras, números y caracteres válidos (#, -, ., /).";
+      }
+
+      if (!formData.departamento || !formData.departamento_codigo)
+        errors.departamento = "Selecciona el departamento.";
+      if (!formData.ciudad || !formData.ciudad_codigo)
+        errors.ciudad = "Selecciona la ciudad.";
+
+      const emailFactura = (formData.email_factura_electronica || "").trim();
+      if (!emailFactura) {
+        errors.email_factura_electronica =
+          "Ingresa el correo de factura electrónica.";
+      } else if (!EMAIL_REGEX.test(emailFactura)) {
+        errors.email_factura_electronica =
+          "Correo de factura electrónica inválido.";
+      }
+
+      const emailContacto = (formData.email_contacto || "").trim();
+      if (!emailContacto) {
+        errors.email_contacto = "Ingresa el correo de contacto.";
+      } else if (!EMAIL_REGEX.test(emailContacto)) {
+        errors.email_contacto = "Correo de contacto inválido.";
+      }
+
+      const telefonoValor = (formData.telefono_contacto || "").trim();
+      if (!telefonoValor) {
+        errors.telefono_contacto = "Ingresa el teléfono de contacto.";
+      } else if (!PHONE_REGEX.test(telefonoValor)) {
+        errors.telefono_contacto =
+          "El teléfono debe tener entre 7 y 15 dígitos.";
+      }
+
+      if (isPersonaJuridica) {
+        const razonSocialValor = (formData.razon_social || "").trim();
+        if (!razonSocialValor) {
+          errors.razon_social = "Ingresa la razón social.";
+        } else if (razonSocialValor.length < 3) {
+          errors.razon_social =
+            "La razón social debe tener al menos 3 caracteres.";
+        }
+
+        const nombreEstablecimientoValor = (
+          formData.nombre_establecimiento || ""
+        ).trim();
+        if (!nombreEstablecimientoValor) {
+          errors.nombre_establecimiento =
+            "Ingresa el nombre del establecimiento.";
+        } else if (nombreEstablecimientoValor.length < 3) {
+          errors.nombre_establecimiento =
+            "El nombre del establecimiento debe tener al menos 3 caracteres.";
+        }
+
+        const repNombreValor = (formData.rep_legal_nombre || "").trim();
+        if (!repNombreValor) {
+          errors.rep_legal_nombre =
+            "Ingresa el nombre del representante legal.";
+        } else if (!NAME_REGEX.test(repNombreValor)) {
+          errors.rep_legal_nombre =
+            "El nombre del representante legal solo debe contener letras y espacios.";
+        }
+
+        const repApellidosValor = (formData.rep_legal_apellidos || "").trim();
+        if (!repApellidosValor) {
+          errors.rep_legal_apellidos =
+            "Ingresa los apellidos del representante legal.";
+        } else if (!NAME_REGEX.test(repApellidosValor)) {
+          errors.rep_legal_apellidos =
+            "Los apellidos del representante legal solo deben contener letras y espacios.";
+        }
+
+        if (!formData.rep_legal_tipo_doc)
+          errors.rep_legal_tipo_doc =
+            "Selecciona el tipo de documento del representante legal.";
+
+        const repDocValor = (formData.rep_legal_num_doc || "").trim();
+        if (!repDocValor) {
+          errors.rep_legal_num_doc =
+            "Ingresa el número de documento del representante legal.";
+        } else if (!DOCUMENT_NUMBER_REGEX.test(repDocValor)) {
+          errors.rep_legal_num_doc =
+            "El documento del representante legal debe tener entre 5 y 15 dígitos.";
+        }
+
+        const nombreContactoValor = (formData.nombre_contacto || "").trim();
+        if (!nombreContactoValor) {
+          errors.nombre_contacto = "Ingresa el nombre de contacto.";
+        } else if (!NAME_REGEX.test(nombreContactoValor)) {
+          errors.nombre_contacto =
+            "El nombre de contacto solo debe contener letras y espacios.";
+        }
+      }
+
+      if (isPersonaNatural) {
+        const primerNombreValor = (formData.primer_nombre || "").trim();
+        if (!primerNombreValor) {
+          errors.primer_nombre = "Ingresa el primer nombre.";
+        } else if (!NAME_REGEX.test(primerNombreValor)) {
+          errors.primer_nombre =
+            "El primer nombre solo debe contener letras y espacios.";
+        }
+
+        const segundoNombreValor = (formData.segundo_nombre || "").trim();
+        if (segundoNombreValor && !NAME_REGEX.test(segundoNombreValor)) {
+          errors.segundo_nombre =
+            "El segundo nombre solo debe contener letras y espacios.";
+        }
+
+        const primerApellidoValor = (formData.primer_apellido || "").trim();
+        if (!primerApellidoValor) {
+          errors.primer_apellido = "Ingresa el primer apellido.";
+        } else if (!NAME_REGEX.test(primerApellidoValor)) {
+          errors.primer_apellido =
+            "El primer apellido solo debe contener letras y espacios.";
+        }
+
+        const segundoApellidoValor = (formData.segundo_apellido || "").trim();
+        if (segundoApellidoValor && !NAME_REGEX.test(segundoApellidoValor)) {
+          errors.segundo_apellido =
+            "El segundo apellido solo debe contener letras y espacios.";
+        }
+
+        const nombreContactoValor = (formData.nombre_contacto || "").trim();
+        if (nombreContactoValor && !NAME_REGEX.test(nombreContactoValor)) {
+          errors.nombre_contacto =
+            "El nombre de contacto solo debe contener letras y espacios.";
+        }
+      }
+
+      if (!formData.declara_pep) errors.declara_pep = "Selecciona una opción.";
+      if (!formData.declara_recursos_publicos)
+        errors.declara_recursos_publicos = "Selecciona una opción.";
+      if (!formData.declara_obligaciones_tributarias)
+        errors.declara_obligaciones_tributarias = "Selecciona una opción.";
+
+      if (!aceptaTerminos)
+        errors.aceptaTerminos = "Debes aceptar el tratamiento de datos.";
+
+      setFormErrors(errors);
+      return Object.keys(errors).length === 0;
+    },
+    [
+      aceptaTerminos,
+      certificacionBancaria,
+      composicionAccionaria,
+      certificadoSagrilaft,
+      docIdentidadRepLegal,
+      documentoEsNit,
+      formData,
+      isPersonaJuridica,
+      isPersonaNatural,
+      rut,
+    ]
+  );
+
+  // --- ¡handleFormSubmit ACTUALIZADO PARA DOS PASOS! ---
   const handleFormSubmit = async (e) => {
     e.preventDefault();
 
@@ -1487,45 +1341,172 @@ const CreacionProveedor = () => {
       }
     }
 
-    if (!validateCompleteForm()) {
-      Swal.fire({
-        title: "Campos pendientes",
-        text: "Revisa los documentos y campos obligatorios marcados en el formulario.",
-        icon: "warning",
-        customClass: SWAL_CUSTOM_CLASSES,
-      });
-      return;
+    // PASO 1: Validar datos y avanzar a paso 2 (sin crear en BD)
+    if (pasoActual === 1) {
+      if (!validateCompleteForm(false)) {
+        Swal.fire({
+          title: "Campos pendientes",
+          text: "Revisa los campos obligatorios marcados en el formulario.",
+          icon: "warning",
+          customClass: SWAL_CUSTOM_CLASSES,
+        });
+        return;
+      }
+
+      // Solo avanzar al paso 2 sin crear nada en la base de datos
+      toast.success(
+        "Datos validados correctamente. Ahora adjunta los documentos."
+      );
+      setPasoActual(2);
+
+      // Scroll al inicio del formulario
+      if (formCardRef.current) {
+        formCardRef.current.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }
     }
 
-    const payload = buildProviderPayload();
+    // PASO 2: Crear proveedor completo con datos y documentos
+    else if (pasoActual === 2) {
+      if (!validateCompleteForm(true)) {
+        Swal.fire({
+          title: "Documentos pendientes",
+          text: "Adjunta todos los documentos obligatorios antes de finalizar.",
+          icon: "warning",
+          customClass: SWAL_CUSTOM_CLASSES,
+        });
+        return;
+      }
 
-    const confirmationDetails = {
-      title: `¿Confirmar ${
-        enModoEdicion ? "actualización" : "creación"
-      } del proveedor?`,
-      // --- ¡CORRECCIÓN! 'htmlContent' se cambió a 'html' ---
-      html: `
-                <div style="text-align: left; margin-top: 1rem;">
-                    <p>Se ${
-                      enModoEdicion ? "actualizará" : "registrará"
-                    } el proveedor con NIT/Documento <strong>${formData.nit}${
-        formData.dv ? `-${formData.dv}` : ""
-      }</strong>.</p>
-                    <p>Se ${
-                      enModoEdicion ? "mantendrán o reemplazarán" : "adjuntarán"
-                    } 5 documentos obligatorios y 1 opcional.</p>
-                </div>
-            `,
-      icon: "question",
-    };
+      const razonSocialDisplay = formData.razon_social || buildNombreNatural();
+      const confirmResult = await Swal.fire({
+        title: "¿Finalizar registro?",
+        html: `
+          <div style="text-align: left; margin-top: 1rem;">
+            <p>Se registrará el proveedor <strong>${razonSocialDisplay}</strong> con NIT/Documento <strong>${
+          formData.nit
+        }${formData.dv ? `-${formData.dv}` : ""}</strong>.</p>
+            <p>Se adjuntarán 5 documentos obligatorios y 1 opcional.</p>
+          </div>
+        `,
+        icon: "question",
+        customClass: SWAL_CUSTOM_CLASSES,
+        showCancelButton: true,
+        confirmButtonText: "✅ Sí, finalizar",
+        cancelButtonText: "❌ Cancelar",
+      });
 
-    // --- ¡AQUÍ ESTÁ EL CAMBIO! ---
-    const successMessage = enModoEdicion
-      ? "Proveedor actualizado correctamente."
-      : "Proveedor creado correctamente.";
+      if (!confirmResult.isConfirmed) return;
 
-    await handleApiSubmit(confirmationDetails, successMessage, payload);
-    // -----------------------------
+      setIsSubmitting(true);
+      setLoading(true);
+      const savingToast = toast.loading(
+        "Subiendo documentos y guardando datos..."
+      );
+
+      const folderPath = `${FOLDER_BASE}/proveedor_${Date.now()}_${Math.random()
+        .toString(36)
+        .substring(2, 8)}`;
+
+      try {
+        const uploadFileOrKeepUrl = (file, fileName) => {
+          if (file instanceof File) {
+            return uploadFileToBucket({
+              bucket: BUCKET_NAME,
+              path: `${folderPath}/${fileName}.${file.name.split(".").pop()}`,
+              file,
+            });
+          }
+          return Promise.resolve(file);
+        };
+
+        const [
+          url_rut,
+          url_certificacion_bancaria,
+          url_doc_identidad_rep_legal,
+          url_certificado_sagrilaft,
+          url_composicion_accionaria,
+          url_camara_comercio,
+        ] = await Promise.all([
+          uploadFileOrKeepUrl(rut, "rut"),
+          uploadFileOrKeepUrl(certificacionBancaria, "certificacion_bancaria"),
+          uploadFileOrKeepUrl(docIdentidadRepLegal, "doc_identidad_rep_legal"),
+          uploadFileOrKeepUrl(certificadoSagrilaft, "certificado_sagrilaft"),
+          uploadFileOrKeepUrl(composicionAccionaria, "composicion_accionaria"),
+          uploadFileOrKeepUrl(camaraComercio, "camara_comercio"),
+        ]);
+
+        // Construir payload completo con datos y documentos
+        const payload = buildProviderPayload();
+        const finalPayload = {
+          ...payload,
+          url_rut,
+          url_camara_comercio,
+          url_certificacion_bancaria,
+          url_doc_identidad_rep_legal,
+          url_certificado_sagrilaft,
+          url_composicion_accionaria,
+        };
+
+        const payloadForRequest = modoPublico
+          ? { ...finalPayload, estado: "pendiente" }
+          : finalPayload;
+
+        // Crear proveedor completo
+        if (modoPublico) {
+          await axios.post(
+            `${
+              import.meta.env.VITE_BACKEND_TRAZABILIDAD_URL
+            }/api/trazabilidad/registro-publico/proveedor/${tokenPublico}`,
+            payloadForRequest,
+            { headers: { "Content-Type": "application/json" } }
+          );
+        } else {
+          await apiTrazabilidad.post(
+            "/trazabilidad/proveedores",
+            payloadForRequest,
+            { headers: { "Content-Type": "application/json" } }
+          );
+        }
+
+        toast.dismiss(savingToast);
+
+        Swal.fire({
+          title: "¡Registro Completo!",
+          text: modoPublico
+            ? "Tu registro ha sido enviado y está pendiente de aprobación."
+            : "Proveedor creado correctamente con todos sus documentos.",
+          icon: "success",
+          customClass: SWAL_CUSTOM_CLASSES,
+          confirmButtonText: "✅ Entendido",
+        });
+
+        resetForm();
+        if (!modoPublico) {
+          fetchHistorial();
+        }
+      } catch (error) {
+        console.error("Error al crear proveedor:", error);
+        const errorMsg = parseApiError(error);
+        toast.update(savingToast, {
+          render: errorMsg,
+          type: "error",
+          isLoading: false,
+          autoClose: 6000,
+        });
+        Swal.fire({
+          icon: "error",
+          title: "Error de Registro",
+          text: errorMsg,
+          customClass: SWAL_CUSTOM_CLASSES,
+        });
+      } finally {
+        setLoading(false);
+        setIsSubmitting(false);
+      }
+    }
   };
 
   // --- (columns no cambia) ---
@@ -1605,824 +1586,892 @@ const CreacionProveedor = () => {
 
   const formulario = (
     <form onSubmit={handleFormSubmit} className="tc-form">
-      <div className="tc-form-separator">
-        <span>Documentos Requeridos y Opcionales</span>
-      </div>
-
-      <div className="tc-form-grid">
-        <FileInput
-          label="RUT"
-          name="rut"
-          file={rut}
-          setFile={setRut}
-          isRequired={true}
-        />
-        <FileInput
-          label="Certificación Bancaria"
-          name="certificacion_bancaria"
-          file={certificacionBancaria}
-          setFile={setCertificacionBancaria}
-          isRequired={true}
-        />
-        <FileInput
-          label="Copia documento representante legal"
-          name="doc_identidad_rep_legal"
-          file={docIdentidadRepLegal}
-          setFile={setDocIdentidadRepLegal}
-          isRequired={true}
-        />
-        <FileInput
-          label="Formato SAGRILAFT firmado por el oficial de cumplimiento"
-          name="certificado_sagrilaft"
-          file={certificadoSagrilaft}
-          setFile={setCertificadoSagrilaft}
-          isRequired={true}
-        />
-        <FileInput
-          label="Composición Accionaria"
-          name="composicion_accionaria"
-          file={composicionAccionaria}
-          setFile={setComposicionAccionaria}
-          isRequired={true}
-        />
-        <FileInput
-          label="Cámara de Comercio (Opcional)"
-          name="camara_comercio"
-          file={camaraComercio}
-          setFile={setCamaraComercio}
-          isRequired={false}
-        />
-      </div>
-
-      {(formErrors.rut ||
-        formErrors.certificacionBancaria ||
-        formErrors.docIdentidadRepLegal ||
-        formErrors.certificadoSagrilaft ||
-        formErrors.composicionAccionaria) && (
-        <div className="tc-error-summary">
-          {formErrors.rut && (
-            <span className="tc-validation-error">⚠️ {formErrors.rut}</span>
-          )}
-          {formErrors.certificacionBancaria && (
-            <span className="tc-validation-error">
-              ⚠️ {formErrors.certificacionBancaria}
-            </span>
-          )}
-          {formErrors.docIdentidadRepLegal && (
-            <span className="tc-validation-error">
-              ⚠️ {formErrors.docIdentidadRepLegal}
-            </span>
-          )}
-          {formErrors.certificadoSagrilaft && (
-            <span className="tc-validation-error">
-              ⚠️ {formErrors.certificadoSagrilaft}
-            </span>
-          )}
-          {formErrors.composicionAccionaria && (
-            <span className="tc-validation-error">
-              ⚠️ {formErrors.composicionAccionaria}
-            </span>
-          )}
-        </div>
-      )}
-
-      <div className="tc-form-separator">
-        <span>Información General</span>
-      </div>
-
-      <div className="tc-form-grid grid-2-cols">
-        <div className="tc-form-group">
-          <label htmlFor="fecha_diligenciamiento">
-            Fecha de diligenciamiento<span className="required">*</span>
-          </label>
-          <input
-            id="fecha_diligenciamiento"
-            name="fecha_diligenciamiento"
-            type="date"
-            max={todayIso}
-            value={formData.fecha_diligenciamiento || ""}
-            readOnly
-            className={`tc-form-input ${
-              formErrors.fecha_diligenciamiento ? "is-invalid" : ""
-            }`}
-          />
-          <p className="tc-field-helper">
-            Esta fecha se asigna automáticamente con el día actual.
-          </p>
-          {formErrors.fecha_diligenciamiento && (
-            <span className="tc-validation-error">
-              {formErrors.fecha_diligenciamiento}
-            </span>
-          )}
-        </div>
-
-        <div className="tc-form-group">
-          <label htmlFor="tipo_regimen">
-            Tipo de régimen<span className="required">*</span>
-          </label>
-          <select
-            id="tipo_regimen"
-            name="tipo_regimen"
-            value={formData.tipo_regimen}
-            onChange={handleFieldChange}
-            className={`tc-form-input ${
-              formErrors.tipo_regimen ? "is-invalid" : ""
-            }`}
-          >
-            <option value="">Seleccione...</option>
-            {TIPO_REGIMEN_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-          {formErrors.tipo_regimen && (
-            <span className="tc-validation-error">
-              {formErrors.tipo_regimen}
-            </span>
-          )}
-        </div>
-
-        <div className="tc-form-group">
-          <label htmlFor="tipo_documento">
-            Tipo de documento<span className="required">*</span>
-          </label>
-          <select
-            id="tipo_documento"
-            name="tipo_documento"
-            value={formData.tipo_documento}
-            onChange={handleFieldChange}
-            className={`tc-form-input ${
-              formErrors.tipo_documento ? "is-invalid" : ""
-            }`}
-            disabled={isPersonaJuridica}
-          >
-            <option value="">Seleccione...</option>
-            {DOCUMENT_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-          {formErrors.tipo_documento && (
-            <span className="tc-validation-error">
-              {formErrors.tipo_documento}
-            </span>
-          )}
-        </div>
-
-        <div className="tc-form-group">
-          <label htmlFor="nit">
-            {documentoEsNit ? "Número NIT" : "Número de documento"}
-            <span className="required">*</span>
-          </label>
-          <input
-            id="nit"
-            name="nit"
-            type="text"
-            value={formData.nit}
-            onChange={handleFieldChange}
-            className={`tc-form-input ${formErrors.nit ? "is-invalid" : ""}`}
-          />
-          {formErrors.nit && (
-            <span className="tc-validation-error">{formErrors.nit}</span>
-          )}
-        </div>
-
-        {documentoEsNit && (
-          <div className="tc-form-group">
-            <label htmlFor="dv">
-              Dígito de verificación<span className="required">*</span>
-            </label>
-            <input
-              id="dv"
-              name="dv"
-              type="text"
-              maxLength={1}
-              value={formData.dv}
-              onChange={handleFieldChange}
-              className={`tc-form-input ${formErrors.dv ? "is-invalid" : ""}`}
-            />
-            {formErrors.dv && (
-              <span className="tc-validation-error">{formErrors.dv}</span>
-            )}
-          </div>
-        )}
-      </div>
-
-      {isPersonaJuridica && (
+      {/* PASO 1: FORMULARIO DE DATOS */}
+      {pasoActual === 1 && (
         <>
           <div className="tc-form-separator">
-            <span>Datos Persona Jurídica</span>
+            <span>Información General</span>
           </div>
+
           <div className="tc-form-grid grid-2-cols">
             <div className="tc-form-group">
-              <label htmlFor="razon_social">
-                Razón social<span className="required">*</span>
+              <label htmlFor="fecha_diligenciamiento">
+                Fecha de diligenciamiento<span className="required">*</span>
               </label>
               <input
-                id="razon_social"
-                name="razon_social"
-                type="text"
-                value={formData.razon_social}
-                onChange={handleFieldChange}
+                id="fecha_diligenciamiento"
+                name="fecha_diligenciamiento"
+                type="date"
+                max={todayIso}
+                value={formData.fecha_diligenciamiento || ""}
+                readOnly
                 className={`tc-form-input ${
-                  formErrors.razon_social ? "is-invalid" : ""
+                  formErrors.fecha_diligenciamiento ? "is-invalid" : ""
                 }`}
               />
-              {formErrors.razon_social && (
+              <p className="tc-field-helper">
+                Esta fecha se asigna automáticamente con el día actual.
+              </p>
+              {formErrors.fecha_diligenciamiento && (
                 <span className="tc-validation-error">
-                  {formErrors.razon_social}
+                  {formErrors.fecha_diligenciamiento}
                 </span>
               )}
             </div>
 
             <div className="tc-form-group">
-              <label htmlFor="nombre_establecimiento">
-                Nombre comercial<span className="required">*</span>
-              </label>
-              <input
-                id="nombre_establecimiento"
-                name="nombre_establecimiento"
-                type="text"
-                value={formData.nombre_establecimiento}
-                onChange={handleFieldChange}
-                className={`tc-form-input ${
-                  formErrors.nombre_establecimiento ? "is-invalid" : ""
-                }`}
-              />
-              {formErrors.nombre_establecimiento && (
-                <span className="tc-validation-error">
-                  {formErrors.nombre_establecimiento}
-                </span>
-              )}
-            </div>
-
-            <div className="tc-form-group">
-              <label htmlFor="rep_legal_nombre">
-                Nombre representante legal<span className="required">*</span>
-              </label>
-              <input
-                id="rep_legal_nombre"
-                name="rep_legal_nombre"
-                type="text"
-                value={formData.rep_legal_nombre}
-                onChange={handleFieldChange}
-                className={`tc-form-input ${
-                  formErrors.rep_legal_nombre ? "is-invalid" : ""
-                }`}
-              />
-              {formErrors.rep_legal_nombre && (
-                <span className="tc-validation-error">
-                  {formErrors.rep_legal_nombre}
-                </span>
-              )}
-            </div>
-
-            <div className="tc-form-group">
-              <label htmlFor="rep_legal_apellidos">
-                Apellidos representante legal<span className="required">*</span>
-              </label>
-              <input
-                id="rep_legal_apellidos"
-                name="rep_legal_apellidos"
-                type="text"
-                value={formData.rep_legal_apellidos}
-                onChange={handleFieldChange}
-                className={`tc-form-input ${
-                  formErrors.rep_legal_apellidos ? "is-invalid" : ""
-                }`}
-              />
-              {formErrors.rep_legal_apellidos && (
-                <span className="tc-validation-error">
-                  {formErrors.rep_legal_apellidos}
-                </span>
-              )}
-            </div>
-
-            <div className="tc-form-group">
-              <label htmlFor="rep_legal_tipo_doc">
-                Tipo documento representante<span className="required">*</span>
+              <label htmlFor="tipo_regimen">
+                Tipo de régimen<span className="required">*</span>
               </label>
               <select
-                id="rep_legal_tipo_doc"
-                name="rep_legal_tipo_doc"
-                value={formData.rep_legal_tipo_doc}
+                id="tipo_regimen"
+                name="tipo_regimen"
+                value={formData.tipo_regimen}
                 onChange={handleFieldChange}
                 className={`tc-form-input ${
-                  formErrors.rep_legal_tipo_doc ? "is-invalid" : ""
+                  formErrors.tipo_regimen ? "is-invalid" : ""
                 }`}
               >
                 <option value="">Seleccione...</option>
-                {DOCUMENT_OPTIONS.filter(
-                  (option) => option.value !== "NIT"
-                ).map((option) => (
+                {TIPO_REGIMEN_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
                     {option.label}
                   </option>
                 ))}
               </select>
-              {formErrors.rep_legal_tipo_doc && (
+              {formErrors.tipo_regimen && (
                 <span className="tc-validation-error">
-                  {formErrors.rep_legal_tipo_doc}
+                  {formErrors.tipo_regimen}
                 </span>
               )}
             </div>
 
             <div className="tc-form-group">
-              <label htmlFor="rep_legal_num_doc">
-                Número documento representante
+              <label htmlFor="tipo_documento">
+                Tipo de documento<span className="required">*</span>
+              </label>
+              <select
+                id="tipo_documento"
+                name="tipo_documento"
+                value={formData.tipo_documento}
+                onChange={handleFieldChange}
+                className={`tc-form-input ${
+                  formErrors.tipo_documento ? "is-invalid" : ""
+                }`}
+                disabled={isPersonaJuridica}
+              >
+                <option value="">Seleccione...</option>
+                {DOCUMENT_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              {formErrors.tipo_documento && (
+                <span className="tc-validation-error">
+                  {formErrors.tipo_documento}
+                </span>
+              )}
+            </div>
+
+            <div className="tc-form-group">
+              <label htmlFor="nit">
+                {documentoEsNit ? "Número NIT" : "Número de documento"}
                 <span className="required">*</span>
               </label>
               <input
-                id="rep_legal_num_doc"
-                name="rep_legal_num_doc"
+                id="nit"
+                name="nit"
                 type="text"
-                value={formData.rep_legal_num_doc}
+                value={formData.nit}
                 onChange={handleFieldChange}
                 className={`tc-form-input ${
-                  formErrors.rep_legal_num_doc ? "is-invalid" : ""
+                  formErrors.nit ? "is-invalid" : ""
                 }`}
               />
-              {formErrors.rep_legal_num_doc && (
-                <span className="tc-validation-error">
-                  {formErrors.rep_legal_num_doc}
-                </span>
+              {formErrors.nit && (
+                <span className="tc-validation-error">{formErrors.nit}</span>
               )}
             </div>
-          </div>
-        </>
-      )}
 
-      {isPersonaNatural && (
-        <>
-          <div className="tc-form-separator">
-            <span>Datos Persona Natural</span>
+            {documentoEsNit && (
+              <div className="tc-form-group">
+                <label htmlFor="dv">
+                  Dígito de verificación<span className="required">*</span>
+                </label>
+                <input
+                  id="dv"
+                  name="dv"
+                  type="text"
+                  maxLength={1}
+                  value={formData.dv}
+                  onChange={handleFieldChange}
+                  className={`tc-form-input ${
+                    formErrors.dv ? "is-invalid" : ""
+                  }`}
+                />
+                {formErrors.dv && (
+                  <span className="tc-validation-error">{formErrors.dv}</span>
+                )}
+              </div>
+            )}
           </div>
+
+          {isPersonaJuridica && (
+            <>
+              <div className="tc-form-separator">
+                <span>Datos Persona Jurídica</span>
+              </div>
+              <div className="tc-form-grid grid-2-cols">
+                <div className="tc-form-group">
+                  <label htmlFor="razon_social">
+                    Razón social<span className="required">*</span>
+                  </label>
+                  <input
+                    id="razon_social"
+                    name="razon_social"
+                    type="text"
+                    value={formData.razon_social}
+                    onChange={handleFieldChange}
+                    className={`tc-form-input ${
+                      formErrors.razon_social ? "is-invalid" : ""
+                    }`}
+                  />
+                  {formErrors.razon_social && (
+                    <span className="tc-validation-error">
+                      {formErrors.razon_social}
+                    </span>
+                  )}
+                </div>
+
+                <div className="tc-form-group">
+                  <label htmlFor="nombre_establecimiento">
+                    Nombre comercial<span className="required">*</span>
+                  </label>
+                  <input
+                    id="nombre_establecimiento"
+                    name="nombre_establecimiento"
+                    type="text"
+                    value={formData.nombre_establecimiento}
+                    onChange={handleFieldChange}
+                    className={`tc-form-input ${
+                      formErrors.nombre_establecimiento ? "is-invalid" : ""
+                    }`}
+                  />
+                  {formErrors.nombre_establecimiento && (
+                    <span className="tc-validation-error">
+                      {formErrors.nombre_establecimiento}
+                    </span>
+                  )}
+                </div>
+
+                <div className="tc-form-group">
+                  <label htmlFor="rep_legal_nombre">
+                    Nombre representante legal
+                    <span className="required">*</span>
+                  </label>
+                  <input
+                    id="rep_legal_nombre"
+                    name="rep_legal_nombre"
+                    type="text"
+                    value={formData.rep_legal_nombre}
+                    onChange={handleFieldChange}
+                    className={`tc-form-input ${
+                      formErrors.rep_legal_nombre ? "is-invalid" : ""
+                    }`}
+                  />
+                  {formErrors.rep_legal_nombre && (
+                    <span className="tc-validation-error">
+                      {formErrors.rep_legal_nombre}
+                    </span>
+                  )}
+                </div>
+
+                <div className="tc-form-group">
+                  <label htmlFor="rep_legal_apellidos">
+                    Apellidos representante legal
+                    <span className="required">*</span>
+                  </label>
+                  <input
+                    id="rep_legal_apellidos"
+                    name="rep_legal_apellidos"
+                    type="text"
+                    value={formData.rep_legal_apellidos}
+                    onChange={handleFieldChange}
+                    className={`tc-form-input ${
+                      formErrors.rep_legal_apellidos ? "is-invalid" : ""
+                    }`}
+                  />
+                  {formErrors.rep_legal_apellidos && (
+                    <span className="tc-validation-error">
+                      {formErrors.rep_legal_apellidos}
+                    </span>
+                  )}
+                </div>
+
+                <div className="tc-form-group">
+                  <label htmlFor="rep_legal_tipo_doc">
+                    Tipo documento representante
+                    <span className="required">*</span>
+                  </label>
+                  <select
+                    id="rep_legal_tipo_doc"
+                    name="rep_legal_tipo_doc"
+                    value={formData.rep_legal_tipo_doc}
+                    onChange={handleFieldChange}
+                    className={`tc-form-input ${
+                      formErrors.rep_legal_tipo_doc ? "is-invalid" : ""
+                    }`}
+                  >
+                    <option value="">Seleccione...</option>
+                    {DOCUMENT_OPTIONS.filter(
+                      (option) => option.value !== "NIT"
+                    ).map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                  {formErrors.rep_legal_tipo_doc && (
+                    <span className="tc-validation-error">
+                      {formErrors.rep_legal_tipo_doc}
+                    </span>
+                  )}
+                </div>
+
+                <div className="tc-form-group">
+                  <label htmlFor="rep_legal_num_doc">
+                    Número documento representante
+                    <span className="required">*</span>
+                  </label>
+                  <input
+                    id="rep_legal_num_doc"
+                    name="rep_legal_num_doc"
+                    type="text"
+                    value={formData.rep_legal_num_doc}
+                    onChange={handleFieldChange}
+                    className={`tc-form-input ${
+                      formErrors.rep_legal_num_doc ? "is-invalid" : ""
+                    }`}
+                  />
+                  {formErrors.rep_legal_num_doc && (
+                    <span className="tc-validation-error">
+                      {formErrors.rep_legal_num_doc}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
+
+          {isPersonaNatural && (
+            <>
+              <div className="tc-form-separator">
+                <span>Datos Persona Natural</span>
+              </div>
+              <div className="tc-form-grid grid-2-cols">
+                <div className="tc-form-group">
+                  <label htmlFor="primer_nombre">
+                    Primer nombre<span className="required">*</span>
+                  </label>
+                  <input
+                    id="primer_nombre"
+                    name="primer_nombre"
+                    type="text"
+                    value={formData.primer_nombre}
+                    onChange={handleFieldChange}
+                    className={`tc-form-input ${
+                      formErrors.primer_nombre ? "is-invalid" : ""
+                    }`}
+                  />
+                  {formErrors.primer_nombre && (
+                    <span className="tc-validation-error">
+                      {formErrors.primer_nombre}
+                    </span>
+                  )}
+                </div>
+
+                <div className="tc-form-group">
+                  <label htmlFor="segundo_nombre">Segundo nombre</label>
+                  <input
+                    id="segundo_nombre"
+                    name="segundo_nombre"
+                    type="text"
+                    value={formData.segundo_nombre}
+                    onChange={handleFieldChange}
+                    className="tc-form-input"
+                  />
+                </div>
+
+                <div className="tc-form-group">
+                  <label htmlFor="primer_apellido">
+                    Primer apellido<span className="required">*</span>
+                  </label>
+                  <input
+                    id="primer_apellido"
+                    name="primer_apellido"
+                    type="text"
+                    value={formData.primer_apellido}
+                    onChange={handleFieldChange}
+                    className={`tc-form-input ${
+                      formErrors.primer_apellido ? "is-invalid" : ""
+                    }`}
+                  />
+                  {formErrors.primer_apellido && (
+                    <span className="tc-validation-error">
+                      {formErrors.primer_apellido}
+                    </span>
+                  )}
+                </div>
+
+                <div className="tc-form-group">
+                  <label htmlFor="segundo_apellido">Segundo apellido</label>
+                  <input
+                    id="segundo_apellido"
+                    name="segundo_apellido"
+                    type="text"
+                    value={formData.segundo_apellido}
+                    onChange={handleFieldChange}
+                    className="tc-form-input"
+                  />
+                </div>
+              </div>
+            </>
+          )}
+
+          <div className="tc-form-separator">
+            <span>Actividad Económica y Ubicación</span>
+          </div>
+
           <div className="tc-form-grid grid-2-cols">
             <div className="tc-form-group">
-              <label htmlFor="primer_nombre">
-                Primer nombre<span className="required">*</span>
+              <label htmlFor="codigo_ciiu">
+                Actividad económica (CIIU)<span className="required">*</span>
               </label>
-              <input
-                id="primer_nombre"
-                name="primer_nombre"
-                type="text"
-                value={formData.primer_nombre}
-                onChange={handleFieldChange}
-                className={`tc-form-input ${
-                  formErrors.primer_nombre ? "is-invalid" : ""
-                }`}
+              <SearchableSelect
+                id="codigo_ciiu"
+                value={formData.codigo_ciiu}
+                onChange={handleCiiuChange}
+                options={ciiuOptions}
+                placeholder="Buscar por código o descripción..."
+                isInvalid={Boolean(formErrors.codigo_ciiu)}
               />
-              {formErrors.primer_nombre && (
+              {formData.descripcion_ciiu && (
+                <p className="tc-field-helper">{formData.descripcion_ciiu}</p>
+              )}
+              {formErrors.codigo_ciiu && (
                 <span className="tc-validation-error">
-                  {formErrors.primer_nombre}
+                  {formErrors.codigo_ciiu}
                 </span>
               )}
             </div>
 
             <div className="tc-form-group">
-              <label htmlFor="segundo_nombre">Segundo nombre</label>
-              <input
-                id="segundo_nombre"
-                name="segundo_nombre"
-                type="text"
-                value={formData.segundo_nombre}
-                onChange={handleFieldChange}
-                className="tc-form-input"
-              />
-            </div>
-
-            <div className="tc-form-group">
-              <label htmlFor="primer_apellido">
-                Primer apellido<span className="required">*</span>
+              <label htmlFor="direccion_domicilio">
+                Dirección domicilio<span className="required">*</span>
               </label>
               <input
-                id="primer_apellido"
-                name="primer_apellido"
+                id="direccion_domicilio"
+                name="direccion_domicilio"
                 type="text"
-                value={formData.primer_apellido}
+                value={formData.direccion_domicilio}
                 onChange={handleFieldChange}
                 className={`tc-form-input ${
-                  formErrors.primer_apellido ? "is-invalid" : ""
+                  formErrors.direccion_domicilio ? "is-invalid" : ""
                 }`}
               />
-              {formErrors.primer_apellido && (
+              {formErrors.direccion_domicilio && (
                 <span className="tc-validation-error">
-                  {formErrors.primer_apellido}
+                  {formErrors.direccion_domicilio}
                 </span>
               )}
             </div>
 
             <div className="tc-form-group">
-              <label htmlFor="segundo_apellido">Segundo apellido</label>
-              <input
-                id="segundo_apellido"
-                name="segundo_apellido"
-                type="text"
-                value={formData.segundo_apellido}
-                onChange={handleFieldChange}
-                className="tc-form-input"
+              <label htmlFor="departamento">
+                Departamento<span className="required">*</span>
+              </label>
+              <SearchableSelect
+                id="departamento"
+                value={formData.departamento_codigo}
+                onChange={handleDepartmentChange}
+                options={departmentOptions}
+                placeholder="Buscar departamento..."
+                isInvalid={Boolean(
+                  formErrors.departamento || formErrors.departamento_codigo
+                )}
               />
+              {formErrors.departamento && (
+                <span className="tc-validation-error">
+                  {formErrors.departamento}
+                </span>
+              )}
             </div>
+
+            <div className="tc-form-group">
+              <label htmlFor="ciudad">
+                Ciudad<span className="required">*</span>
+              </label>
+              <SearchableSelect
+                id="ciudad"
+                value={formData.ciudad_codigo}
+                onChange={handleCityChange}
+                options={selectedDepartment ? cityOptions : []}
+                placeholder={
+                  selectedDepartment
+                    ? "Buscar ciudad..."
+                    : "Selecciona un departamento"
+                }
+                disabled={!selectedDepartment}
+                noOptionsText={
+                  selectedDepartment
+                    ? "Sin coincidencias"
+                    : "Selecciona primero un departamento"
+                }
+                isInvalid={Boolean(
+                  formErrors.ciudad || formErrors.ciudad_codigo
+                )}
+              />
+              {formErrors.ciudad && (
+                <span className="tc-validation-error">{formErrors.ciudad}</span>
+              )}
+            </div>
+          </div>
+
+          <div className="tc-form-separator">
+            <span>Contacto y Notificación</span>
+          </div>
+
+          <div className="tc-form-grid grid-2-cols">
+            <div className="tc-form-group">
+              <label htmlFor="email_factura_electronica">
+                Correo factura electrónica<span className="required">*</span>
+              </label>
+              <input
+                id="email_factura_electronica"
+                name="email_factura_electronica"
+                type="email"
+                value={formData.email_factura_electronica}
+                onChange={handleFieldChange}
+                className={`tc-form-input ${
+                  formErrors.email_factura_electronica ? "is-invalid" : ""
+                }`}
+              />
+              {formErrors.email_factura_electronica && (
+                <span className="tc-validation-error">
+                  {formErrors.email_factura_electronica}
+                </span>
+              )}
+            </div>
+
+            <div className="tc-form-group">
+              <label htmlFor="email_contacto">
+                Correo de contacto<span className="required">*</span>
+              </label>
+              <input
+                id="email_contacto"
+                name="email_contacto"
+                type="email"
+                value={formData.email_contacto}
+                onChange={handleFieldChange}
+                className={`tc-form-input ${
+                  formErrors.email_contacto ? "is-invalid" : ""
+                }`}
+              />
+              {formErrors.email_contacto && (
+                <span className="tc-validation-error">
+                  {formErrors.email_contacto}
+                </span>
+              )}
+            </div>
+
+            <div className="tc-form-group">
+              <label htmlFor="nombre_contacto">
+                Nombre de contacto
+                {isPersonaJuridica && <span className="required">*</span>}
+              </label>
+              <input
+                id="nombre_contacto"
+                name="nombre_contacto"
+                type="text"
+                value={formData.nombre_contacto}
+                onChange={handleFieldChange}
+                className={`tc-form-input ${
+                  formErrors.nombre_contacto ? "is-invalid" : ""
+                }`}
+              />
+              {formErrors.nombre_contacto && (
+                <span className="tc-validation-error">
+                  {formErrors.nombre_contacto}
+                </span>
+              )}
+            </div>
+
+            <div className="tc-form-group">
+              <label htmlFor="telefono_contacto">
+                Teléfono de contacto<span className="required">*</span>
+              </label>
+              <input
+                id="telefono_contacto"
+                name="telefono_contacto"
+                type="tel"
+                value={formData.telefono_contacto}
+                onChange={handleFieldChange}
+                className={`tc-form-input ${
+                  formErrors.telefono_contacto ? "is-invalid" : ""
+                }`}
+              />
+              {formErrors.telefono_contacto && (
+                <span className="tc-validation-error">
+                  {formErrors.telefono_contacto}
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div className="tc-form-separator">
+            <span>Declaraciones y Tratamiento de Datos</span>
+          </div>
+
+          <div className="tc-form-grid grid-2-cols">
+            <div className="tc-form-group">
+              <p className="tc-radio-label">
+                ¿Es PEP o asociado?<span className="required">*</span>
+              </p>
+              <div
+                className={`tc-radio-group ${
+                  formErrors.declara_pep ? "has-error" : ""
+                }`}
+              >
+                {RESPUESTA_PREGUNTA.map((option) => {
+                  const isSelected = formData.declara_pep === option.value;
+                  return (
+                    <label
+                      key={option.value}
+                      className={`tc-radio-option ${
+                        isSelected ? "is-selected" : ""
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="declara_pep"
+                        value={option.value}
+                        checked={isSelected}
+                        onChange={handleFieldChange}
+                      />
+                      <span>{option.label}</span>
+                    </label>
+                  );
+                })}
+              </div>
+              {formErrors.declara_pep && (
+                <span className="tc-validation-error">
+                  {formErrors.declara_pep}
+                </span>
+              )}
+            </div>
+
+            <div className="tc-form-group">
+              <p className="tc-radio-label">
+                ¿Maneja recursos públicos?<span className="required">*</span>
+              </p>
+              <div
+                className={`tc-radio-group ${
+                  formErrors.declara_recursos_publicos ? "has-error" : ""
+                }`}
+              >
+                {RESPUESTA_PREGUNTA.map((option) => {
+                  const isSelected =
+                    formData.declara_recursos_publicos === option.value;
+                  return (
+                    <label
+                      key={option.value}
+                      className={`tc-radio-option ${
+                        isSelected ? "is-selected" : ""
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="declara_recursos_publicos"
+                        value={option.value}
+                        checked={isSelected}
+                        onChange={handleFieldChange}
+                      />
+                      <span>{option.label}</span>
+                    </label>
+                  );
+                })}
+              </div>
+              {formErrors.declara_recursos_publicos && (
+                <span className="tc-validation-error">
+                  {formErrors.declara_recursos_publicos}
+                </span>
+              )}
+            </div>
+
+            <div className="tc-form-group">
+              <p className="tc-radio-label">
+                ¿Está al día en obligaciones tributarias?
+                <span className="required">*</span>
+              </p>
+              <div
+                className={`tc-radio-group ${
+                  formErrors.declara_obligaciones_tributarias ? "has-error" : ""
+                }`}
+              >
+                {RESPUESTA_PREGUNTA.map((option) => {
+                  const isSelected =
+                    formData.declara_obligaciones_tributarias === option.value;
+                  return (
+                    <label
+                      key={option.value}
+                      className={`tc-radio-option ${
+                        isSelected ? "is-selected" : ""
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="declara_obligaciones_tributarias"
+                        value={option.value}
+                        checked={isSelected}
+                        onChange={handleFieldChange}
+                      />
+                      <span>{option.label}</span>
+                    </label>
+                  );
+                })}
+              </div>
+              {formErrors.declara_obligaciones_tributarias && (
+                <span className="tc-validation-error">
+                  {formErrors.declara_obligaciones_tributarias}
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div
+            className={`tc-terms-group ${
+              formErrors.aceptaTerminos ? "has-error" : ""
+            }`}
+          >
+            <input
+              id="aceptaTerminos"
+              type="checkbox"
+              checked={aceptaTerminos}
+              onChange={(event) => {
+                setAceptaTerminos(event.target.checked);
+                if (event.target.checked) {
+                  setFormErrors((prev) => ({
+                    ...prev,
+                    aceptaTerminos: undefined,
+                  }));
+                }
+              }}
+            />
+            <div className="tc-terms-text">
+              <p className="tc-terms-title">
+                Aceptar términos y condiciones de envío de información.
+                <span className="tc-terms-links">
+                  <Link
+                    to="/politicas"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="tc-terms-link"
+                  >
+                    Tratamiento de datos
+                  </Link>
+                  <span className="tc-terms-divider">•</span>
+                  <Link
+                    to="/declaracion-origen-fondos"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="tc-terms-link"
+                  >
+                    Declaraciones legales
+                  </Link>
+                </span>
+              </p>
+              <label htmlFor="aceptaTerminos" className="tc-terms-label">
+                He leído y estoy de acuerdo con las políticas y lineamientos
+                generales de protección de datos personales, SAGRILAFT y las
+                declaraciones de origen de fondos, transparencia y gestión de
+                riesgos de SUPERMERCADOS MERKAHORRO S.A.S.
+              </label>
+            </div>
+          </div>
+          {formErrors.aceptaTerminos && (
+            <span className="tc-validation-error">
+              {formErrors.aceptaTerminos}
+            </span>
+          )}
+
+          <div className="tc-form-actions">
+            <button
+              type="submit"
+              className={`tc-submit-btn ${isSubmitting ? "submitting" : ""}`}
+              disabled={loading || isSubmitting}
+            >
+              {loading || isSubmitting ? (
+                <FaSpinner className="tc-spinner" />
+              ) : (
+                <FaUserPlus />
+              )}
+              {loading || isSubmitting
+                ? "Guardando datos..."
+                : "Continuar a Documentos →"}
+            </button>
           </div>
         </>
       )}
 
-      <div className="tc-form-separator">
-        <span>Actividad Económica y Ubicación</span>
-      </div>
-
-      <div className="tc-form-grid grid-2-cols">
-        <div className="tc-form-group">
-          <label htmlFor="codigo_ciiu">
-            Actividad económica (CIIU)<span className="required">*</span>
-          </label>
-          <SearchableSelect
-            id="codigo_ciiu"
-            value={formData.codigo_ciiu}
-            onChange={handleCiiuChange}
-            options={ciiuOptions}
-            placeholder="Buscar por código o descripción..."
-            isInvalid={Boolean(formErrors.codigo_ciiu)}
-          />
-          {formData.descripcion_ciiu && (
-            <p className="tc-field-helper">{formData.descripcion_ciiu}</p>
-          )}
-          {formErrors.codigo_ciiu && (
-            <span className="tc-validation-error">
-              {formErrors.codigo_ciiu}
-            </span>
-          )}
-        </div>
-
-        <div className="tc-form-group">
-          <label htmlFor="direccion_domicilio">
-            Dirección domicilio<span className="required">*</span>
-          </label>
-          <input
-            id="direccion_domicilio"
-            name="direccion_domicilio"
-            type="text"
-            value={formData.direccion_domicilio}
-            onChange={handleFieldChange}
-            className={`tc-form-input ${
-              formErrors.direccion_domicilio ? "is-invalid" : ""
-            }`}
-          />
-          {formErrors.direccion_domicilio && (
-            <span className="tc-validation-error">
-              {formErrors.direccion_domicilio}
-            </span>
-          )}
-        </div>
-
-        <div className="tc-form-group">
-          <label htmlFor="departamento">
-            Departamento<span className="required">*</span>
-          </label>
-          <SearchableSelect
-            id="departamento"
-            value={formData.departamento_codigo}
-            onChange={handleDepartmentChange}
-            options={departmentOptions}
-            placeholder="Buscar departamento..."
-            isInvalid={Boolean(
-              formErrors.departamento || formErrors.departamento_codigo
-            )}
-          />
-          {formErrors.departamento && (
-            <span className="tc-validation-error">
-              {formErrors.departamento}
-            </span>
-          )}
-        </div>
-
-        <div className="tc-form-group">
-          <label htmlFor="ciudad">
-            Ciudad<span className="required">*</span>
-          </label>
-          <SearchableSelect
-            id="ciudad"
-            value={formData.ciudad_codigo}
-            onChange={handleCityChange}
-            options={selectedDepartment ? cityOptions : []}
-            placeholder={
-              selectedDepartment
-                ? "Buscar ciudad..."
-                : "Selecciona un departamento"
-            }
-            disabled={!selectedDepartment}
-            noOptionsText={
-              selectedDepartment
-                ? "Sin coincidencias"
-                : "Selecciona primero un departamento"
-            }
-            isInvalid={Boolean(formErrors.ciudad || formErrors.ciudad_codigo)}
-          />
-          {formErrors.ciudad && (
-            <span className="tc-validation-error">{formErrors.ciudad}</span>
-          )}
-        </div>
-      </div>
-
-      <div className="tc-form-separator">
-        <span>Contacto y Notificación</span>
-      </div>
-
-      <div className="tc-form-grid grid-2-cols">
-        <div className="tc-form-group">
-          <label htmlFor="email_factura_electronica">
-            Correo factura electrónica<span className="required">*</span>
-          </label>
-          <input
-            id="email_factura_electronica"
-            name="email_factura_electronica"
-            type="email"
-            value={formData.email_factura_electronica}
-            onChange={handleFieldChange}
-            className={`tc-form-input ${
-              formErrors.email_factura_electronica ? "is-invalid" : ""
-            }`}
-          />
-          {formErrors.email_factura_electronica && (
-            <span className="tc-validation-error">
-              {formErrors.email_factura_electronica}
-            </span>
-          )}
-        </div>
-
-        <div className="tc-form-group">
-          <label htmlFor="email_contacto">
-            Correo de contacto<span className="required">*</span>
-          </label>
-          <input
-            id="email_contacto"
-            name="email_contacto"
-            type="email"
-            value={formData.email_contacto}
-            onChange={handleFieldChange}
-            className={`tc-form-input ${
-              formErrors.email_contacto ? "is-invalid" : ""
-            }`}
-          />
-          {formErrors.email_contacto && (
-            <span className="tc-validation-error">
-              {formErrors.email_contacto}
-            </span>
-          )}
-        </div>
-
-        <div className="tc-form-group">
-          <label htmlFor="nombre_contacto">
-            Nombre de contacto
-            {isPersonaJuridica && <span className="required">*</span>}
-          </label>
-          <input
-            id="nombre_contacto"
-            name="nombre_contacto"
-            type="text"
-            value={formData.nombre_contacto}
-            onChange={handleFieldChange}
-            className={`tc-form-input ${
-              formErrors.nombre_contacto ? "is-invalid" : ""
-            }`}
-          />
-          {formErrors.nombre_contacto && (
-            <span className="tc-validation-error">
-              {formErrors.nombre_contacto}
-            </span>
-          )}
-        </div>
-
-        <div className="tc-form-group">
-          <label htmlFor="telefono_contacto">
-            Teléfono de contacto<span className="required">*</span>
-          </label>
-          <input
-            id="telefono_contacto"
-            name="telefono_contacto"
-            type="tel"
-            value={formData.telefono_contacto}
-            onChange={handleFieldChange}
-            className={`tc-form-input ${
-              formErrors.telefono_contacto ? "is-invalid" : ""
-            }`}
-          />
-          {formErrors.telefono_contacto && (
-            <span className="tc-validation-error">
-              {formErrors.telefono_contacto}
-            </span>
-          )}
-        </div>
-      </div>
-
-      <div className="tc-form-separator">
-        <span>Declaraciones y Tratamiento de Datos</span>
-      </div>
-
-      <div className="tc-form-grid grid-2-cols">
-        <div className="tc-form-group">
-          <p className="tc-radio-label">
-            ¿Es PEP o asociado?<span className="required">*</span>
-          </p>
-          <div
-            className={`tc-radio-group ${
-              formErrors.declara_pep ? "has-error" : ""
-            }`}
-          >
-            {RESPUESTA_PREGUNTA.map((option) => {
-              const isSelected = formData.declara_pep === option.value;
-              return (
-                <label
-                  key={option.value}
-                  className={`tc-radio-option ${
-                    isSelected ? "is-selected" : ""
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="declara_pep"
-                    value={option.value}
-                    checked={isSelected}
-                    onChange={handleFieldChange}
-                  />
-                  <span>{option.label}</span>
-                </label>
-              );
-            })}
+      {/* PASO 2: CARGA DE DOCUMENTOS */}
+      {pasoActual === 2 && (
+        <>
+          <div className="tc-form-separator">
+            <span>✅ Datos Validados - Ahora Adjunta los Documentos</span>
           </div>
-          {formErrors.declara_pep && (
-            <span className="tc-validation-error">
-              {formErrors.declara_pep}
-            </span>
-          )}
-        </div>
 
-        <div className="tc-form-group">
-          <p className="tc-radio-label">
-            ¿Maneja recursos públicos?<span className="required">*</span>
-          </p>
           <div
-            className={`tc-radio-group ${
-              formErrors.declara_recursos_publicos ? "has-error" : ""
-            }`}
+            className="tc-info-box"
+            style={{
+              marginBottom: "1.5rem",
+              padding: "1rem",
+              background: "#e7f5ff",
+              borderRadius: "8px",
+              border: "1px solid #339af0",
+            }}
           >
-            {RESPUESTA_PREGUNTA.map((option) => {
-              const isSelected =
-                formData.declara_recursos_publicos === option.value;
-              return (
-                <label
-                  key={option.value}
-                  className={`tc-radio-option ${
-                    isSelected ? "is-selected" : ""
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="declara_recursos_publicos"
-                    value={option.value}
-                    checked={isSelected}
-                    onChange={handleFieldChange}
-                  />
-                  <span>{option.label}</span>
-                </label>
-              );
-            })}
+            <p style={{ margin: 0, color: "#1864ab" }}>
+              <strong>Proveedor:</strong>{" "}
+              {formData.razon_social || buildNombreNatural()} <br />
+              <strong>NIT/Documento:</strong> {formData.nit}
+              {formData.dv ? `-${formData.dv}` : ""}
+            </p>
           </div>
-          {formErrors.declara_recursos_publicos && (
-            <span className="tc-validation-error">
-              {formErrors.declara_recursos_publicos}
-            </span>
-          )}
-        </div>
 
-        <div className="tc-form-group">
-          <p className="tc-radio-label">
-            ¿Está al día en obligaciones tributarias?
-            <span className="required">*</span>
-          </p>
-          <div
-            className={`tc-radio-group ${
-              formErrors.declara_obligaciones_tributarias ? "has-error" : ""
-            }`}
-          >
-            {RESPUESTA_PREGUNTA.map((option) => {
-              const isSelected =
-                formData.declara_obligaciones_tributarias === option.value;
-              return (
-                <label
-                  key={option.value}
-                  className={`tc-radio-option ${
-                    isSelected ? "is-selected" : ""
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="declara_obligaciones_tributarias"
-                    value={option.value}
-                    checked={isSelected}
-                    onChange={handleFieldChange}
-                  />
-                  <span>{option.label}</span>
-                </label>
-              );
-            })}
+          <div className="tc-form-separator">
+            <span>Documentos Requeridos y Opcionales</span>
           </div>
-          {formErrors.declara_obligaciones_tributarias && (
-            <span className="tc-validation-error">
-              {formErrors.declara_obligaciones_tributarias}
-            </span>
-          )}
-        </div>
-      </div>
 
-      <div
-        className={`tc-terms-group ${
-          formErrors.aceptaTerminos ? "has-error" : ""
-        }`}
-      >
-        <input
-          id="aceptaTerminos"
-          type="checkbox"
-          checked={aceptaTerminos}
-          onChange={(event) => {
-            setAceptaTerminos(event.target.checked);
-            if (event.target.checked) {
-              setFormErrors((prev) => ({ ...prev, aceptaTerminos: undefined }));
-            }
-          }}
-        />
-        <div className="tc-terms-text">
-          <p className="tc-terms-title">
-            Aceptar términos y condiciones de envío de información.
-            <span className="tc-terms-links">
-              <Link
-                to="/politicas"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="tc-terms-link"
-              >
-                Tratamiento de datos
-              </Link>
-              <span className="tc-terms-divider">•</span>
-              <Link
-                to="/declaracion-origen-fondos"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="tc-terms-link"
-              >
-                Declaraciones legales
-              </Link>
-            </span>
-          </p>
-          <label htmlFor="aceptaTerminos" className="tc-terms-label">
-            He leído y estoy de acuerdo con las políticas y lineamientos
-            generales de protección de datos personales, SAGRILAFT y las
-            declaraciones de origen de fondos, transparencia y gestión de
-            riesgos de SUPERMERCADOS MERKAHORRO S.A.S.
-          </label>
-        </div>
-      </div>
-      {formErrors.aceptaTerminos && (
-        <span className="tc-validation-error">{formErrors.aceptaTerminos}</span>
+          <div className="tc-form-grid">
+            <FileInput
+              label="RUT"
+              name="rut"
+              file={rut}
+              setFile={setRut}
+              isRequired={true}
+            />
+            <FileInput
+              label="Certificación Bancaria"
+              name="certificacion_bancaria"
+              file={certificacionBancaria}
+              setFile={setCertificacionBancaria}
+              isRequired={true}
+            />
+            <FileInput
+              label="Copia documento representante legal"
+              name="doc_identidad_rep_legal"
+              file={docIdentidadRepLegal}
+              setFile={setDocIdentidadRepLegal}
+              isRequired={true}
+            />
+            <FileInput
+              label="Formato SAGRILAFT firmado por el oficial de cumplimiento"
+              name="certificado_sagrilaft"
+              file={certificadoSagrilaft}
+              setFile={setCertificadoSagrilaft}
+              isRequired={true}
+            />
+            <FileInput
+              label="Composición Accionaria"
+              name="composicion_accionaria"
+              file={composicionAccionaria}
+              setFile={setComposicionAccionaria}
+              isRequired={true}
+            />
+            <FileInput
+              label="Cámara de Comercio (Opcional)"
+              name="camara_comercio"
+              file={camaraComercio}
+              setFile={setCamaraComercio}
+              isRequired={false}
+            />
+          </div>
+
+          {(formErrors.rut ||
+            formErrors.certificacionBancaria ||
+            formErrors.docIdentidadRepLegal ||
+            formErrors.certificadoSagrilaft ||
+            formErrors.composicionAccionaria) && (
+            <div className="tc-error-summary">
+              {formErrors.rut && (
+                <span className="tc-validation-error">⚠️ {formErrors.rut}</span>
+              )}
+              {formErrors.certificacionBancaria && (
+                <span className="tc-validation-error">
+                  ⚠️ {formErrors.certificacionBancaria}
+                </span>
+              )}
+              {formErrors.docIdentidadRepLegal && (
+                <span className="tc-validation-error">
+                  ⚠️ {formErrors.docIdentidadRepLegal}
+                </span>
+              )}
+              {formErrors.certificadoSagrilaft && (
+                <span className="tc-validation-error">
+                  ⚠️ {formErrors.certificadoSagrilaft}
+                </span>
+              )}
+              {formErrors.composicionAccionaria && (
+                <span className="tc-validation-error">
+                  ⚠️ {formErrors.composicionAccionaria}
+                </span>
+              )}
+            </div>
+          )}
+
+          <div className="tc-form-actions">
+            <button
+              type="button"
+              className="tc-cancel-btn"
+              onClick={() => {
+                setPasoActual(1);
+                if (formCardRef.current) {
+                  formCardRef.current.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start",
+                  });
+                }
+              }}
+              disabled={loading || isSubmitting}
+            >
+              ← Volver a Datos
+            </button>
+            <button
+              type="submit"
+              className={`tc-submit-btn ${isSubmitting ? "submitting" : ""}`}
+              disabled={
+                loading ||
+                isSubmitting ||
+                !rut ||
+                !certificacionBancaria ||
+                !docIdentidadRepLegal ||
+                !certificadoSagrilaft ||
+                !composicionAccionaria
+              }
+            >
+              {loading || isSubmitting ? (
+                <FaSpinner className="tc-spinner" />
+              ) : (
+                <FaUserPlus />
+              )}
+              {loading || isSubmitting
+                ? "Subiendo documentos..."
+                : "Finalizar Registro"}
+            </button>
+          </div>
+        </>
       )}
-
-      <div className="tc-form-actions">
-        {enModoEdicion && (
-          <button type="button" className="tc-cancel-btn" onClick={resetForm}>
-            Cancelar Edición
-          </button>
-        )}
-        <button
-          type="submit"
-          className={`tc-submit-btn ${isSubmitting ? "submitting" : ""}`}
-          disabled={
-            loading ||
-            isSubmitting ||
-            !rut ||
-            !certificacionBancaria ||
-            !docIdentidadRepLegal ||
-            !certificadoSagrilaft ||
-            !composicionAccionaria
-          }
-        >
-          {loading || isSubmitting ? (
-            <FaSpinner className="tc-spinner" />
-          ) : enModoEdicion ? (
-            <FaEdit />
-          ) : (
-            <FaUserPlus />
-          )}
-          {loading || isSubmitting
-            ? enModoEdicion
-              ? "Actualizando..."
-              : "Guardando..."
-            : enModoEdicion
-            ? "Actualizar Proveedor"
-            : "Guardar Proveedor"}
-        </button>
-      </div>
     </form>
   );
 
@@ -2461,34 +2510,31 @@ const CreacionProveedor = () => {
       />
       <TrazabilidadPageLayout
         title={
-          enModoEdicion
-            ? "Editar Proveedor (Contabilidad)"
+          pasoActual === 1
+            ? "Crear Nuevo Proveedor - Paso 1: Datos Básicos"
+            : pasoActual === 2
+            ? "Crear Nuevo Proveedor - Paso 2: Documentos"
             : "Crear Nuevo Proveedor (Contabilidad)"
         }
         icon={
-          enModoEdicion ? (
-            <FaEdit style={{ fontSize: "1.25em" }} />
+          pasoActual === 2 ? (
+            <FaFileUpload style={{ fontSize: "1.25em" }} />
           ) : (
             <FaHardHat style={{ fontSize: "1.25em" }} />
           )
         }
         subtitle={
-          enModoEdicion
-            ? "Actualice los campos o documentos del proveedor."
+          pasoActual === 1
+            ? "Completa los datos básicos del proveedor. Los documentos se adjuntarán en el siguiente paso."
+            : pasoActual === 2
+            ? "Adjunta todos los documentos requeridos para completar el registro del proveedor."
             : "Adjunta todos los documentos requeridos para la creación y vinculación del proveedor."
         }
         formContent={formContent}
         historialTitle="Historial de Proveedores Creados"
-        historialContent={
-          <HistorialTable
-            isLoading={loadingHistorial}
-            data={historial}
-            columns={columns}
-            emptyMessage="No has creado ningún proveedor todavía."
-          />
-        }
+        historialContent={null}
         formCardRef={formCardRef}
-        modoPublico={modoPublico}
+        modoPublico={true}
       />
     </>
   );

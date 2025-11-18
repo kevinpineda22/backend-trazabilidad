@@ -22,7 +22,6 @@ export const createEmpleadoContabilidad = async (req, res) => {
       contacto,
       correo_electronico,
       direccion,
-      codigo_ciudad,
       url_hoja_de_vida,
       url_cedula,
       url_certificado_bancario,
@@ -55,7 +54,6 @@ export const createEmpleadoContabilidad = async (req, res) => {
       contacto: contacto || null,
       correo_electronico: correo_electronico || null,
       direccion: direccion || null,
-      codigo_ciudad: codigo_ciudad || null,
       url_hoja_de_vida,
       url_cedula,
       url_certificado_bancario,
@@ -88,7 +86,8 @@ export const createEmpleadoContabilidad = async (req, res) => {
       }
       return res.status(error.response.status || 400).json({
         message:
-          error.response.data?.message || "Error al guardar en la base de datos",
+          error.response.data?.message ||
+          "Error al guardar en la base de datos",
         details: error.response.data?.details,
       });
     }
@@ -106,11 +105,9 @@ export const getHistorialEmpleados = async (req, res) => {
   try {
     const user_id = req.user?.id;
     if (!user_id) {
-      return res
-        .status(401)
-        .json({
-          message: "Usuario no autenticado para acceder a su historial.",
-        });
+      return res.status(401).json({
+        message: "Usuario no autenticado para acceder a su historial.",
+      });
     }
 
     const { data, error } = await supabaseAxios.get(
@@ -170,7 +167,9 @@ export const updateEmpleadoContabilidad = async (req, res) => {
       return res.status(401).json({ message: "Usuario no autenticado." });
     }
     if (!id) {
-      return res.status(400).json({ message: "No se proporcionó un ID para actualizar." });
+      return res
+        .status(400)
+        .json({ message: "No se proporcionó un ID para actualizar." });
     }
 
     // Obtenemos solo los campos que el frontend podría enviar
@@ -181,7 +180,6 @@ export const updateEmpleadoContabilidad = async (req, res) => {
       contacto,
       correo_electronico,
       direccion,
-      codigo_ciudad,
       url_hoja_de_vida,
       url_cedula,
       url_certificado_bancario,
@@ -195,17 +193,22 @@ export const updateEmpleadoContabilidad = async (req, res) => {
     if (apellidos !== undefined) payload.apellidos = apellidos;
     if (cedula !== undefined) payload.cedula = cedula;
     if (contacto !== undefined) payload.contacto = contacto;
-    if (correo_electronico !== undefined) payload.correo_electronico = correo_electronico;
+    if (correo_electronico !== undefined)
+      payload.correo_electronico = correo_electronico;
     if (direccion !== undefined) payload.direccion = direccion;
-    if (codigo_ciudad !== undefined) payload.codigo_ciudad = codigo_ciudad;
-    if (url_hoja_de_vida !== undefined) payload.url_hoja_de_vida = url_hoja_de_vida;
+    if (url_hoja_de_vida !== undefined)
+      payload.url_hoja_de_vida = url_hoja_de_vida;
     if (url_cedula !== undefined) payload.url_cedula = url_cedula;
-    if (url_certificado_bancario !== undefined) payload.url_certificado_bancario = url_certificado_bancario;
-    if (url_habeas_data !== undefined) payload.url_habeas_data = url_habeas_data;
+    if (url_certificado_bancario !== undefined)
+      payload.url_certificado_bancario = url_certificado_bancario;
+    if (url_habeas_data !== undefined)
+      payload.url_habeas_data = url_habeas_data;
 
     // Si el payload está vacío, no hay nada que actualizar.
     if (Object.keys(payload).length === 0) {
-      return res.status(400).json({ message: "No se proporcionaron datos para actualizar." });
+      return res
+        .status(400)
+        .json({ message: "No se proporcionaron datos para actualizar." });
     }
 
     // ¡Importante! El PATCH se filtra por ID y por user_id.
@@ -218,14 +221,20 @@ export const updateEmpleadoContabilidad = async (req, res) => {
 
     // Si data está vacío, no se encontró un registro que coincida con (id Y user_id).
     if (!data || data.length === 0) {
-      return res.status(404).json({ message: "Registro no encontrado o no tiene permiso para editarlo." });
+      return res
+        .status(404)
+        .json({
+          message: "Registro no encontrado o no tiene permiso para editarlo.",
+        });
     }
 
     res.status(200).json(data[0]); // Devuelve el objeto actualizado
-
   } catch (error) {
     // Manejo de errores idéntico al de 'create'
-    console.error("Error en updateEmpleadoContabilidad:", error.response ? error.response.data : error.message);
+    console.error(
+      "Error en updateEmpleadoContabilidad:",
+      error.response ? error.response.data : error.message
+    );
     if (error.response) {
       if (
         error.response.data?.code === "23505" ||
@@ -240,7 +249,8 @@ export const updateEmpleadoContabilidad = async (req, res) => {
       }
       return res.status(error.response.status || 400).json({
         message:
-          error.response.data?.message || "Error al actualizar la base de datos",
+          error.response.data?.message ||
+          "Error al actualizar la base de datos",
         details: error.response.data?.details,
       });
     }

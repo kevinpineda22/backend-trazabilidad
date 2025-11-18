@@ -199,7 +199,7 @@ const PanelAprobaciones = () => {
               value: datos.correo_electronico || "N/A",
             },
             { label: "Dirección", value: datos.direccion || "N/A" },
-            { label: "Ciudad", value: datos.codigo_ciudad || "N/A" },
+            // Nota: codigo_ciudad no existe en la tabla empleados_contabilidad
           ],
           documentos: mapDocs([
             { label: "Hoja de Vida", url: datos.url_hoja_de_vida },

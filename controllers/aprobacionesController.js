@@ -88,7 +88,7 @@ export const aprobarRegistro = async (req, res) => {
               contacto: normalizar(datos.contacto),
               correo_electronico: normalizar(datos.correo_electronico),
               direccion: normalizar(datos.direccion),
-              codigo_ciudad: normalizar(datos.codigo_ciudad),
+              // Nota: codigo_ciudad NO existe en la tabla empleados_contabilidad según el schema
               url_hoja_de_vida: normalizar(datos.url_hoja_de_vida),
               url_cedula: normalizar(datos.url_cedula),
               url_certificado_bancario: normalizar(

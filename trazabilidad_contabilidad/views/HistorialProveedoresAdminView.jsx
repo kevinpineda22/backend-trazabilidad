@@ -12,7 +12,6 @@ import AdminDocLink from "../components/AdminDocLink";
 const HistorialProveedoresAdminView = ({ onPreview }) => {
   const [historial, setHistorial] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [detalleProveedor, setDetalleProveedor] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -36,208 +35,148 @@ const HistorialProveedoresAdminView = ({ onPreview }) => {
   if (historial.length === 0)
     return <MensajeVacio mensaje="No se han creado proveedores." />;
 
-  const abrirDetalle = (proveedor) => setDetalleProveedor(proveedor);
-  const cerrarDetalle = () => setDetalleProveedor(null);
+  const formatFechaCorta = (fecha) => {
+    if (!fecha) return "N/A";
+    try {
+      return format(parseISO(`${fecha}T00:00:00`), "dd/MM/yy");
+    } catch (error) {
+      return fecha;
+    }
+  };
+
+  const renderSummaryItem = (label, value) => (
+    <div className="admin-cont-summary-item">
+      <span className="admin-cont-summary-label">{label}</span>
+      <span className="admin-cont-summary-value">{value || "N/A"}</span>
+    </div>
+  );
 
   const renderIdentificacion = (prov) => (
-    <div className="admin-cont-stack">
-      <span className="admin-cont-strong">
-        {prov.razon_social || prov.nombre_contacto || "Sin nombre"}
-      </span>
-      <span>
-        {prov.tipo_documento || "Documento"}: {prov.nit || "N/A"}
-        {prov.dv ? `-${prov.dv}` : ""}
-      </span>
-      {prov.fecha_diligenciamiento && (
-        <span>
-          Formulario{" "}
-          {format(
-            parseISO(`${prov.fecha_diligenciamiento}T00:00:00`),
-            "dd/MM/yy"
-          )}
-        </span>
-      )}
+    <div className="admin-cont-summary-block">
+      <p className="admin-cont-summary-title">
+        {prov.razon_social || prov.nombre_contacto || "Proveedor sin nombre"}
+      </p>
+      <div className="admin-cont-summary-grid">
+        {renderSummaryItem("Tipo documento", prov.tipo_documento)}
+        {renderSummaryItem(
+          "Número",
+          prov.nit ? `${prov.nit}${prov.dv ? `-${prov.dv}` : ""}` : "N/A"
+        )}
+        {renderSummaryItem("Régimen", prov.tipo_regimen)}
+        {renderSummaryItem("Código CIIU", prov.codigo_ciiu)}
+        {renderSummaryItem(
+          "Formulario",
+          formatFechaCorta(prov.fecha_diligenciamiento)
+        )}
+      </div>
     </div>
   );
 
   const renderContacto = (prov) => (
-    <div className="admin-cont-stack">
-      <span>{prov.nombre_contacto || "Sin contacto"}</span>
-      <span>{prov.email_contacto || "Sin correo"}</span>
-      <span>{prov.telefono_contacto || "Sin teléfono"}</span>
+    <div className="admin-cont-summary-block">
+      <p className="admin-cont-summary-title">Contacto principal</p>
+      <div className="admin-cont-summary-grid">
+        {renderSummaryItem("Nombre", prov.nombre_contacto)}
+        {renderSummaryItem("Correo", prov.email_contacto)}
+        {renderSummaryItem("Teléfono", prov.telefono_contacto)}
+        {renderSummaryItem(
+          "Ubicación",
+          [prov.ciudad, prov.departamento].filter(Boolean).join(", ")
+        )}
+        {renderSummaryItem("Dirección", prov.direccion_domicilio)}
+      </div>
     </div>
   );
 
-  const renderDeclaraciones = (prov) => (
-    <div className="admin-cont-pill-group">
-      <span className="admin-cont-pill">PEP: {prov.declara_pep || "N/A"}</span>
-      <span className="admin-cont-pill">
-        Recursos públicos: {prov.declara_recursos_publicos || "N/A"}
-      </span>
-      <span className="admin-cont-pill">
-        Obligaciones tributarias:{" "}
-        {prov.declara_obligaciones_tributarias || "N/A"}
-      </span>
-    </div>
-  );
+  const renderDeclaracionPill = (label, value) => {
+    const normalized = (value || "N/A").toString();
+    const tone = normalized.trim().toLowerCase();
+    let toneClass = "admin-cont-pill-neutral";
 
-  const renderDocumentos = (prov) => (
-    <div className="admin-cont-doc-grid">
-      <AdminDocLink url={prov.url_rut} label="RUT" onPreview={onPreview} />
-      <AdminDocLink
-        url={prov.url_camara_comercio}
-        label="Cám. Comercio"
-        onPreview={onPreview}
-      />
-      <AdminDocLink
-        url={prov.url_certificacion_bancaria}
-        label="Cert. Bancaria"
-        onPreview={onPreview}
-      />
-      <AdminDocLink
-        url={prov.url_doc_identidad_rep_legal}
-        label="Doc. Rep. Legal"
-        onPreview={onPreview}
-      />
-      <AdminDocLink
-        url={prov.url_certificado_sagrilaft}
-        label="Cert. SAGRILAFT"
-        onPreview={onPreview}
-      />
-      <AdminDocLink
-        url={prov.url_composicion_accionaria}
-        label="Comp. Accionaria"
-        onPreview={onPreview}
-      />
-    </div>
-  );
-
-  const renderDetalleCampo = (label, value) => (
-    <div className="admin-cont-modal-field" key={label}>
-      <span className="admin-cont-modal-label">{label}</span>
-      <span>{value || "N/A"}</span>
-    </div>
-  );
-
-  const renderDetalle = () => {
-    if (!detalleProveedor) return null;
-
-    const prov = detalleProveedor;
+    if (["si", "sí", "true", "cumple"].includes(tone)) {
+      toneClass = "admin-cont-pill-positive";
+    } else if (["no", "false", "n/a", "ninguno"].includes(tone)) {
+      toneClass = "admin-cont-pill-negative";
+    }
 
     return (
-      <div
-        className="admin-cont-modal-overlay"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="admin-cont-modal-title"
-        onClick={cerrarDetalle}
-      >
-        <div
-          className="admin-cont-modal"
-          onClick={(event) => event.stopPropagation()}
-        >
-          <header className="admin-cont-modal-header">
-            <div>
-              <h2
-                id="admin-cont-modal-title"
-                className="admin-cont-modal-title"
-              >
-                Detalle del proveedor
-              </h2>
-              <p className="admin-cont-modal-subtitle">
-                Creado por {prov.profiles?.nombre || "N/A"} ·{" "}
-                {format(parseISO(prov.created_at), "dd/MM/yy hh:mm a")}
-              </p>
+      <span className={`admin-cont-pill ${toneClass}`} key={label}>
+        <span className="admin-cont-pill-label">{label}</span>
+        <span className="admin-cont-pill-value">{normalized}</span>
+      </span>
+    );
+  };
+
+  const renderDeclaraciones = (prov) => (
+    <div className="admin-cont-summary-block">
+      <p className="admin-cont-summary-title">Declaraciones</p>
+      <div className="admin-cont-pill-grid">
+        {renderDeclaracionPill("Declara PEP", prov.declara_pep)}
+        {renderDeclaracionPill(
+          "Recursos públicos",
+          prov.declara_recursos_publicos
+        )}
+        {renderDeclaracionPill(
+          "Obligaciones tributarias",
+          prov.declara_obligaciones_tributarias
+        )}
+      </div>
+    </div>
+  );
+
+  const renderDocumentos = (prov) => {
+    const sections = [
+      {
+        title: "Registro legal",
+        docs: [
+          { label: "RUT", url: prov.url_rut },
+          { label: "Cám. Comercio", url: prov.url_camara_comercio },
+          { label: "Comp. Accionaria", url: prov.url_composicion_accionaria },
+        ],
+      },
+      {
+        title: "Cumplimiento",
+        docs: [
+          { label: "Cert. SAGRILAFT", url: prov.url_certificado_sagrilaft },
+        ],
+      },
+      {
+        title: "Financiero",
+        docs: [
+          {
+            label: "Cert. Bancaria",
+            url: prov.url_certificacion_bancaria,
+          },
+        ],
+      },
+      {
+        title: "Representación legal",
+        docs: [
+          {
+            label: "Doc. Rep. Legal",
+            url: prov.url_doc_identidad_rep_legal,
+          },
+        ],
+      },
+    ];
+
+    return (
+      <div className="admin-cont-doc-sectioned">
+        {sections.map((section) => (
+          <div className="admin-cont-doc-group" key={section.title}>
+            <span className="admin-cont-doc-group-title">{section.title}</span>
+            <div className="admin-cont-doc-group-grid">
+              {section.docs.map((doc) => (
+                <AdminDocLink
+                  key={doc.label}
+                  url={doc.url}
+                  label={doc.label}
+                  onPreview={onPreview}
+                />
+              ))}
             </div>
-            <button
-              type="button"
-              className="admin-cont-modal-close"
-              onClick={cerrarDetalle}
-              aria-label="Cerrar detalle"
-            >
-              ×
-            </button>
-          </header>
-
-          <div className="admin-cont-modal-body">
-            <section className="admin-cont-modal-section">
-              <h3>Identificación</h3>
-              <div className="admin-cont-modal-grid">
-                {renderDetalleCampo("Tipo documento", prov.tipo_documento)}
-                {renderDetalleCampo("Número", prov.nit)}
-                {renderDetalleCampo("Dígito verificación", prov.dv)}
-                {renderDetalleCampo("Régimen", prov.tipo_regimen)}
-                {renderDetalleCampo(
-                  "Fecha diligenciamiento",
-                  prov.fecha_diligenciamiento
-                )}
-                {renderDetalleCampo("Código CIIU", prov.codigo_ciiu)}
-              </div>
-            </section>
-
-            <section className="admin-cont-modal-section">
-              <h3>Empresa</h3>
-              <div className="admin-cont-modal-grid">
-                {renderDetalleCampo("Razón social", prov.razon_social)}
-                {renderDetalleCampo(
-                  "Nombre comercial",
-                  prov.nombre_establecimiento
-                )}
-                {renderDetalleCampo(
-                  "Correo factura electrónica",
-                  prov.email_factura_electronica
-                )}
-              </div>
-            </section>
-
-            <section className="admin-cont-modal-section">
-              <h3>Contacto y ubicación</h3>
-              <div className="admin-cont-modal-grid">
-                {renderDetalleCampo("Nombre contacto", prov.nombre_contacto)}
-                {renderDetalleCampo("Correo contacto", prov.email_contacto)}
-                {renderDetalleCampo(
-                  "Teléfono contacto",
-                  prov.telefono_contacto
-                )}
-                {renderDetalleCampo("Departamento", prov.departamento)}
-                {renderDetalleCampo("Ciudad", prov.ciudad)}
-                {renderDetalleCampo("Dirección", prov.direccion_domicilio)}
-              </div>
-            </section>
-
-            <section className="admin-cont-modal-section">
-              <h3>Representante legal</h3>
-              <div className="admin-cont-modal-grid">
-                {renderDetalleCampo("Nombre", prov.rep_legal_nombre)}
-                {renderDetalleCampo("Apellidos", prov.rep_legal_apellidos)}
-                {renderDetalleCampo("Tipo documento", prov.rep_legal_tipo_doc)}
-                {renderDetalleCampo("Número documento", prov.rep_legal_num_doc)}
-              </div>
-            </section>
-
-            <section className="admin-cont-modal-section">
-              <h3>Declaraciones</h3>
-              <div className="admin-cont-modal-grid">
-                {renderDetalleCampo("Declara PEP", prov.declara_pep)}
-                {renderDetalleCampo(
-                  "Recursos públicos",
-                  prov.declara_recursos_publicos
-                )}
-                {renderDetalleCampo(
-                  "Obligaciones tributarias",
-                  prov.declara_obligaciones_tributarias
-                )}
-              </div>
-            </section>
-
-            <section className="admin-cont-modal-section">
-              <h3>Documentos</h3>
-              <div className="admin-cont-modal-docs">
-                {renderDocumentos(prov)}
-              </div>
-            </section>
           </div>
-        </div>
+        ))}
       </div>
     );
   };
@@ -253,7 +192,6 @@ const HistorialProveedoresAdminView = ({ onPreview }) => {
             <th>Contacto</th>
             <th>Declaraciones</th>
             <th>Documentos</th>
-            <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -272,20 +210,10 @@ const HistorialProveedoresAdminView = ({ onPreview }) => {
               <td>{renderContacto(prov)}</td>
               <td>{renderDeclaraciones(prov)}</td>
               <td className="admin-cont-doc-cell">{renderDocumentos(prov)}</td>
-              <td className="admin-cont-cell-centered">
-                <button
-                  type="button"
-                  className="admin-cont-detail-button"
-                  onClick={() => abrirDetalle(prov)}
-                >
-                  Ver detalle
-                </button>
-              </td>
             </tr>
           ))}
         </tbody>
       </HistorialTabla>
-      {renderDetalle()}
     </div>
   );
 };

@@ -424,7 +424,6 @@ const CreacionSubirEmpleado = () => {
   const [contacto, setContacto] = useState("");
   const [correo, setCorreo] = useState("");
   const [direccion, setDireccion] = useState("");
-  const [codigoCiudad, setCodigoCiudad] = useState("");
   const [hojaDeVida, setHojaDeVida] = useState(null);
   const [cedulaFile, setCedulaFile] = useState(null);
   const [certificadoBancario, setCertificadoBancario] = useState(null);
@@ -532,7 +531,6 @@ const CreacionSubirEmpleado = () => {
     setContacto("");
     setCorreo("");
     setDireccion("");
-    setCodigoCiudad("");
     setHojaDeVida(null);
     setCedulaFile(null);
     setCertificadoBancario(null);
@@ -560,7 +558,6 @@ const CreacionSubirEmpleado = () => {
     setContacto(item.contacto || "");
     setCorreo(item.correo_electronico || "");
     setDireccion(item.direccion || "");
-    setCodigoCiudad(item.codigo_ciudad || "");
     setHojaDeVida(item.url_hoja_de_vida || null);
     setCedulaFile(item.url_cedula || null);
     setCertificadoBancario(item.url_certificado_bancario || null);
@@ -797,7 +794,6 @@ const CreacionSubirEmpleado = () => {
       contacto,
       correo_electronico: correo,
       direccion,
-      codigo_ciudad: codigoCiudad,
     };
 
     const confirmationDetails = {
@@ -1023,43 +1019,6 @@ const CreacionSubirEmpleado = () => {
         </div>
 
         {/* Fila 3 - Códigos */}
-        <div className="tc-form-group full-width">
-          <div className="tc-form-grid grid-2-cols">
-            <div className="tc-form-group">
-              <label htmlFor="codigo_pais">Código País</label>
-              <input
-                type="text"
-                id="codigo_pais"
-                value="169"
-                readOnly
-                disabled
-                className="tc-form-input tc-readonly-input"
-              />
-            </div>
-            <div className="tc-form-group">
-              <label htmlFor="codigo_dpto">Código Departamento</label>
-              <input
-                type="text"
-                id="codigo_dpto"
-                value="05"
-                readOnly
-                disabled
-                className="tc-form-input tc-readonly-input"
-              />
-            </div>
-            <div className="tc-form-group">
-              <label htmlFor="codigo_ciudad">Código Ciudad</label>
-              <input
-                type="text"
-                id="codigo_ciudad"
-                value={codigoCiudad}
-                onChange={(e) => setCodigoCiudad(e.target.value)}
-                placeholder="Ej: 001 (Medellín)"
-                className="tc-form-input"
-              />
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Separador */}
