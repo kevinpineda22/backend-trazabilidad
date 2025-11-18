@@ -25,12 +25,7 @@ const InfoItem = ({ label, value }) => (
   </div>
 );
 
-const ExpedienteEmpleadoView = ({
-  empleadoId,
-  onBack,
-  onPreview,
-  apiEndpoint,
-}) => {
+const ExpedienteEmpleadoView = ({ empleadoId, onBack, onPreview }) => {
   const [empleado, setEmpleado] = useState(null);
   // ¡ELIMINADO! Ya no usamos el array 'documentos' del estado
   // const [documentos, setDocumentos] = useState([]);
@@ -48,10 +43,9 @@ const ExpedienteEmpleadoView = ({
       try {
         setLoading(true);
         // El backend ahora solo nos devuelve el 'empleado'
-        const endpoint =
-          apiEndpoint ||
-          `/trazabilidad/empleados/admin/expediente/${empleadoId}`;
-        const { data } = await api.get(endpoint);
+        const { data } = await api.get(
+          `/trazabilidad/empleados/admin/expediente/${empleadoId}`
+        );
         setEmpleado(data.empleado); // ¡Solo guardamos el empleado!
         setError(null);
       } catch (err) {
@@ -66,7 +60,7 @@ const ExpedienteEmpleadoView = ({
     };
 
     fetchExpediente();
-  }, [empleadoId, apiEndpoint]);
+  }, [empleadoId]);
 
   const getFileIcon = (fileNameOrUrl) => {
     // Esta función ahora es segura, solo revisa el final del string (la URL)

@@ -7,7 +7,6 @@ import empleadosContabilidadRoutes from "./routes/empleadosContabilidadRoutes.js
 import proveedoresContabilidadRoutes from "./routes/proveedoresContabilidadRoutes.js";
 import clientesContabilidadRoutes from "./routes/clientesContabilidadRoutes.js";
 import adminContabilidadRoutes from "./routes/adminContabilidadRoutes.js";
-import adminTrazabilidadRoutes from "./routes/adminTrazabilidadRoutes.js";
 import tokensRoutes from "./routes/tokensRoutes.js";
 import aprobacionesRoutes from "./routes/aprobacionesRoutes.js";
 import registroPublicoRoutes from "./routes/registroPublicoRoutes.js";
@@ -31,7 +30,6 @@ app.use(`${apiBase}/empleados`, empleadosContabilidadRoutes);
 app.use(`${apiBase}/proveedores`, proveedoresContabilidadRoutes);
 app.use(`${apiBase}/clientes`, clientesContabilidadRoutes);
 app.use(`${apiBase}/admin`, adminContabilidadRoutes);
-app.use(`${apiBase}/admin-trazabilidad`, adminTrazabilidadRoutes);
 app.use(`${apiBase}/tokens`, tokensRoutes);
 app.use(`${apiBase}/aprobaciones`, aprobacionesRoutes);
 app.use(`${apiBase}/registro-publico`, registroPublicoRoutes);

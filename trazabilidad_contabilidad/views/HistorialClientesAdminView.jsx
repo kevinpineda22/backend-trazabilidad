@@ -11,11 +11,7 @@ import MensajeVacio from "../components/MensajeVacio";
 import HistorialTabla from "../components/HistorialTabla";
 import AdminDocLink from "../components/AdminDocLink";
 
-const HistorialClientesAdminView = ({
-  onPreview,
-  onOpenExpediente,
-  apiEndpoint = "/trazabilidad/admin/historial-clientes",
-}) => {
+const HistorialClientesAdminView = ({ onPreview, onOpenExpediente }) => {
   // 1. Definición de Estado
   const [historial, setHistorial] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -26,7 +22,9 @@ const HistorialClientesAdminView = ({
       try {
         setLoading(true);
         // El endpoint de admin ya trae todos los campos (select=*)
-        const { data } = await api.get(apiEndpoint);
+        const { data } = await api.get(
+          "/trazabilidad/admin/historial-clientes"
+        );
         setHistorial(data || []);
       } catch (error) {
         console.error("Error al cargar el historial de clientes:", error);
@@ -37,7 +35,7 @@ const HistorialClientesAdminView = ({
     };
 
     fetchData();
-  }, [apiEndpoint]); // Se ejecuta una vez al montar el componente    // 3. Manejo de Estados de Carga y Vacío
+  }, []); // Se ejecuta una vez al montar el componente    // 3. Manejo de Estados de Carga y Vacío
   if (loading) {
     return <Loader />;
   }

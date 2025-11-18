@@ -8,10 +8,7 @@ import Loader from "../components/Loader";
 import MensajeVacio from "../components/MensajeVacio";
 import HistorialTabla from "../components/HistorialTabla";
 
-const HistorialProveedoresAdminView = ({
-  onOpenExpediente,
-  apiEndpoint = "/trazabilidad/admin/historial-proveedores",
-}) => {
+const HistorialProveedoresAdminView = ({ onOpenExpediente }) => {
   const [historial, setHistorial] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -19,7 +16,9 @@ const HistorialProveedoresAdminView = ({
     const fetchData = async () => {
       try {
         setLoading(true);
-        const { data } = await api.get(apiEndpoint);
+        const { data } = await api.get(
+          "/trazabilidad/admin/historial-proveedores"
+        );
         setHistorial(data || []);
       } catch (error) {
         toast.error("Error al cargar el historial de proveedores.");
@@ -29,7 +28,7 @@ const HistorialProveedoresAdminView = ({
     };
 
     fetchData();
-  }, [apiEndpoint]);
+  }, []);
 
   if (loading) return <Loader />;
   if (historial.length === 0)

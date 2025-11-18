@@ -12,12 +12,8 @@ import Loader from "../components/Loader";
 import MensajeVacio from "../components/MensajeVacio";
 import HistorialTabla from "../components/HistorialTabla";
 
-// --- ¡ACTUALIZADO! Aceptamos la nueva prop 'onOpenExpediente' y 'apiEndpoint' ---
-const HistorialEmpleadosAdminView = ({
-  onPreview,
-  onOpenExpediente,
-  apiEndpoint = "/trazabilidad/admin/historial-empleados",
-}) => {
+// --- ¡ACTUALIZADO! Aceptamos la nueva prop 'onOpenExpediente' ---
+const HistorialEmpleadosAdminView = ({ onPreview, onOpenExpediente }) => {
   const [historial, setHistorial] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -25,7 +21,9 @@ const HistorialEmpleadosAdminView = ({
     const fetchData = async () => {
       try {
         setLoading(true);
-        const { data } = await api.get(apiEndpoint);
+        const { data } = await api.get(
+          "/trazabilidad/admin/historial-empleados"
+        );
         setHistorial(data || []);
       } catch (error) {
         toast.error("Error al cargar el historial de empleados.");
@@ -34,7 +32,7 @@ const HistorialEmpleadosAdminView = ({
       }
     };
     fetchData();
-  }, [apiEndpoint]);
+  }, []);
 
   if (loading) return <Loader />;
   if (historial.length === 0)
