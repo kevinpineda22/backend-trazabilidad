@@ -4,6 +4,12 @@ import axios from "axios";
 import FilePreviewModal from "./FilePreviewModal";
 import "./PanelAprobaciones.css";
 
+// Importar componentes de expedientes
+import ExpedienteEmpleadoView from "./views/ExpedienteEmpleadoView";
+import ExpedienteProveedorView from "./views/ExpedienteProveedorView";
+import ExpedienteClienteView from "./views/ExpedienteClienteView";
+import { FaFolderOpen } from "react-icons/fa";
+
 const TIPOS_FILTRO = [
   { value: "todos", label: "Todos" },
   { value: "empleado", label: "Empleados" },
@@ -24,6 +30,10 @@ const PanelAprobaciones = () => {
   const [modalRechazoAbierto, setModalRechazoAbierto] = useState(false);
   const [archivoPreview, setArchivoPreview] = useState(null);
   const mensajeTimeout = useRef(null);
+
+  // Estados para expedientes en historial
+  const [vistaExpediente, setVistaExpediente] = useState(null); // 'empleado', 'proveedor', 'cliente', o null
+  const [expedienteId, setExpedienteId] = useState(null);
 
   useEffect(() => {
     if (vistaActual === "pendientes") {
@@ -395,6 +405,16 @@ const PanelAprobaciones = () => {
     setArchivoPreview({ url, nombre });
   };
 
+  const abrirExpediente = (tipo, id) => {
+    setVistaExpediente(tipo);
+    setExpedienteId(id);
+  };
+
+  const cerrarExpediente = () => {
+    setVistaExpediente(null);
+    setExpedienteId(null);
+  };
+
   const renderPendientes = () => {
     if (pendientesFiltrados.length === 0) {
       return (
@@ -540,6 +560,7 @@ const PanelAprobaciones = () => {
               <th>Estado</th>
               <th>Fecha decisión</th>
               <th>Motivo rechazo</th>
+              <th>Expediente</th>
             </tr>
           </thead>
           <tbody>
@@ -571,6 +592,28 @@ const PanelAprobaciones = () => {
                   </td>
                   <td>{fechaDecision}</td>
                   <td>{registro.motivo_rechazo || "N/A"}</td>
+                  <td>
+                    {estado === "aprobado" && registro.registro_aprobado_id && (
+                      <button
+                        type="button"
+                        className="btn-ver-expediente"
+                        onClick={() =>
+                          abrirExpediente(
+                            registro.tipo,
+                            registro.registro_aprobado_id
+                          )
+                        }
+                        title="Ver expediente completo"
+                      >
+                        <FaFolderOpen /> Ver Expediente
+                      </button>
+                    )}
+                    {estado === "rechazado" && (
+                      <span style={{ color: "#6b7280", fontSize: "0.875rem" }}>
+                        —
+                      </span>
+                    )}
+                  </td>
                 </tr>
               );
             })}
@@ -579,6 +622,37 @@ const PanelAprobaciones = () => {
       </div>
     );
   };
+
+  // Si estamos viendo un expediente, mostrar el componente correspondiente
+  if (vistaExpediente && expedienteId) {
+    if (vistaExpediente === "empleado") {
+      return (
+        <ExpedienteEmpleadoView
+          empleadoId={expedienteId}
+          onBack={cerrarExpediente}
+          onPreview={(url) => setArchivoPreview({ url, nombre: "Documento" })}
+        />
+      );
+    }
+    if (vistaExpediente === "proveedor") {
+      return (
+        <ExpedienteProveedorView
+          proveedorId={expedienteId}
+          onBack={cerrarExpediente}
+          onPreview={(url) => setArchivoPreview({ url, nombre: "Documento" })}
+        />
+      );
+    }
+    if (vistaExpediente === "cliente") {
+      return (
+        <ExpedienteClienteView
+          clienteId={expedienteId}
+          onBack={cerrarExpediente}
+          onPreview={(url) => setArchivoPreview({ url, nombre: "Documento" })}
+        />
+      );
+    }
+  }
 
   return (
     <div className="panel-aprobaciones-container">

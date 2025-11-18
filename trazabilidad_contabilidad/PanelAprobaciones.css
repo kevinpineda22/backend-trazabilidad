@@ -495,6 +495,57 @@
   background: #e5e7eb;
 }
 
+/* Botón Ver Expediente en Historial */
+.btn-ver-expediente {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: white;
+  background: #111827;
+  border: none;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.btn-ver-expediente:hover {
+  background: #1f2937;
+  transform: translateY(-1px);
+}
+
+.btn-ver-expediente:active {
+  transform: translateY(0);
+}
+
+.btn-ver-expediente svg {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+.btn-volver-historial {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: white;
+  background: #111827;
+  border: none;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  margin-bottom: 1rem;
+}
+
+.btn-volver-historial:hover {
+  background: #1f2937;
+}
+
 @media (max-width: 1024px) {
   .pendientes-layout {
     flex-direction: column;

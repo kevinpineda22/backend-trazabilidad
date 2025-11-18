@@ -4,7 +4,8 @@ import { authMiddleware } from "../middlewares/authMiddleware.js";
 import {
   createClienteContabilidad,
   getHistorialClientes,
-  updateClienteContabilidad, // <-- 1. IMPORTA LA NUEVA FUNCIÓN
+  updateClienteContabilidad,
+  getExpedienteClienteAdmin,
 } from "../controllers/clientesContabilidadController.js";
 
 const router = express.Router();
@@ -12,6 +13,8 @@ const router = express.Router();
 router.post("/", authMiddleware, createClienteContabilidad);
 
 router.get("/historial", authMiddleware, getHistorialClientes);
+
+router.get("/admin/expediente/:id", authMiddleware, getExpedienteClienteAdmin);
 
 // --- 2. AÑADE ESTA NUEVA RUTA PATCH ---
 router.patch(

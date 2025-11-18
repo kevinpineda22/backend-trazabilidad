@@ -181,11 +181,12 @@ export const aprobarRegistro = async (req, res) => {
       { headers: { Prefer: "return=representation" } }
     );
 
-    // Actualizar estado del registro pendiente
+    // Actualizar estado del registro pendiente con el ID del registro aprobado
     await supabaseAxios.patch(`/registros_pendientes?id=eq.${id}`, {
       estado: "aprobado",
       aprobado_por: user_id,
       fecha_aprobacion: new Date().toISOString(),
+      registro_aprobado_id: nuevoRegistro[0]?.id, // Guardar el ID del registro creado
     });
 
     res.status(200).json({

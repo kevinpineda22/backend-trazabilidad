@@ -162,3 +162,38 @@ export const updateClienteContabilidad = async (req, res) => {
       .json({ message: "Error interno del servidor.", error: error.message });
   }
 };
+/**
+ * @route GET /api/trazabilidad/clientes/admin/expediente/:id
+ * Obtiene el expediente completo de un cliente por ID
+ */
+export const getExpedienteClienteAdmin = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user_id = req.user?.id;
+
+    if (!user_id) {
+      return res.status(401).json({ message: 'Usuario no autenticado.' });
+    }
+
+    const { data: clienteData, error: dbError } = await supabaseAxios.get(
+      `/clientes_contabilidad?select=*,profiles(nombre)&id=eq.${id}`
+    );
+
+    if (dbError) throw dbError;
+    if (!clienteData || clienteData.length === 0) {
+      return res.status(404).json({ message: 'Cliente no encontrado' });
+    }
+
+    const cliente = clienteData[0];
+    res.status(200).json({
+      cliente: cliente,
+    });
+  } catch (error) {
+    console.error('Error al obtener expediente de cliente:', error);
+    res.status(500).json({
+      message: 'Error interno al obtener el expediente.',
+      details: error.message,
+    });
+  }
+};
+
