@@ -1,9 +1,9 @@
-// src/pages/trazabilidad_contabilidad/views/ExpedienteEmpleadoView.jsx
+// src/pages/trazabilidad_contabilidad/views/ExpedienteClienteView.jsx
 import React, { useState, useEffect } from "react";
 import { apiTrazabilidad as api } from "../../../services/apiTrazabilidad";
 import {
   FaArrowLeft,
-  FaUserCircle,
+  FaUserTie,
   FaFilePdf,
   FaFileImage,
   FaFileAlt,
@@ -14,7 +14,7 @@ import { format, parseISO } from "date-fns";
 import { toast } from "react-toastify";
 import Loader from "../components/Loader";
 
-// Importa los estilos
+// Importa los estilos del expediente de empleado (reutilizamos)
 import "./ExpedienteEmpleadoView.css";
 
 // Componente simple para mostrar "Label: Value"
@@ -25,37 +25,28 @@ const InfoItem = ({ label, value }) => (
   </div>
 );
 
-const ExpedienteEmpleadoView = ({
-  empleadoId,
-  onBack,
-  onPreview,
-  apiEndpoint,
-}) => {
-  const [empleado, setEmpleado] = useState(null);
-  // ¡ELIMINADO! Ya no usamos el array 'documentos' del estado
-  // const [documentos, setDocumentos] = useState([]);
+const ExpedienteClienteView = ({ clienteId, onBack, onPreview }) => {
+  const [cliente, setCliente] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!empleadoId) {
+    if (!clienteId) {
       setLoading(false);
-      setError("No se ha seleccionado un empleado.");
+      setError("No se ha seleccionado un cliente.");
       return;
     }
 
     const fetchExpediente = async () => {
       try {
         setLoading(true);
-        // El backend ahora solo nos devuelve el 'empleado'
-        const endpoint =
-          apiEndpoint ||
-          `/trazabilidad/empleados/admin/expediente/${empleadoId}`;
-        const { data } = await api.get(endpoint);
-        setEmpleado(data.empleado); // ¡Solo guardamos el empleado!
+        const { data } = await api.get(
+          `/trazabilidad/admin-trazabilidad/expediente-cliente/${clienteId}`
+        );
+        setCliente(data.cliente);
         setError(null);
       } catch (err) {
-        console.error("Error fetching expediente:", err);
+        console.error("Error fetching expediente cliente:", err);
         const errorMsg =
           err.response?.data?.message || "No se pudo cargar el expediente.";
         setError(errorMsg);
@@ -66,10 +57,9 @@ const ExpedienteEmpleadoView = ({
     };
 
     fetchExpediente();
-  }, [empleadoId, apiEndpoint]);
+  }, [clienteId]);
 
   const getFileIcon = (fileNameOrUrl) => {
-    // Esta función ahora es segura, solo revisa el final del string (la URL)
     if (!fileNameOrUrl) return <FaFileAlt className="file-icon other" />;
     if (fileNameOrUrl.toLowerCase().endsWith(".pdf"))
       return <FaFilePdf className="file-icon pdf" />;
@@ -78,18 +68,16 @@ const ExpedienteEmpleadoView = ({
     return <FaFileAlt className="file-icon other" />;
   };
 
-  // --- ¡NUEVA LÓGICA DE DOCUMENTOS! ---
-  // Creamos un array de documentos definidos a partir del objeto 'empleado'
+  // Crear array de documentos del cliente
   let documentosDefinidos = [];
-  if (empleado) {
+  if (cliente) {
     documentosDefinidos = [
-      { label: "Hoja de Vida", url: empleado.url_hoja_de_vida },
-      { label: "Cédula", url: empleado.url_cedula },
-      { label: "Certificado Bancario", url: empleado.url_certificado_bancario },
-      { label: "Habeas Data", url: empleado.url_habeas_data },
+      { label: "RUT", url: cliente.url_rut },
+      { label: "Cámara de Comercio", url: cliente.url_camara_comercio },
+      { label: "Formato SAGRILAFT", url: cliente.url_formato_sangrilaft },
+      { label: "Cédula", url: cliente.url_cedula },
     ];
   }
-  // ------------------------------------
 
   if (loading) {
     return (
@@ -113,48 +101,30 @@ const ExpedienteEmpleadoView = ({
           </div>
         )}
 
-        {empleado && (
+        {cliente && (
           <>
-            {/* --- ENCABEZADO (Solo nombre y cédula) --- */}
+            {/* Encabezado */}
             <div className="expediente-header">
-              <FaUserCircle className="header-icon" />
+              <FaUserTie className="header-icon" />
               <div className="header-info">
-                <h1 className="header-title">
-                  {empleado.nombre} {empleado.apellidos}
-                </h1>
-                <span className="header-subtitle">C.C: {empleado.cedula}</span>
+                <h1 className="header-title">Solicitud de Cliente</h1>
+                <span className="header-subtitle">
+                  Cupo: {cliente.cupo || "N/A"}
+                </span>
               </div>
             </div>
 
-            {/* --- TARJETA DE INFORMACIÓN (con todos los campos) --- */}
+            {/* Tarjeta de Información */}
             <div className="expediente-info-card">
-              <h2 className="info-card-title">
-                Información de Contacto y Registro
-              </h2>
+              <h2 className="info-card-title">Información de Solicitud</h2>
               <div className="info-card-grid">
-                <InfoItem
-                  label="Correo Electrónico"
-                  value={empleado.correo_electronico}
-                />
-                <InfoItem
-                  label="Contacto (Celular)"
-                  value={empleado.contacto}
-                />
-                <InfoItem label="Dirección" value={empleado.direccion} />
-                {/* Nota: codigo_ciudad no existe en la tabla empleados_contabilidad */}
-                <InfoItem
-                  label="Código Departamento"
-                  value={empleado.codigo_departamento}
-                />
-                <InfoItem label="Código País" value={empleado.codigo_pais} />
-                <InfoItem
-                  label="Creado por"
-                  value={empleado.profiles?.nombre}
-                />
+                <InfoItem label="Cupo Solicitado" value={cliente.cupo} />
+                <InfoItem label="Plazo" value={cliente.plazo} />
+                <InfoItem label="Creado por" value={cliente.profiles?.nombre} />
                 <InfoItem
                   label="Fecha Creación"
                   value={format(
-                    parseISO(empleado.created_at),
+                    parseISO(cliente.created_at),
                     "dd/MM/yyyy hh:mm a"
                   )}
                 />
@@ -163,23 +133,18 @@ const ExpedienteEmpleadoView = ({
           </>
         )}
 
-        {/* --- ¡LISTA DE DOCUMENTOS ACTUALIZADA! --- */}
+        {/* Lista de Documentos */}
         <div className="expediente-file-list">
           <h2 className="file-list-title">Documentos del Expediente</h2>
-          {/* Verificamos si hay documentos filtrando los que tienen URL */}
-          {empleado &&
+          {cliente &&
           documentosDefinidos.filter((doc) => doc.url).length > 0 ? (
             <ul>
               {documentosDefinidos
-                .filter((doc) => doc.url) // Solo muestra documentos que SÍ tienen URL
+                .filter((doc) => doc.url)
                 .map((doc) => (
                   <li key={doc.label} className="file-item">
-                    {" "}
-                    {/* Key ahora es el label */}
                     <div className="file-info">
-                      {/* Pasamos la URL al getFileIcon */}
                       {getFileIcon(doc.url)}
-                      {/* ¡AQUÍ ESTÁ EL CAMBIO! Mostramos la etiqueta */}
                       <span className="file-name">{doc.label}</span>
                     </div>
                     <div className="file-actions">
@@ -191,7 +156,6 @@ const ExpedienteEmpleadoView = ({
                       </button>
                       <a
                         href={doc.url}
-                        // Sugiere un nombre de descarga limpio
                         download={doc.label.replace(/ /g, "_")}
                         target="_blank"
                         rel="noopener noreferrer"
@@ -211,7 +175,7 @@ const ExpedienteEmpleadoView = ({
                 style={{ marginTop: "1rem" }}
               >
                 <FaInfoCircle />
-                <span>No se encontraron documentos para este empleado.</span>
+                <span>No se encontraron documentos para este cliente.</span>
               </div>
             )
           )}
@@ -221,4 +185,4 @@ const ExpedienteEmpleadoView = ({
   );
 };
 
-export default ExpedienteEmpleadoView;
+export default ExpedienteClienteView;

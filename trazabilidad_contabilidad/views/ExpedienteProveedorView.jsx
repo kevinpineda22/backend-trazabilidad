@@ -25,7 +25,12 @@ const InfoItem = ({ label, value }) => (
   </div>
 );
 
-const ExpedienteProveedorView = ({ proveedorId, onBack, onPreview }) => {
+const ExpedienteProveedorView = ({
+  proveedorId,
+  onBack,
+  onPreview,
+  apiEndpoint,
+}) => {
   const [proveedor, setProveedor] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -40,9 +45,10 @@ const ExpedienteProveedorView = ({ proveedorId, onBack, onPreview }) => {
     const fetchExpediente = async () => {
       try {
         setLoading(true);
-        const { data } = await api.get(
-          `/trazabilidad/admin/expediente-proveedor/${proveedorId}`
-        );
+        const endpoint =
+          apiEndpoint ||
+          `/trazabilidad/admin/expediente-proveedor/${proveedorId}`;
+        const { data } = await api.get(endpoint);
         setProveedor(data.proveedor);
         setError(null);
       } catch (err) {
@@ -57,7 +63,7 @@ const ExpedienteProveedorView = ({ proveedorId, onBack, onPreview }) => {
     };
 
     fetchExpediente();
-  }, [proveedorId]);
+  }, [proveedorId, apiEndpoint]);
 
   const getFileIcon = (fileNameOrUrl) => {
     if (!fileNameOrUrl) return <FaFileAlt className="file-icon other" />;

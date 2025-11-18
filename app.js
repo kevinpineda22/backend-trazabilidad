@@ -1,14 +1,13 @@
 import dotenv from "dotenv";
 import express from "express";
-import {
-  corsMiddleware,
-} from "./config/corsConfig.js";
+import { corsMiddleware } from "./config/corsConfig.js";
 
 // --- Importar las rutas (Asumo que tienen la extensión .js) ---
 import empleadosContabilidadRoutes from "./routes/empleadosContabilidadRoutes.js";
 import proveedoresContabilidadRoutes from "./routes/proveedoresContabilidadRoutes.js";
 import clientesContabilidadRoutes from "./routes/clientesContabilidadRoutes.js";
 import adminContabilidadRoutes from "./routes/adminContabilidadRoutes.js";
+import adminTrazabilidadRoutes from "./routes/adminTrazabilidadRoutes.js";
 import tokensRoutes from "./routes/tokensRoutes.js";
 import aprobacionesRoutes from "./routes/aprobacionesRoutes.js";
 import registroPublicoRoutes from "./routes/registroPublicoRoutes.js";
@@ -23,7 +22,7 @@ const PORT = process.env.PORT || 3000;
 app.use(corsMiddleware);
 
 // Aumentar el límite de payload para JSON complejos (ya no es Multer)
-app.use(express.json({ limit: "50mb" })); 
+app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
 // --- Definición de Rutas ---
@@ -32,6 +31,7 @@ app.use(`${apiBase}/empleados`, empleadosContabilidadRoutes);
 app.use(`${apiBase}/proveedores`, proveedoresContabilidadRoutes);
 app.use(`${apiBase}/clientes`, clientesContabilidadRoutes);
 app.use(`${apiBase}/admin`, adminContabilidadRoutes);
+app.use(`${apiBase}/admin-trazabilidad`, adminTrazabilidadRoutes);
 app.use(`${apiBase}/tokens`, tokensRoutes);
 app.use(`${apiBase}/aprobaciones`, aprobacionesRoutes);
 app.use(`${apiBase}/registro-publico`, registroPublicoRoutes);
@@ -55,7 +55,7 @@ app.use((req, res, next) => {
 app.use((error, req, res, next) => {
   const statusCode = error.status || 500;
   console.error(`Error global (Status: ${statusCode}):`, error);
-  
+
   res.status(statusCode).json({
     message: error.message || "Error interno del servidor",
   });
