@@ -77,6 +77,41 @@ export const getHistorialClientesAdmin = async (req, res) => {
 };
 
 /**
+ * @route GET /api/trazabilidad/admin/expediente-proveedor/:id
+ * Obtiene el expediente completo de un proveedor por ID.
+ */
+export const getExpedienteProveedorAdmin = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user_id = req.user?.id;
+
+    if (!user_id) {
+      return res.status(401).json({ message: "Usuario no autenticado." });
+    }
+
+    const { data: proveedorData, error: dbError } = await supabaseAxios.get(
+      `/proveedores_contabilidad?select=*,profiles(nombre)&id=eq.${id}`
+    );
+
+    if (dbError) throw dbError;
+    if (!proveedorData || proveedorData.length === 0) {
+      return res.status(404).json({ message: "Proveedor no encontrado" });
+    }
+
+    const proveedor = proveedorData[0];
+    res.status(200).json({
+      proveedor: proveedor,
+    });
+  } catch (error) {
+    console.error("Error al obtener expediente de proveedor:", error);
+    res.status(500).json({
+      message: "Error interno al obtener el expediente.",
+      details: error.message,
+    });
+  }
+};
+
+/**
  * @route GET /api/trazabilidad/admin/dashboard-stats
  * Obtiene estadísticas para el dashboard.
  * (Vista de Admin - sin filtrar por user_id)
@@ -87,7 +122,7 @@ export const getDashboardStats = async (req, res) => {
     if (!user_id) {
       return res.status(401).json({ message: "Usuario no autenticado." });
     }
-    
+
     // ¡CORREGIDO! Se eliminó el filtro user_id para la vista de admin
     const [empleadosResponse, proveedoresResponse, clientesResponse] =
       await Promise.all([
@@ -104,7 +139,7 @@ export const getDashboardStats = async (req, res) => {
           { headers: { Prefer: "count=exact" } }
         ),
       ]);
-      
+
     const stats = {
       totalEmpleados: empleadosResponse.headers["content-range"]
         ? parseInt(empleadosResponse.headers["content-range"].split("/")[1])
