@@ -433,6 +433,8 @@ const EMPTY_FORM = {
   declara_pep: "",
   declara_recursos_publicos: "",
   declara_obligaciones_tributarias: "",
+  cupo: "",
+  plazo: "",
 };
 
 const DOCUMENT_OPTIONS = [
@@ -1098,8 +1100,24 @@ const CreacionCliente = () => {
     (validarDocumentos = false) => {
       const errors = {};
 
-      // Validar documentos solo si se solicita explícitamente (paso 2)
+      // Validar documentos Y campos comerciales si se solicita explícitamente (paso 2)
       if (validarDocumentos) {
+        // Validar cupo y plazo en paso 2
+        const cupoValor = (formData.cupo || "").trim();
+        if (!cupoValor) {
+          errors.cupo = "Ingresa el cupo solicitado.";
+        } else if (cupoValor.length < 2) {
+          errors.cupo = "El cupo debe tener al menos 2 caracteres.";
+        }
+
+        const plazoValor = (formData.plazo || "").trim();
+        if (!plazoValor) {
+          errors.plazo = "Ingresa el plazo solicitado.";
+        } else if (plazoValor.length < 2) {
+          errors.plazo = "El plazo debe tener al menos 2 caracteres.";
+        }
+
+        // Validar documentos
         if (!rut) errors.rut = "RUT es requerido.";
         if (!certificacionBancaria)
           errors.certificacionBancaria = "Certificación Bancaria es requerida.";
@@ -1386,6 +1404,9 @@ const CreacionCliente = () => {
             <p>Se registrará el cliente <strong>${razonSocialDisplay}</strong> con NIT/Documento <strong>${
           formData.nit
         }${formData.dv ? `-${formData.dv}` : ""}</strong>.</p>
+            <p>Cupo: <strong>${
+              formData.cupo || "N/A"
+            }</strong> | Plazo: <strong>${formData.plazo || "N/A"}</strong></p>
             <p>Se adjuntarán 5 documentos obligatorios y 1 opcional.</p>
           </div>
         `,
@@ -2326,7 +2347,7 @@ const CreacionCliente = () => {
       {pasoActual === 2 && (
         <>
           <div className="tc-form-separator">
-            <span>✅ Datos Validados - Ahora Adjunta los Documentos</span>
+            <span>✅ Datos Validados - Información Comercial y Documentos</span>
           </div>
 
           <div
@@ -2340,11 +2361,57 @@ const CreacionCliente = () => {
             }}
           >
             <p style={{ margin: 0, color: "#1864ab" }}>
-              <strong>Proveedor:</strong>{" "}
+              <strong>Cliente:</strong>{" "}
               {formData.razon_social || buildNombreNatural()} <br />
               <strong>NIT/Documento:</strong> {formData.nit}
               {formData.dv ? `-${formData.dv}` : ""}
             </p>
+          </div>
+
+          <div className="tc-form-separator">
+            <span>Información Comercial del Cliente</span>
+          </div>
+
+          <div className="tc-form-grid grid-2-cols">
+            <div className="tc-form-group">
+              <label htmlFor="cupo_cliente">
+                Cupo solicitado<span className="required">*</span>
+              </label>
+              <input
+                id="cupo_cliente"
+                name="cupo"
+                type="text"
+                value={formData.cupo || ""}
+                onChange={handleFieldChange}
+                placeholder="Ej: $5,000,000"
+                className={`tc-form-input ${
+                  formErrors.cupo ? "is-invalid" : ""
+                }`}
+              />
+              {formErrors.cupo && (
+                <span className="tc-validation-error">{formErrors.cupo}</span>
+              )}
+            </div>
+
+            <div className="tc-form-group">
+              <label htmlFor="plazo_cliente">
+                Plazo solicitado<span className="required">*</span>
+              </label>
+              <input
+                id="plazo_cliente"
+                name="plazo"
+                type="text"
+                value={formData.plazo || ""}
+                onChange={handleFieldChange}
+                placeholder="Ej: 30 días, 60 días"
+                className={`tc-form-input ${
+                  formErrors.plazo ? "is-invalid" : ""
+                }`}
+              />
+              {formErrors.plazo && (
+                <span className="tc-validation-error">{formErrors.plazo}</span>
+              )}
+            </div>
           </div>
 
           <div className="tc-form-separator">
@@ -2396,12 +2463,24 @@ const CreacionCliente = () => {
             />
           </div>
 
-          {(formErrors.rut ||
+          {(formErrors.cupo ||
+            formErrors.plazo ||
+            formErrors.rut ||
             formErrors.certificacionBancaria ||
             formErrors.cedula ||
             formErrors.certificadoSagrilaft ||
             formErrors.composicionAccionaria) && (
             <div className="tc-error-summary">
+              {formErrors.cupo && (
+                <span className="tc-validation-error">
+                  ⚠️ {formErrors.cupo}
+                </span>
+              )}
+              {formErrors.plazo && (
+                <span className="tc-validation-error">
+                  ⚠️ {formErrors.plazo}
+                </span>
+              )}
               {formErrors.rut && (
                 <span className="tc-validation-error">⚠️ {formErrors.rut}</span>
               )}
@@ -2511,7 +2590,7 @@ const CreacionCliente = () => {
           pasoActual === 1
             ? "Crear Nuevo Cliente - Paso 1: Datos Básicos"
             : pasoActual === 2
-            ? "Crear Nuevo Cliente - Paso 2: Documentos"
+            ? "Crear Nuevo Cliente - Paso 2: Información Comercial y Documentos"
             : "Crear Nuevo Cliente (Contabilidad)"
         }
         icon={
@@ -2523,10 +2602,10 @@ const CreacionCliente = () => {
         }
         subtitle={
           pasoActual === 1
-            ? "Completa los datos básicos del cliente. Los documentos se adjuntarán en el siguiente paso."
+            ? "Completa los datos básicos del cliente. La información comercial y documentos se adjuntarán en el siguiente paso."
             : pasoActual === 2
-            ? "Adjunta todos los documentos requeridos para completar el registro del cliente."
-            : "Adjunta todos los documentos requeridos para la creación y vinculación del cliente."
+            ? "Ingresa el cupo y plazo solicitado, y adjunta todos los documentos requeridos para completar el registro del cliente."
+            : "Completa la información comercial y adjunta todos los documentos requeridos para la creación y vinculación del cliente."
         }
         formContent={formContent}
         historialTitle="Historial de Clientes Creados"

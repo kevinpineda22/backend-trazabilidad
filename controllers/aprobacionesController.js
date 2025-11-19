@@ -104,12 +104,64 @@ export const aprobarRegistro = async (req, res) => {
             tablaDestino: "clientes_contabilidad",
             payload: {
               ...basePayload,
+              // Campos generales
+              fecha_diligenciamiento: normalizar(datos.fecha_diligenciamiento),
+              tipo_regimen: normalizar(datos.tipo_regimen),
+              tipo_documento: normalizar(datos.tipo_documento),
+              nit: normalizar(datos.nit),
+              dv: normalizar(datos.dv),
+              razon_social: normalizar(datos.razon_social),
+              nombre_establecimiento: normalizar(datos.nombre_establecimiento),
+              // Persona Natural
+              primer_nombre: normalizar(datos.primer_nombre),
+              segundo_nombre: normalizar(datos.segundo_nombre),
+              primer_apellido: normalizar(datos.primer_apellido),
+              segundo_apellido: normalizar(datos.segundo_apellido),
+              // CIIU
+              codigo_ciiu: normalizar(datos.codigo_ciiu),
+              descripcion_ciiu: normalizar(datos.descripcion_ciiu),
+              // Ubicación
+              direccion_domicilio: normalizar(datos.direccion_domicilio),
+              departamento: normalizar(datos.departamento),
+              departamento_codigo: normalizar(datos.departamento_codigo),
+              ciudad: normalizar(datos.ciudad),
+              ciudad_codigo: normalizar(datos.ciudad_codigo),
+              // Contacto
+              email_factura_electronica: normalizar(
+                datos.email_factura_electronica
+              ),
+              nombre_contacto: normalizar(datos.nombre_contacto),
+              email_contacto: normalizar(datos.email_contacto),
+              telefono_contacto: normalizar(datos.telefono_contacto),
+              // Representante Legal
+              rep_legal_nombre: normalizar(datos.rep_legal_nombre),
+              rep_legal_apellidos: normalizar(datos.rep_legal_apellidos),
+              rep_legal_tipo_doc: normalizar(datos.rep_legal_tipo_doc),
+              rep_legal_num_doc: normalizar(datos.rep_legal_num_doc),
+              // Declaraciones
+              declara_pep: normalizar(datos.declara_pep),
+              declara_recursos_publicos: normalizar(
+                datos.declara_recursos_publicos
+              ),
+              declara_obligaciones_tributarias: normalizar(
+                datos.declara_obligaciones_tributarias
+              ),
+              // Cupo y plazo (campos específicos de cliente)
               cupo: normalizar(datos.cupo),
               plazo: normalizar(datos.plazo),
+              // Documentos - CLIENTES usa certificado_sagrilaft
               url_rut: normalizar(datos.url_rut),
               url_camara_comercio: normalizar(datos.url_camara_comercio),
-              url_formato_sangrilaft: normalizar(datos.url_formato_sangrilaft),
+              url_certificado_sagrilaft: normalizar(
+                datos.url_certificado_sagrilaft
+              ),
               url_cedula: normalizar(datos.url_cedula),
+              url_certificacion_bancaria: normalizar(
+                datos.url_certificacion_bancaria
+              ),
+              url_composicion_accionaria: normalizar(
+                datos.url_composicion_accionaria
+              ),
             },
           };
         }

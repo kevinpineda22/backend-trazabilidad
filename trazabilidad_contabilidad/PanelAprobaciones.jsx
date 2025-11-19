@@ -224,17 +224,107 @@ const PanelAprobaciones = () => {
       }
 
       case "cliente": {
+        const razonSocialCliente =
+          datos.razon_social ||
+          `${datos.primer_nombre || ""} ${
+            datos.primer_apellido || ""
+          }`.trim() ||
+          "Cliente";
         return {
-          resumen: `Solicitud de cliente`,
+          resumen: razonSocialCliente,
           campos: [
+            {
+              label: "Fecha diligenciamiento",
+              value: datos.fecha_diligenciamiento
+                ? new Date(datos.fecha_diligenciamiento).toLocaleDateString(
+                    "es-CO"
+                  )
+                : "N/A",
+            },
+            { label: "Tipo de régimen", value: toTitle(datos.tipo_regimen) },
+            {
+              label: "Tipo de documento",
+              value: toTitle(datos.tipo_documento),
+            },
+            { label: "NIT", value: datos.nit || "N/A" },
+            { label: "DV", value: datos.dv || "N/A" },
+            { label: "Razón social", value: datos.razon_social || "N/A" },
+            {
+              label: "Nombre establecimiento",
+              value: datos.nombre_establecimiento || "N/A",
+            },
+            { label: "Primer nombre", value: datos.primer_nombre || "N/A" },
+            { label: "Segundo nombre", value: datos.segundo_nombre || "N/A" },
+            { label: "Primer apellido", value: datos.primer_apellido || "N/A" },
+            {
+              label: "Segundo apellido",
+              value: datos.segundo_apellido || "N/A",
+            },
+            { label: "Código CIIU", value: datos.codigo_ciiu || "N/A" },
+            {
+              label: "Descripción CIIU",
+              value: datos.descripcion_ciiu || "N/A",
+            },
+            {
+              label: "Dirección domicilio",
+              value: datos.direccion_domicilio || "N/A",
+            },
+            { label: "Departamento", value: datos.departamento || "N/A" },
+            { label: "Ciudad", value: datos.ciudad || "N/A" },
+            {
+              label: "Email factura electrónica",
+              value: datos.email_factura_electronica || "N/A",
+            },
+            { label: "Nombre contacto", value: datos.nombre_contacto || "N/A" },
+            { label: "Email contacto", value: datos.email_contacto || "N/A" },
+            {
+              label: "Teléfono contacto",
+              value: datos.telefono_contacto || "N/A",
+            },
+            {
+              label: "Rep. Legal - Nombre",
+              value: datos.rep_legal_nombre || "N/A",
+            },
+            {
+              label: "Rep. Legal - Apellidos",
+              value: datos.rep_legal_apellidos || "N/A",
+            },
+            {
+              label: "Rep. Legal - Tipo doc.",
+              value: toTitle(datos.rep_legal_tipo_doc),
+            },
+            {
+              label: "Rep. Legal - Núm. doc.",
+              value: datos.rep_legal_num_doc || "N/A",
+            },
+            { label: "Declara PEP", value: datos.declara_pep || "N/A" },
+            {
+              label: "Declara recursos públicos",
+              value: datos.declara_recursos_publicos || "N/A",
+            },
+            {
+              label: "Declara obligaciones tributarias",
+              value: datos.declara_obligaciones_tributarias || "N/A",
+            },
             { label: "Cupo solicitado", value: datos.cupo || "N/A" },
             { label: "Plazo", value: datos.plazo || "N/A" },
           ],
           documentos: mapDocs([
             { label: "RUT", url: datos.url_rut },
             { label: "Cámara de Comercio", url: datos.url_camara_comercio },
-            { label: "Formato SAGRILAFT", url: datos.url_formato_sangrilaft },
+            {
+              label: "Certificación Bancaria",
+              url: datos.url_certificacion_bancaria,
+            },
             { label: "Cédula", url: datos.url_cedula },
+            {
+              label: "Certificado SAGRILAFT",
+              url: datos.url_certificado_sagrilaft,
+            },
+            {
+              label: "Composición Accionaria",
+              url: datos.url_composicion_accionaria,
+            },
           ]),
         };
       }
@@ -360,11 +450,21 @@ const PanelAprobaciones = () => {
           meta: documentosLabel,
         };
       }
-      case "cliente":
+      case "cliente": {
+        const razonSocialClienteTitulo =
+          datos.razon_social ||
+          `${datos.primer_nombre || ""} ${
+            datos.primer_apellido || ""
+          }`.trim() ||
+          "Cliente pendiente";
+        const nitDisplay = datos.nit
+          ? `NIT ${datos.nit}${datos.dv ? `-${datos.dv}` : ""}`
+          : "Sin NIT";
         return {
-          titulo: `Cliente — Cupo ${datos.cupo || "N/A"}`,
-          meta: documentosLabel,
+          titulo: razonSocialClienteTitulo,
+          meta: `${nitDisplay} • ${documentosLabel}`,
         };
+      }
       case "proveedor":
         return {
           titulo:
