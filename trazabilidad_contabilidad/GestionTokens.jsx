@@ -8,6 +8,7 @@ const GestionTokens = () => {
   const [loading, setLoading] = useState(false);
   const [mensaje, setMensaje] = useState("");
   const [tipoMensaje, setTipoMensaje] = useState(""); // 'success' o 'error'
+  const [filtroEstado, setFiltroEstado] = useState("activo"); // 'activo', 'todos', 'usado', 'expirado'
 
   // Cargar tokens al montar el componente
   useEffect(() => {
@@ -117,11 +118,11 @@ const GestionTokens = () => {
   const obtenerClaseEstado = (estado) => {
     switch (estado) {
       case "activo":
-        return "estado-activo";
+        return "tokens-estado-activo";
       case "usado":
-        return "estado-usado";
+        return "tokens-estado-usado";
       case "expirado":
-        return "estado-expirado";
+        return "tokens-estado-expirado";
       default:
         return "";
     }
@@ -137,18 +138,35 @@ const GestionTokens = () => {
     return `${window.location.origin}${rutas[tipo]}?token=${token}`;
   };
 
+  // Filtrar tokens según el estado seleccionado
+  const tokensFiltrados = tokens.filter((token) => {
+    if (filtroEstado === "todos") return true;
+    const estado = calcularEstado(token);
+    return estado === filtroEstado;
+  });
+
+  // Contar tokens por estado
+  const contadorEstados = {
+    activo: tokens.filter((t) => calcularEstado(t) === "activo").length,
+    usado: tokens.filter((t) => calcularEstado(t) === "usado").length,
+    expirado: tokens.filter((t) => calcularEstado(t) === "expirado").length,
+    todos: tokens.length,
+  };
+
   return (
-    <div className="gestion-tokens-container">
+    <div className="tokens-container">
       <h1>Gestión de Links de Registro</h1>
-      <p className="descripcion">
+      <p className="tokens-descripcion">
         Genera links únicos para que terceros se registren. Los links tienen
         validez de 3 días o hasta que sean usados.
       </p>
 
       {mensaje && (
         <div
-          className={`mensaje ${
-            tipoMensaje === "success" ? "mensaje-exito" : "mensaje-error"
+          className={`tokens-mensaje ${
+            tipoMensaje === "success"
+              ? "tokens-mensaje-exito"
+              : "tokens-mensaje-error"
           }`}
         >
           {mensaje}
@@ -156,23 +174,23 @@ const GestionTokens = () => {
       )}
 
       {/* Botones para generar tokens */}
-      <div className="botones-generar">
+      <div className="tokens-botones-generar">
         <button
-          className="btn-generar btn-empleado"
+          className="tokens-btn-generar tokens-btn-empleado"
           onClick={() => generarNuevoToken("empleado")}
           disabled={loading}
         >
           ➕ Generar Link Empleado
         </button>
         <button
-          className="btn-generar btn-cliente"
+          className="tokens-btn-generar tokens-btn-cliente"
           onClick={() => generarNuevoToken("cliente")}
           disabled={loading}
         >
           ➕ Generar Link Cliente
         </button>
         <button
-          className="btn-generar btn-proveedor"
+          className="tokens-btn-generar tokens-btn-proveedor"
           onClick={() => generarNuevoToken("proveedor")}
           disabled={loading}
         >
@@ -180,15 +198,70 @@ const GestionTokens = () => {
         </button>
       </div>
 
+      {/* Filtros de estado */}
+      <div className="tokens-filtros-estado">
+        <button
+          className={`tokens-filtro-btn ${
+            filtroEstado === "activo" ? "tokens-activo" : ""
+          }`}
+          onClick={() => setFiltroEstado("activo")}
+        >
+          ✅ Activos ({contadorEstados.activo})
+        </button>
+        <button
+          className={`tokens-filtro-btn ${
+            filtroEstado === "usado" ? "tokens-activo" : ""
+          }`}
+          onClick={() => setFiltroEstado("usado")}
+        >
+          ✔️ Usados ({contadorEstados.usado})
+        </button>
+        <button
+          className={`tokens-filtro-btn ${
+            filtroEstado === "expirado" ? "tokens-activo" : ""
+          }`}
+          onClick={() => setFiltroEstado("expirado")}
+        >
+          ⏰ Expirados ({contadorEstados.expirado})
+        </button>
+        <button
+          className={`tokens-filtro-btn ${
+            filtroEstado === "todos" ? "tokens-activo" : ""
+          }`}
+          onClick={() => setFiltroEstado("todos")}
+        >
+          📋 Todos ({contadorEstados.todos})
+        </button>
+      </div>
+
       {/* Tabla de tokens generados */}
-      <div className="tabla-tokens-wrapper">
-        <h2>Links Generados</h2>
+      <div className="tokens-tabla-wrapper">
+        <h2>
+          Links Generados -{" "}
+          {filtroEstado === "activo"
+            ? "Activos"
+            : filtroEstado === "usado"
+            ? "Usados"
+            : filtroEstado === "expirado"
+            ? "Expirados"
+            : "Todos"}
+        </h2>
         {loading && tokens.length === 0 ? (
-          <div className="loader">Cargando...</div>
-        ) : tokens.length === 0 ? (
-          <p className="mensaje-vacio">No hay links generados aún.</p>
+          <div className="tokens-loader">Cargando...</div>
+        ) : tokensFiltrados.length === 0 ? (
+          <p className="tokens-mensaje-vacio">
+            No hay links{" "}
+            {filtroEstado === "todos"
+              ? ""
+              : filtroEstado === "activo"
+              ? "activos"
+              : filtroEstado === "usado"
+              ? "usados"
+              : "expirados"}{" "}
+            en este momento.
+          </p>
         ) : (
-          <table className="tabla-tokens">
+          <table className="tokens-tabla">
             <thead>
               <tr>
                 <th>Tipo</th>
@@ -201,12 +274,14 @@ const GestionTokens = () => {
               </tr>
             </thead>
             <tbody>
-              {tokens.map((token) => {
+              {tokensFiltrados.map((token) => {
                 const estado = calcularEstado(token);
                 return (
                   <tr key={token.id}>
                     <td>
-                      <span className={`badge-tipo ${token.tipo}`}>
+                      <span
+                        className={`tokens-badge-tipo tokens-badge-${token.tipo}`}
+                      >
                         {token.tipo.charAt(0).toUpperCase() +
                           token.tipo.slice(1)}
                       </span>
@@ -216,19 +291,21 @@ const GestionTokens = () => {
                     <td>{formatearFecha(token.expiracion)}</td>
                     <td>
                       <span
-                        className={`badge-estado ${obtenerClaseEstado(estado)}`}
+                        className={`tokens-badge-estado ${obtenerClaseEstado(
+                          estado
+                        )}`}
                       >
                         {estado.charAt(0).toUpperCase() + estado.slice(1)}
                       </span>
                     </td>
-                    <td className="celda-link">
-                      <code className="link-code">
+                    <td className="tokens-celda-link">
+                      <code className="tokens-link-code">
                         {generarUrlRegistro(token.tipo, token.token)}
                       </code>
                     </td>
                     <td>
                       <button
-                        className="btn-copiar"
+                        className="tokens-btn-copiar"
                         onClick={() =>
                           copiarAlPortapapeles(
                             generarUrlRegistro(token.tipo, token.token)

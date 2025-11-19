@@ -1,24 +1,24 @@
 /* trazabilidad_contabilidad/GestionTokens.css */
-.gestion-tokens-container {
+.tokens-container {
   padding: 2rem;
   max-width: 1400px;
   margin: 0 auto;
 }
 
-.gestion-tokens-container h1 {
+.tokens-container h1 {
   font-size: 2rem;
   color: #1a1a1a;
   margin-bottom: 0.5rem;
 }
 
-.descripcion {
+.tokens-descripcion {
   color: #666;
   margin-bottom: 2rem;
   font-size: 0.95rem;
 }
 
 /* Mensajes */
-.mensaje {
+.tokens-mensaje {
   padding: 1rem;
   border-radius: 8px;
   margin-bottom: 1.5rem;
@@ -26,13 +26,13 @@
   animation: slideDown 0.3s ease-out;
 }
 
-.mensaje-exito {
+.tokens-mensaje-exito {
   background-color: #d4edda;
   color: #155724;
   border: 1px solid #c3e6cb;
 }
 
-.mensaje-error {
+.tokens-mensaje-error {
   background-color: #f8d7da;
   color: #721c24;
   border: 1px solid #f5c6cb;
@@ -50,14 +50,14 @@
 }
 
 /* Botones de generación */
-.botones-generar {
+.tokens-botones-generar {
   display: flex;
   gap: 1rem;
   margin-bottom: 2rem;
   flex-wrap: wrap;
 }
 
-.btn-generar {
+.tokens-btn-generar {
   padding: 0.875rem 1.75rem;
   border: none;
   border-radius: 8px;
@@ -68,33 +68,73 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.btn-generar:hover:not(:disabled) {
+.tokens-btn-generar:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
-.btn-generar:disabled {
+.tokens-btn-generar:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-.btn-empleado {
+.tokens-btn-empleado {
   background-color: #007bff;
   color: white;
 }
 
-.btn-cliente {
+.tokens-btn-cliente {
   background-color: #28a745;
   color: white;
 }
 
-.btn-proveedor {
+.tokens-btn-proveedor {
   background-color: #fd7e14;
   color: white;
 }
 
+/* Filtros de estado */
+.tokens-filtros-estado {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+.tokens-filtro-btn {
+  padding: 0.625rem 1.25rem;
+  border: 2px solid #dee2e6;
+  border-radius: 8px;
+  background-color: white;
+  color: #495057;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.tokens-filtro-btn:hover {
+  border-color: #adb5bd;
+  background-color: #f8f9fa;
+}
+
+.tokens-filtro-btn.tokens-activo {
+  background-color: #111827;
+  color: white;
+  border-color: #111827;
+}
+
+.tokens-filtro-btn.tokens-activo:hover {
+  background-color: #1f2937;
+  border-color: #1f2937;
+}
+
 /* Tabla de tokens */
-.tabla-tokens-wrapper {
+.tokens-tabla-wrapper {
   background: white;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -102,24 +142,24 @@
   overflow-x: auto;
 }
 
-.tabla-tokens-wrapper h2 {
+.tokens-tabla-wrapper h2 {
   font-size: 1.5rem;
   color: #1a1a1a;
   margin-bottom: 1.5rem;
 }
 
-.tabla-tokens {
+.tokens-tabla {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.9rem;
 }
 
-.tabla-tokens thead {
+.tokens-tabla thead {
   background-color: #f8f9fa;
   border-bottom: 2px solid #dee2e6;
 }
 
-.tabla-tokens th {
+.tokens-tabla th {
   padding: 1rem;
   text-align: left;
   font-weight: 600;
@@ -129,22 +169,22 @@
   letter-spacing: 0.5px;
 }
 
-.tabla-tokens tbody tr {
+.tokens-tabla tbody tr {
   border-bottom: 1px solid #dee2e6;
   transition: background-color 0.2s ease;
 }
 
-.tabla-tokens tbody tr:hover {
+.tokens-tabla tbody tr:hover {
   background-color: #f8f9fa;
 }
 
-.tabla-tokens td {
+.tokens-tabla td {
   padding: 1rem;
   vertical-align: middle;
 }
 
 /* Badges */
-.badge-tipo {
+.tokens-badge-tipo {
   padding: 0.4rem 0.8rem;
   border-radius: 20px;
   font-size: 0.8rem;
@@ -153,22 +193,22 @@
   display: inline-block;
 }
 
-.badge-tipo.empleado {
+.tokens-badge-empleado {
   background-color: #cfe2ff;
   color: #084298;
 }
 
-.badge-tipo.cliente {
+.tokens-badge-cliente {
   background-color: #d1e7dd;
   color: #0f5132;
 }
 
-.badge-tipo.proveedor {
+.tokens-badge-proveedor {
   background-color: #ffe5d0;
   color: #653208;
 }
 
-.badge-estado {
+.tokens-badge-estado {
   padding: 0.4rem 0.8rem;
   border-radius: 20px;
   font-size: 0.8rem;
@@ -176,33 +216,33 @@
   display: inline-block;
 }
 
-.estado-activo {
+.tokens-estado-activo {
   background-color: #d1e7dd;
   color: #0f5132;
 }
 
-.estado-usado {
+.tokens-estado-usado {
   background-color: #f8d7da;
   color: #721c24;
 }
 
-.estado-expirado {
+.tokens-estado-expirado {
   background-color: #fff3cd;
   color: #856404;
 }
 
 /* Celda del link */
-.celda-link {
+.tokens-celda-link {
   max-width: 300px;
 }
 
-.link-code {
+.tokens-link-code {
   display: block;
   background-color: #f8f9fa;
   padding: 0.5rem;
   border-radius: 4px;
   font-size: 0.75rem;
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -210,7 +250,7 @@
 }
 
 /* Botón copiar */
-.btn-copiar {
+.tokens-btn-copiar {
   padding: 0.5rem 1rem;
   background-color: #6c757d;
   color: white;
@@ -222,25 +262,25 @@
   white-space: nowrap;
 }
 
-.btn-copiar:hover:not(:disabled) {
+.tokens-btn-copiar:hover:not(:disabled) {
   background-color: #5a6268;
 }
 
-.btn-copiar:disabled {
+.tokens-btn-copiar:disabled {
   background-color: #ced4da;
   cursor: not-allowed;
   opacity: 0.6;
 }
 
 /* Loader */
-.loader {
+.tokens-loader {
   text-align: center;
   padding: 3rem;
   color: #6c757d;
   font-size: 1.1rem;
 }
 
-.mensaje-vacio {
+.tokens-mensaje-vacio {
   text-align: center;
   padding: 3rem;
   color: #6c757d;
@@ -249,28 +289,37 @@
 
 /* Responsive */
 @media (max-width: 768px) {
-  .gestion-tokens-container {
+  .tokens-container {
     padding: 1rem;
   }
 
-  .botones-generar {
+  .tokens-botones-generar {
     flex-direction: column;
   }
 
-  .btn-generar {
+  .tokens-btn-generar {
     width: 100%;
   }
 
-  .tabla-tokens {
+  .tokens-filtros-estado {
+    flex-direction: column;
+  }
+
+  .tokens-filtro-btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .tokens-tabla {
     font-size: 0.8rem;
   }
 
-  .tabla-tokens th,
-  .tabla-tokens td {
+  .tokens-tabla th,
+  .tokens-tabla td {
     padding: 0.75rem 0.5rem;
   }
 
-  .celda-link {
+  .tokens-celda-link {
     max-width: 150px;
   }
 }

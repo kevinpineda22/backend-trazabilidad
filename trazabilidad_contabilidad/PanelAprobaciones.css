@@ -177,6 +177,8 @@
   flex-direction: column;
   gap: 1.5rem;
   min-height: 320px;
+  max-height: 80vh;
+  overflow-y: auto;
 }
 
 .detalle-header {
@@ -228,8 +230,9 @@
 
 .detalle-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.25rem;
+  padding-bottom: 0.5rem;
 }
 
 .detalle-campo {

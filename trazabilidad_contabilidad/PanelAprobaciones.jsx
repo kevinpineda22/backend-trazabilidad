@@ -201,7 +201,8 @@ const PanelAprobaciones = () => {
         return {
           resumen: nombreCompleto || "Empleado",
           campos: [
-            { label: "Nombre completo", value: nombreCompleto || "N/A" },
+            { label: "Nombre", value: datos.nombre || "N/A" },
+            { label: "Apellidos", value: datos.apellidos || "N/A" },
             { label: "Cédula", value: datos.cedula || "N/A" },
             { label: "Contacto", value: datos.contacto || "N/A" },
             {
@@ -209,7 +210,6 @@ const PanelAprobaciones = () => {
               value: datos.correo_electronico || "N/A",
             },
             { label: "Dirección", value: datos.direccion || "N/A" },
-            // Nota: codigo_ciudad no existe en la tabla empleados_contabilidad
           ],
           documentos: mapDocs([
             { label: "Hoja de Vida", url: datos.url_hoja_de_vida },
@@ -245,10 +245,68 @@ const PanelAprobaciones = () => {
         return {
           resumen: razonSocial,
           campos: [
+            {
+              label: "Fecha diligenciamiento",
+              value: datos.fecha_diligenciamiento
+                ? new Date(datos.fecha_diligenciamiento).toLocaleDateString(
+                    "es-CO"
+                  )
+                : "N/A",
+            },
             { label: "Tipo de régimen", value: toTitle(datos.tipo_regimen) },
+            {
+              label: "Tipo de documento",
+              value: toTitle(datos.tipo_documento),
+            },
+            { label: "NIT", value: datos.nit || "N/A" },
+            { label: "DV", value: datos.dv || "N/A" },
+            { label: "Razón social", value: datos.razon_social || "N/A" },
+            {
+              label: "Nombre establecimiento",
+              value: datos.nombre_establecimiento || "N/A",
+            },
+            { label: "Código CIIU", value: datos.codigo_ciiu || "N/A" },
+            {
+              label: "Dirección domicilio",
+              value: datos.direccion_domicilio || "N/A",
+            },
+            { label: "Departamento", value: datos.departamento || "N/A" },
+            { label: "Ciudad", value: datos.ciudad || "N/A" },
+            {
+              label: "Email factura electrónica",
+              value: datos.email_factura_electronica || "N/A",
+            },
             { label: "Nombre contacto", value: datos.nombre_contacto || "N/A" },
-            { label: "Correo contacto", value: datos.email_contacto || "N/A" },
-            { label: "Teléfono", value: datos.telefono_contacto || "N/A" },
+            { label: "Email contacto", value: datos.email_contacto || "N/A" },
+            {
+              label: "Teléfono contacto",
+              value: datos.telefono_contacto || "N/A",
+            },
+            {
+              label: "Rep. Legal - Nombre",
+              value: datos.rep_legal_nombre || "N/A",
+            },
+            {
+              label: "Rep. Legal - Apellidos",
+              value: datos.rep_legal_apellidos || "N/A",
+            },
+            {
+              label: "Rep. Legal - Tipo doc.",
+              value: toTitle(datos.rep_legal_tipo_doc),
+            },
+            {
+              label: "Rep. Legal - Núm. doc.",
+              value: datos.rep_legal_num_doc || "N/A",
+            },
+            { label: "Declara PEP", value: datos.declara_pep || "N/A" },
+            {
+              label: "Declara recursos públicos",
+              value: datos.declara_recursos_publicos || "N/A",
+            },
+            {
+              label: "Declara obligaciones tributarias",
+              value: datos.declara_obligaciones_tributarias || "N/A",
+            },
           ],
           documentos: mapDocs([
             { label: "RUT", url: datos.url_rut },

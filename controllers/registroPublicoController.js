@@ -129,12 +129,52 @@ export const registrarClientePublico = async (req, res) => {
   try {
     const { token } = req.params;
     const {
-      url_rut,
+      // Campos generales
+      fecha_diligenciamiento,
+      tipo_regimen,
+      tipo_documento,
+      nit,
+      dv,
+      razon_social,
+      nombre_establecimiento,
+      // Persona Natural
+      primer_nombre,
+      segundo_nombre,
+      primer_apellido,
+      segundo_apellido,
+      // CIIU
+      codigo_ciiu,
+      descripcion_ciiu,
+      // Ubicación
+      direccion_domicilio,
+      codigo_departamento,
+      nombre_departamento,
+      codigo_ciudad,
+      nombre_ciudad,
+      // Contacto
+      email_factura_electronica,
+      nombre_contacto,
+      email_contacto,
+      telefono_contacto,
+      // Representante Legal
+      rep_legal_nombre,
+      rep_legal_apellidos,
+      rep_legal_tipo_doc,
+      rep_legal_num_doc,
+      // Declaraciones
+      declara_pep,
+      declara_recursos_publicos,
+      declara_obligaciones_tributarias,
+      // Cupo y plazo
       cupo,
       plazo,
+      // Documentos - CLIENTE usa certificado_sagrilaft (no formato_sangrilaft)
+      url_rut,
       url_camara_comercio,
-      url_formato_sangrilaft,
+      url_certificado_sagrilaft,
       url_cedula,
+      url_certificacion_bancaria,
+      url_composicion_accionaria,
     } = req.body;
 
     const { data: tokenData } = await supabaseAxios.get(
@@ -157,17 +197,29 @@ export const registrarClientePublico = async (req, res) => {
       return sendTokenDisabled(res, "expirado");
     }
 
-    if (
-      !url_rut ||
-      !cupo ||
-      !plazo ||
-      !url_camara_comercio ||
-      !url_formato_sangrilaft ||
-      !url_cedula
-    ) {
+    // Validación de campos obligatorios básicos
+    if (!url_rut || !tipo_regimen || !nit || !url_certificado_sagrilaft) {
       return res.status(400).json({
-        message: "Todos los campos son obligatorios.",
+        message:
+          "Faltan campos obligatorios (RUT, tipo régimen, NIT, certificado SAGRILAFT).",
       });
+    }
+
+    // Validación según tipo de régimen
+    if (tipo_regimen === "persona_juridica") {
+      if (!razon_social || !url_camara_comercio) {
+        return res.status(400).json({
+          message:
+            "Para persona jurídica se requiere razón social y cámara de comercio.",
+        });
+      }
+    } else if (tipo_regimen === "persona_natural") {
+      if (!primer_nombre || !primer_apellido || !url_cedula) {
+        return res.status(400).json({
+          message:
+            "Para persona natural se requiere nombre, apellido y cédula.",
+        });
+      }
     }
 
     const payload = {
@@ -176,12 +228,52 @@ export const registrarClientePublico = async (req, res) => {
       user_id: tokenInfo.generado_por,
       token,
       datos: {
+        // Campos generales
+        fecha_diligenciamiento,
+        tipo_regimen,
+        tipo_documento,
+        nit,
+        dv,
+        razon_social,
+        nombre_establecimiento,
+        // Persona Natural
+        primer_nombre,
+        segundo_nombre,
+        primer_apellido,
+        segundo_apellido,
+        // CIIU
+        codigo_ciiu,
+        descripcion_ciiu,
+        // Ubicación
+        direccion_domicilio,
+        codigo_departamento,
+        nombre_departamento,
+        codigo_ciudad,
+        nombre_ciudad,
+        // Contacto
+        email_factura_electronica,
+        nombre_contacto,
+        email_contacto,
+        telefono_contacto,
+        // Representante Legal
+        rep_legal_nombre,
+        rep_legal_apellidos,
+        rep_legal_tipo_doc,
+        rep_legal_num_doc,
+        // Declaraciones
+        declara_pep,
+        declara_recursos_publicos,
+        declara_obligaciones_tributarias,
+        // Cupo y plazo
         cupo,
         plazo,
+        // Documentos
         url_rut,
         url_camara_comercio,
-        url_formato_sangrilaft,
+        url_certificado_sagrilaft,
         url_cedula,
+        url_certificacion_bancaria,
+        url_composicion_accionaria,
       },
       created_at: new Date().toISOString(),
     };
