@@ -7,6 +7,8 @@ import {
   FaFileAlt,
   FaFilePdf,
   FaFileImage,
+  FaTimes,
+  FaCloudUploadAlt,
 } from "react-icons/fa";
 import { toast } from "react-toastify";
 import { uploadFileToBucket } from "../../supabaseClient";
@@ -143,11 +145,45 @@ const GestionDocumentos = ({ userRole }) => {
               <div className="file-input-wrapper">
                 <input
                   id="file-upload"
+                  name="file-upload"
                   type="file"
                   onChange={handleFileChange}
-                  required
-                  className="file-input"
+                  className="file-input-hidden"
                 />
+                {!nuevoDoc.file ? (
+                  <label htmlFor="file-upload" className="file-drop-zone">
+                    <FaCloudUploadAlt className="upload-icon-large" />
+                    <span className="drop-text">
+                      Haz clic para seleccionar un archivo
+                    </span>
+                    <span className="file-types-text">
+                      PDF, Word, Excel, Imágenes
+                    </span>
+                  </label>
+                ) : (
+                  <div className="selected-file-preview">
+                    <div className="file-info">
+                      {getIcon(nuevoDoc.file.name)}
+                      <div className="file-details">
+                        <span className="file-name">{nuevoDoc.file.name}</span>
+                        <span className="file-size">
+                          {(nuevoDoc.file.size / 1024 / 1024).toFixed(2)} MB
+                        </span>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      className="btn-remove-file"
+                      onClick={() => {
+                        setNuevoDoc({ ...nuevoDoc, file: null });
+                        document.getElementById("file-upload").value = "";
+                      }}
+                      title="Quitar archivo"
+                    >
+                      <FaTimes />
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
             <div className="form-group">

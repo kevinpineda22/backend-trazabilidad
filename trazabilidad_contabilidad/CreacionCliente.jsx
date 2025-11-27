@@ -1432,18 +1432,8 @@ const CreacionCliente = () => {
                   gap: "8px",
                 }}
               >
-                <FaFileAlt /> Documentos Importantes
+                <FaFileAlt /> Documento Importante
               </h4>
-              <p
-                style={{
-                  fontSize: "0.9rem",
-                  color: "#4a5568",
-                  marginBottom: "10px",
-                }}
-              >
-                Por favor descargue los siguientes documentos necesarios para su
-                registro:
-              </p>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
                 {documentosDescarga.map((doc) => (
                   <a

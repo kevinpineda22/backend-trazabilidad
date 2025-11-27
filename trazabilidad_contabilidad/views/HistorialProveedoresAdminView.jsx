@@ -43,6 +43,7 @@ const HistorialProveedoresAdminView = ({ onOpenExpediente }) => {
             <th>Fecha Creación</th>
             <th>Razón Social / Nombre</th>
             <th>NIT / Documento</th>
+            <th>Cupo Aprobado</th>
             <th>Tipo Régimen</th>
             <th>Expediente</th>
           </tr>
@@ -64,6 +65,9 @@ const HistorialProveedoresAdminView = ({ onOpenExpediente }) => {
                 {prov.nit
                   ? `${prov.nit}${prov.dv ? `-${prov.dv}` : ""}`
                   : "N/A"}
+              </td>
+              <td className="admin-cont-cell-centered">
+                {prov.cupo_aprobado || "N/A"}
               </td>
               <td className="admin-cont-cell-centered">
                 {prov.tipo_regimen || "N/A"}

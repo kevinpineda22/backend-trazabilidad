@@ -38,6 +38,7 @@ const PanelAprobaciones = ({ userRole }) => {
   const [motivoRechazo, setMotivoRechazo] = useState("");
   const [modalRechazoAbierto, setModalRechazoAbierto] = useState(false);
   const [archivoPreview, setArchivoPreview] = useState(null);
+  const [cupoAprobado, setCupoAprobado] = useState("");
   const mensajeTimeout = useRef(null);
 
   // Estados para expedientes en historial
@@ -586,6 +587,7 @@ const PanelAprobaciones = ({ userRole }) => {
 
   const handleSeleccionRegistro = (registro) => {
     setRegistroSeleccionado(registro);
+    setCupoAprobado("");
     if (registro?.tipo && filtroTipo !== registro.tipo) {
       setFiltroTipo(registro.tipo);
     }
@@ -598,11 +600,17 @@ const PanelAprobaciones = ({ userRole }) => {
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
+
+      const payload = {};
+      if (registroSeleccionado.tipo === "proveedor") {
+        payload.cupoAprobado = cupoAprobado;
+      }
+
       await axios.post(
         `${
           import.meta.env.VITE_BACKEND_TRAZABILIDAD_URL
         }/api/trazabilidad/aprobaciones/aprobar/${registroSeleccionado.id}`,
-        {},
+        payload,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -767,6 +775,36 @@ const PanelAprobaciones = ({ userRole }) => {
                   </span>
                 )}
               </div>
+
+              {registroSeleccionado.tipo === "proveedor" && (
+                <div
+                  className="detalle-cupo-aprobado"
+                  style={{ margin: "20px 0" }}
+                >
+                  <label
+                    style={{
+                      display: "block",
+                      marginBottom: "8px",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    Cupo Aprobado
+                  </label>
+                  <input
+                    type="text"
+                    value={cupoAprobado}
+                    onChange={(e) => setCupoAprobado(e.target.value)}
+                    placeholder="Ingrese el cupo aprobado (números o letras)"
+                    className="input-cupo-aprobado"
+                    style={{
+                      width: "100%",
+                      padding: "10px",
+                      borderRadius: "4px",
+                      border: "1px solid #ccc",
+                    }}
+                  />
+                </div>
+              )}
 
               <div className="detalle-acciones">
                 <button

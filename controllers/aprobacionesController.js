@@ -35,6 +35,7 @@ export const obtenerPendientes = async (req, res) => {
 export const aprobarRegistro = async (req, res) => {
   try {
     const { id } = req.params;
+    const { cupoAprobado } = req.body;
     const user_id = req.user?.id;
 
     if (!user_id) {
@@ -199,6 +200,7 @@ export const aprobarRegistro = async (req, res) => {
               declara_obligaciones_tributarias: normalizar(
                 datos.declara_obligaciones_tributarias
               ),
+              cupo_aprobado: normalizar(cupoAprobado),
               url_rut: normalizar(datos.url_rut),
               url_camara_comercio: normalizar(datos.url_camara_comercio),
               url_certificacion_bancaria: normalizar(
