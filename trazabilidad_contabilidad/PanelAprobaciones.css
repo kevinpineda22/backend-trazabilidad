@@ -748,6 +748,47 @@
   color: #991b1b;
 }
 
+/* Estilos para el campo de Cupo Aprobado */
+.detalle-cupo-aprobado {
+  margin: 20px 2rem;
+  background-color: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: var(--aprob-radius);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.detalle-cupo-aprobado label {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #166534;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.input-cupo-aprobado {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #86efac;
+  border-radius: var(--aprob-radius);
+  font-size: 1rem;
+  color: #14532d;
+  background-color: white;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.input-cupo-aprobado:focus {
+  border-color: #22c55e;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2);
+}
+
+.input-cupo-aprobado::placeholder {
+  color: #86efac;
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
   .pendientes-layout {

@@ -100,7 +100,26 @@ export const Login = () => {
       .eq("role", userRole)
       .maybeSingle();
 
-    if (roleConfigErr || !roleConfig) {
+    // Si hay error de base de datos (no de "no encontrado"), reportarlo
+    if (roleConfigErr) {
+      console.error("Error fetching role config:", roleConfigErr);
+    }
+
+    let finalRoutes = [];
+    let redirectPath = "/acceso"; // Ruta por defecto si no hay config de rol
+
+    if (roleConfig) {
+      finalRoutes = roleConfig.permissions || [];
+      redirectPath = roleConfig.redirect;
+    }
+
+    // Prioridad a rutas personales
+    if (profileData.personal_routes && profileData.personal_routes.length > 0) {
+      finalRoutes = profileData.personal_routes;
+    }
+
+    // Si después de todo no hay rutas, entonces sí es un error
+    if (!finalRoutes || finalRoutes.length === 0) {
       setError(
         "No se encontró configuración de rutas para el rol: " + userRole
       );
@@ -109,16 +128,20 @@ export const Login = () => {
       return;
     }
 
-    let finalRoutes = roleConfig.permissions;
-
-    if (profileData.personal_routes && profileData.personal_routes.length > 0) {
-      finalRoutes = profileData.personal_routes;
-    }
-
     const config = {
-      redirect: roleConfig.redirect,
+      redirect: redirectPath,
       routes: finalRoutes,
     };
+
+    // Si el usuario es admin_proveedor o admin_cliente, redirigir al panel de acceso
+    // para que puedan elegir entre las diferentes opciones disponibles
+    if (
+      ["admin_proveedor", "admin_proveedores", "admin_cliente"].includes(
+        userRole
+      )
+    ) {
+      config.redirect = "/acceso";
+    }
 
     localStorage.setItem("token", authData.session.access_token);
     localStorage.setItem("correo_empleado", correo);

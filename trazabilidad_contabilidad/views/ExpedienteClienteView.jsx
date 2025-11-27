@@ -1,9 +1,9 @@
-// src/pages/trazabilidad_contabilidad/views/ExpedienteClienteView.jsx
+// src/pages/trazabilidad_contabilidad/views/ExpedienteProveedorView.jsx
 import React, { useState, useEffect } from "react";
 import { apiTrazabilidad as api } from "../../../services/apiTrazabilidad";
 import {
   FaArrowLeft,
-  FaUserTie,
+  FaBuilding,
   FaFilePdf,
   FaFileImage,
   FaFileAlt,
@@ -25,29 +25,28 @@ const InfoItem = ({ label, value }) => (
   </div>
 );
 
-const ExpedienteClienteView = ({ clienteId, onBack, onPreview }) => {
-  const [cliente, setCliente] = useState(null);
+const ExpedienteProveedorView = ({ proveedorId, onBack, onPreview }) => {
+  const [proveedor, setProveedor] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!clienteId) {
+    if (!proveedorId) {
       setLoading(false);
-      setError("No se ha seleccionado un cliente.");
+      setError("No se ha seleccionado un proveedor.");
       return;
     }
 
     const fetchExpediente = async () => {
       try {
         setLoading(true);
-        // Intentar obtener del endpoint de admin-contabilidad
         const { data } = await api.get(
-          `/trazabilidad/clientes/admin/expediente/${clienteId}`
+          `/trazabilidad/admin/expediente-proveedor/${proveedorId}`
         );
-        setCliente(data.cliente);
+        setProveedor(data.proveedor);
         setError(null);
       } catch (err) {
-        console.error("Error fetching expediente cliente:", err);
+        console.error("Error fetching expediente proveedor:", err);
         const errorMsg =
           err.response?.data?.message || "No se pudo cargar el expediente.";
         setError(errorMsg);
@@ -58,7 +57,7 @@ const ExpedienteClienteView = ({ clienteId, onBack, onPreview }) => {
     };
 
     fetchExpediente();
-  }, [clienteId]);
+  }, [proveedorId]);
 
   const getFileIcon = (fileNameOrUrl) => {
     if (!fileNameOrUrl) return <FaFileAlt className="file-icon other" />;
@@ -70,14 +69,37 @@ const ExpedienteClienteView = ({ clienteId, onBack, onPreview }) => {
     return <FaFileAlt className="file-icon other" />;
   };
 
-  // Crear array de documentos del cliente
+  const formatFechaCorta = (fecha) => {
+    if (!fecha) return "N/A";
+    try {
+      return format(parseISO(`${fecha}T00:00:00`), "dd/MM/yy");
+    } catch (error) {
+      return fecha;
+    }
+  };
+
+  // Crear array de documentos a partir del objeto proveedor
   let documentosDefinidos = [];
-  if (cliente) {
+  if (proveedor) {
     documentosDefinidos = [
-      { label: "RUT", url: cliente.url_rut },
-      { label: "Cámara de Comercio", url: cliente.url_camara_comercio },
-      { label: "Formato SAGRILAFT", url: cliente.url_formato_sangrilaft },
-      { label: "Cédula", url: cliente.url_cedula },
+      { label: "RUT", url: proveedor.url_rut },
+      { label: "Cámara de Comercio", url: proveedor.url_camara_comercio },
+      {
+        label: "Certificación Bancaria",
+        url: proveedor.url_certificacion_bancaria,
+      },
+      {
+        label: "Documento Identidad Rep. Legal",
+        url: proveedor.url_doc_identidad_rep_legal,
+      },
+      {
+        label: "Composición Accionaria",
+        url: proveedor.url_composicion_accionaria,
+      },
+      {
+        label: "Certificado SAGRILAFT",
+        url: proveedor.url_certificado_sagrilaft,
+      },
     ];
   }
 
@@ -93,7 +115,7 @@ const ExpedienteClienteView = ({ clienteId, onBack, onPreview }) => {
     <>
       <div className="expediente-container-inner">
         <button onClick={onBack} className="expediente-back-button">
-          <FaArrowLeft /> Volver al historial
+          <FaArrowLeft /> Volver a la lista
         </button>
 
         {error && (
@@ -103,46 +125,158 @@ const ExpedienteClienteView = ({ clienteId, onBack, onPreview }) => {
           </div>
         )}
 
-        {cliente && (
+        {proveedor && (
           <>
-            {/* Encabezado */}
+            {/* ENCABEZADO */}
             <div className="expediente-header">
-              <FaUserTie className="header-icon" />
+              <FaBuilding className="header-icon" />
               <div className="header-info">
-                <h1 className="header-title">Solicitud de Cliente</h1>
+                <h1 className="header-title">
+                  {proveedor.razon_social ||
+                    proveedor.nombre_contacto ||
+                    "Proveedor"}
+                </h1>
                 <span className="header-subtitle">
-                  Cupo: {cliente.cupo || "N/A"}
+                  {proveedor.tipo_documento}: {proveedor.nit}
+                  {proveedor.dv ? `-${proveedor.dv}` : ""}
                 </span>
               </div>
             </div>
 
-            {/* Tarjeta de Información */}
+            {/* TARJETA DE INFORMACIÓN GENERAL */}
             <div className="expediente-info-card">
-              <h2 className="info-card-title">Información de Solicitud</h2>
+              <h2 className="info-card-title">Información General</h2>
               <div className="info-card-grid">
-                <InfoItem label="Cupo Solicitado" value={cliente.cupo} />
-                <InfoItem label="Plazo" value={cliente.plazo} />
-                <InfoItem label="Creado por" value={cliente.profiles?.nombre} />
                 <InfoItem
-                  label="Fecha Creación"
+                  label="Cupo Aprobado"
+                  value={proveedor.cupo_aprobado}
+                />
+                <InfoItem
+                  label="Tipo de Régimen"
+                  value={proveedor.tipo_regimen}
+                />
+                <InfoItem
+                  label="Tipo de Documento"
+                  value={proveedor.tipo_documento}
+                />
+                <InfoItem
+                  label="Número de Documento"
                   value={
-                    cliente.created_at
-                      ? format(
-                          parseISO(cliente.created_at),
-                          "dd/MM/yyyy hh:mm a"
-                        )
+                    proveedor.nit
+                      ? `${proveedor.nit}${
+                          proveedor.dv ? `-${proveedor.dv}` : ""
+                        }`
                       : "N/A"
                   }
+                />
+                <InfoItem label="Razón Social" value={proveedor.razon_social} />
+                <InfoItem
+                  label="Nombre Establecimiento"
+                  value={proveedor.nombre_establecimiento}
+                />
+                <InfoItem label="Código CIIU" value={proveedor.codigo_ciiu} />
+                <InfoItem
+                  label="Descripción CIIU"
+                  value={proveedor.descripcion_ciiu}
+                />
+                <InfoItem
+                  label="Fecha Diligenciamiento"
+                  value={formatFechaCorta(proveedor.fecha_diligenciamiento)}
+                />
+              </div>
+            </div>
+
+            {/* TARJETA DE UBICACIÓN */}
+            <div className="expediente-info-card">
+              <h2 className="info-card-title">Ubicación y Contacto</h2>
+              <div className="info-card-grid">
+                <InfoItem
+                  label="Dirección Domicilio"
+                  value={proveedor.direccion_domicilio}
+                />
+                <InfoItem label="Departamento" value={proveedor.departamento} />
+                <InfoItem label="Ciudad" value={proveedor.ciudad} />
+                <InfoItem
+                  label="Nombre Contacto"
+                  value={proveedor.nombre_contacto}
+                />
+                <InfoItem
+                  label="Email Contacto"
+                  value={proveedor.email_contacto}
+                />
+                <InfoItem
+                  label="Teléfono Contacto"
+                  value={proveedor.telefono_contacto}
+                />
+                <InfoItem
+                  label="Email Factura Electrónica"
+                  value={proveedor.email_factura_electronica}
+                />
+              </div>
+            </div>
+
+            {/* TARJETA DE REPRESENTANTE LEGAL */}
+            {proveedor.tipo_regimen === "persona_juridica" && (
+              <div className="expediente-info-card">
+                <h2 className="info-card-title">Representante Legal</h2>
+                <div className="info-card-grid">
+                  <InfoItem label="Nombre" value={proveedor.rep_legal_nombre} />
+                  <InfoItem
+                    label="Apellidos"
+                    value={proveedor.rep_legal_apellidos}
+                  />
+                  <InfoItem
+                    label="Tipo de Documento"
+                    value={proveedor.rep_legal_tipo_doc}
+                  />
+                  <InfoItem
+                    label="Número de Documento"
+                    value={proveedor.rep_legal_num_doc}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* TARJETA DE DECLARACIONES */}
+            <div className="expediente-info-card">
+              <h2 className="info-card-title">Declaraciones</h2>
+              <div className="info-card-grid">
+                <InfoItem label="Declara PEP" value={proveedor.declara_pep} />
+                <InfoItem
+                  label="Recursos Públicos"
+                  value={proveedor.declara_recursos_publicos}
+                />
+                <InfoItem
+                  label="Obligaciones Tributarias"
+                  value={proveedor.declara_obligaciones_tributarias}
+                />
+              </div>
+            </div>
+
+            {/* TARJETA DE REGISTRO */}
+            <div className="expediente-info-card">
+              <h2 className="info-card-title">Información de Registro</h2>
+              <div className="info-card-grid">
+                <InfoItem
+                  label="Creado por"
+                  value={proveedor.profiles?.nombre}
+                />
+                <InfoItem
+                  label="Fecha Creación"
+                  value={format(
+                    parseISO(proveedor.created_at),
+                    "dd/MM/yyyy hh:mm a"
+                  )}
                 />
               </div>
             </div>
           </>
         )}
 
-        {/* Lista de Documentos */}
+        {/* LISTA DE DOCUMENTOS */}
         <div className="expediente-file-list">
           <h2 className="file-list-title">Documentos del Expediente</h2>
-          {cliente &&
+          {proveedor &&
           documentosDefinidos.filter((doc) => doc.url).length > 0 ? (
             <ul>
               {documentosDefinidos
@@ -181,7 +315,7 @@ const ExpedienteClienteView = ({ clienteId, onBack, onPreview }) => {
                 style={{ marginTop: "1rem" }}
               >
                 <FaInfoCircle />
-                <span>No se encontraron documentos para este cliente.</span>
+                <span>No se encontraron documentos para este proveedor.</span>
               </div>
             )
           )}
@@ -191,4 +325,4 @@ const ExpedienteClienteView = ({ clienteId, onBack, onPreview }) => {
   );
 };
 
-export default ExpedienteClienteView;
+export default ExpedienteProveedorView;

@@ -148,10 +148,6 @@ const ExpedienteProveedorView = ({ proveedorId, onBack, onPreview }) => {
               <h2 className="info-card-title">Información General</h2>
               <div className="info-card-grid">
                 <InfoItem
-                  label="Cupo Aprobado"
-                  value={proveedor.cupo_aprobado}
-                />
-                <InfoItem
                   label="Tipo de Régimen"
                   value={proveedor.tipo_regimen}
                 />
@@ -182,6 +178,10 @@ const ExpedienteProveedorView = ({ proveedorId, onBack, onPreview }) => {
                 <InfoItem
                   label="Fecha Diligenciamiento"
                   value={formatFechaCorta(proveedor.fecha_diligenciamiento)}
+                />
+                <InfoItem
+                  label="Cupo Aprobado"
+                  value={proveedor.cupo_aprobado}
                 />
               </div>
             </div>

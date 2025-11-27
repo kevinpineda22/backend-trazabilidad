@@ -50,17 +50,9 @@ const SuperAdminContabilidad = () => {
   });
 
   const getAllowedViews = (role) => {
-    if (!role) return [VISTAS.EMPLEADOS, VISTAS.PROVEEDORES, VISTAS.CLIENTES]; // Fallback si no hay rol
-    if (["super_admin", "admin"].includes(role)) {
-      return [VISTAS.EMPLEADOS, VISTAS.PROVEEDORES, VISTAS.CLIENTES];
-    }
-    if (role === "admin_empleado") {
-      return [VISTAS.EMPLEADOS];
-    }
-    if (["admin_cliente", "admin_proveedor"].includes(role)) {
-      return [VISTAS.CLIENTES, VISTAS.PROVEEDORES];
-    }
-    return [];
+    // En este módulo (Admin Contabilidad / Archivadores), se deben mostrar todas las carpetas
+    // independientemente del rol del usuario (admin_proveedor, admin_cliente, etc.)
+    return [VISTAS.EMPLEADOS, VISTAS.PROVEEDORES, VISTAS.CLIENTES];
   };
 
   const allowedViews = getAllowedViews(userRole);

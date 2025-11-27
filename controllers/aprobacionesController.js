@@ -35,7 +35,7 @@ export const obtenerPendientes = async (req, res) => {
 export const aprobarRegistro = async (req, res) => {
   try {
     const { id } = req.params;
-    const { cupoAprobado } = req.body;
+    const { cupoAprobado, datosAprobados } = req.body;
     const user_id = req.user?.id;
 
     if (!user_id) {
@@ -100,7 +100,13 @@ export const aprobarRegistro = async (req, res) => {
           };
         }
         case "cliente": {
-          const datos = registro.datos || {};
+          // Si vienen datos editados, los usamos. Si no, usamos los originales.
+          // Se hace merge por si acaso, pero idealmente datosAprobados trae todo.
+          const datosOriginales = registro.datos || {};
+          const datos = datosAprobados
+            ? { ...datosOriginales, ...datosAprobados }
+            : datosOriginales;
+
           return {
             tablaDestino: "clientes_contabilidad",
             payload: {

@@ -12,14 +12,19 @@ const GestionTokens = ({ userRole }) => {
 
   // Definir permisos basados en el rol
   const puedeGestionar = (tipo) => {
-    if (!userRole || userRole === "admin" || userRole === "super_admin")
-      return true;
+    if (!userRole) return false; // Esperar a que se cargue el rol
+
+    if (userRole === "admin" || userRole === "super_admin") return true;
     // Mapeo de roles a tipos permitidos
     // admin_empleado -> empleado
     if (userRole === "admin_empleado" && tipo === "empleado") return true;
 
     // admin_cliente y admin_proveedor -> cliente y proveedor (Unificados)
-    if (["admin_cliente", "admin_proveedor"].includes(userRole)) {
+    if (
+      ["admin_cliente", "admin_proveedor", "admin_proveedores"].includes(
+        userRole
+      )
+    ) {
       return ["cliente", "proveedor"].includes(tipo);
     }
 

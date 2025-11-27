@@ -26,6 +26,45 @@ const TIPOS_FILTRO = [
   { value: "proveedor", label: "Proveedores" },
 ];
 
+const CLIENTE_FIELDS = [
+  {
+    key: "fecha_diligenciamiento",
+    label: "Fecha diligenciamiento",
+    type: "date",
+  },
+  { key: "tipo_regimen", label: "Tipo de régimen" },
+  { key: "tipo_documento", label: "Tipo de documento" },
+  { key: "nit", label: "NIT" },
+  { key: "dv", label: "DV" },
+  { key: "razon_social", label: "Razón social" },
+  { key: "nombre_establecimiento", label: "Nombre establecimiento" },
+  { key: "primer_nombre", label: "Primer nombre" },
+  { key: "segundo_nombre", label: "Segundo nombre" },
+  { key: "primer_apellido", label: "Primer apellido" },
+  { key: "segundo_apellido", label: "Segundo apellido" },
+  { key: "codigo_ciiu", label: "Código CIIU" },
+  { key: "descripcion_ciiu", label: "Descripción CIIU" },
+  { key: "direccion_domicilio", label: "Dirección domicilio" },
+  { key: "departamento", label: "Departamento" },
+  { key: "ciudad", label: "Ciudad" },
+  { key: "email_factura_electronica", label: "Email factura electrónica" },
+  { key: "nombre_contacto", label: "Nombre contacto" },
+  { key: "email_contacto", label: "Email contacto" },
+  { key: "telefono_contacto", label: "Teléfono contacto" },
+  { key: "rep_legal_nombre", label: "Rep. Legal - Nombre" },
+  { key: "rep_legal_apellidos", label: "Rep. Legal - Apellidos" },
+  { key: "rep_legal_tipo_doc", label: "Rep. Legal - Tipo doc." },
+  { key: "rep_legal_num_doc", label: "Rep. Legal - Núm. doc." },
+  { key: "declara_pep", label: "Declara PEP" },
+  { key: "declara_recursos_publicos", label: "Declara recursos públicos" },
+  {
+    key: "declara_obligaciones_tributarias",
+    label: "Declara obligaciones tributarias",
+  },
+  { key: "cupo", label: "Cupo solicitado" },
+  { key: "plazo", label: "Plazo" },
+];
+
 const PanelAprobaciones = ({ userRole }) => {
   const [registrosPendientes, setRegistrosPendientes] = useState([]);
   const [historial, setHistorial] = useState([]);
@@ -39,6 +78,7 @@ const PanelAprobaciones = ({ userRole }) => {
   const [modalRechazoAbierto, setModalRechazoAbierto] = useState(false);
   const [archivoPreview, setArchivoPreview] = useState(null);
   const [cupoAprobado, setCupoAprobado] = useState("");
+  const [datosEditables, setDatosEditables] = useState({});
   const mensajeTimeout = useRef(null);
 
   // Estados para expedientes en historial
@@ -50,7 +90,11 @@ const PanelAprobaciones = ({ userRole }) => {
     if (!userRole || userRole === "admin" || userRole === "super_admin") {
       return ["empleado", "cliente", "proveedor"];
     }
-    if (["admin_cliente", "admin_proveedor"].includes(userRole)) {
+    if (
+      ["admin_cliente", "admin_proveedor", "admin_proveedores"].includes(
+        userRole
+      )
+    ) {
       return ["cliente", "proveedor"];
     }
     // Si el rol es admin_empleado, retorna ['empleado']
@@ -68,7 +112,11 @@ const PanelAprobaciones = ({ userRole }) => {
     ) {
       // Si es admin o no tiene rol específico, mantener 'todos' o lo que estaba
     } else {
-      if (["admin_cliente", "admin_proveedor"].includes(userRole)) {
+      if (
+        ["admin_cliente", "admin_proveedor", "admin_proveedores"].includes(
+          userRole
+        )
+      ) {
         setFiltroTipo("todos");
       } else {
         // Si tiene un rol específico, forzar el filtro a su tipo
@@ -162,7 +210,11 @@ const PanelAprobaciones = ({ userRole }) => {
       userRole !== "super_admin" &&
       userRole !== "authenticated"
     ) {
-      if (["admin_cliente", "admin_proveedor"].includes(userRole)) {
+      if (
+        ["admin_cliente", "admin_proveedor", "admin_proveedores"].includes(
+          userRole
+        )
+      ) {
         filtrados = filtrados.filter((r) =>
           ["cliente", "proveedor"].includes(r.tipo)
         );
@@ -189,7 +241,11 @@ const PanelAprobaciones = ({ userRole }) => {
       userRole !== "super_admin" &&
       userRole !== "authenticated"
     ) {
-      if (["admin_cliente", "admin_proveedor"].includes(userRole)) {
+      if (
+        ["admin_cliente", "admin_proveedor", "admin_proveedores"].includes(
+          userRole
+        )
+      ) {
         filtrados = filtrados.filter((r) =>
           ["cliente", "proveedor"].includes(r.tipo)
         );
@@ -216,7 +272,11 @@ const PanelAprobaciones = ({ userRole }) => {
       userRole !== "super_admin" &&
       userRole !== "authenticated"
     ) {
-      if (["admin_cliente", "admin_proveedor"].includes(userRole)) {
+      if (
+        ["admin_cliente", "admin_proveedor", "admin_proveedores"].includes(
+          userRole
+        )
+      ) {
         basePermitida = base.filter((r) =>
           ["cliente", "proveedor"].includes(r.tipo)
         );
@@ -588,6 +648,11 @@ const PanelAprobaciones = ({ userRole }) => {
   const handleSeleccionRegistro = (registro) => {
     setRegistroSeleccionado(registro);
     setCupoAprobado("");
+    if (registro?.datos) {
+      setDatosEditables({ ...registro.datos });
+    } else {
+      setDatosEditables({});
+    }
     if (registro?.tipo && filtroTipo !== registro.tipo) {
       setFiltroTipo(registro.tipo);
     }
@@ -604,6 +669,9 @@ const PanelAprobaciones = ({ userRole }) => {
       const payload = {};
       if (registroSeleccionado.tipo === "proveedor") {
         payload.cupoAprobado = cupoAprobado;
+      }
+      if (registroSeleccionado.tipo === "cliente") {
+        payload.datosAprobados = datosEditables;
       }
 
       await axios.post(
@@ -745,15 +813,45 @@ const PanelAprobaciones = ({ userRole }) => {
                 </h2>
               </div>
 
-              {detalleSeleccionado.campos.length > 0 && (
-                <div className="detalle-grid">
-                  {detalleSeleccionado.campos.map((campo) => (
-                    <div key={campo.label} className="detalle-campo">
-                      <label>{campo.label}</label>
-                      <span>{campo.value || "N/A"}</span>
+              {registroSeleccionado.tipo === "cliente" ? (
+                <div className="detalle-grid-editable">
+                  <h3
+                    style={{
+                      gridColumn: "1 / -1",
+                      marginTop: "1rem",
+                      marginBottom: "0.5rem",
+                    }}
+                  >
+                    Editar Información del Cliente
+                  </h3>
+                  {CLIENTE_FIELDS.map((field) => (
+                    <div key={field.key} className="detalle-campo-editable">
+                      <label>{field.label}</label>
+                      <input
+                        type={field.type || "text"}
+                        value={datosEditables[field.key] || ""}
+                        onChange={(e) =>
+                          setDatosEditables({
+                            ...datosEditables,
+                            [field.key]: e.target.value,
+                          })
+                        }
+                        className="input-editable"
+                      />
                     </div>
                   ))}
                 </div>
+              ) : (
+                detalleSeleccionado.campos.length > 0 && (
+                  <div className="detalle-grid">
+                    {detalleSeleccionado.campos.map((campo) => (
+                      <div key={campo.label} className="detalle-campo">
+                        <label>{campo.label}</label>
+                        <span>{campo.value || "N/A"}</span>
+                      </div>
+                    ))}
+                  </div>
+                )
               )}
 
               <div className="detalle-docs">
@@ -777,31 +875,14 @@ const PanelAprobaciones = ({ userRole }) => {
               </div>
 
               {registroSeleccionado.tipo === "proveedor" && (
-                <div
-                  className="detalle-cupo-aprobado"
-                  style={{ margin: "20px 0" }}
-                >
-                  <label
-                    style={{
-                      display: "block",
-                      marginBottom: "8px",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    Cupo Aprobado
-                  </label>
+                <div className="detalle-cupo-aprobado">
+                  <label>Cupo Aprobado</label>
                   <input
                     type="text"
                     value={cupoAprobado}
                     onChange={(e) => setCupoAprobado(e.target.value)}
                     placeholder="Ingrese el cupo aprobado (números o letras)"
                     className="input-cupo-aprobado"
-                    style={{
-                      width: "100%",
-                      padding: "10px",
-                      borderRadius: "4px",
-                      border: "1px solid #ccc",
-                    }}
                   />
                 </div>
               )}
@@ -1047,7 +1128,13 @@ const PanelAprobaciones = ({ userRole }) => {
               )
                 return true;
 
-              if (["admin_cliente", "admin_proveedor"].includes(userRole)) {
+              if (
+                [
+                  "admin_cliente",
+                  "admin_proveedor",
+                  "admin_proveedores",
+                ].includes(userRole)
+              ) {
                 return ["cliente", "proveedor", "todos"].includes(f.value);
               }
 
@@ -1061,7 +1148,11 @@ const PanelAprobaciones = ({ userRole }) => {
                 userRole !== "admin" &&
                 userRole !== "super_admin" &&
                 userRole !== "authenticated" &&
-                !["admin_cliente", "admin_proveedor"].includes(userRole)
+                ![
+                  "admin_cliente",
+                  "admin_proveedor",
+                  "admin_proveedores",
+                ].includes(userRole)
               )
                 return null;
 
