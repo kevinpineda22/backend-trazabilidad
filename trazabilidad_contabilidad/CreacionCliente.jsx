@@ -15,16 +15,12 @@ import {
   FaTimesCircle,
   FaFilePdf,
   FaFileImage,
-  FaHistory,
   FaSpinner,
   FaInfoCircle,
-  FaSort,
-  FaSortUp,
-  FaSortDown,
-  FaEdit,
   FaFileUpload,
+  FaDownload,
 } from "react-icons/fa";
-import { format, parseISO } from "date-fns";
+import { format } from "date-fns";
 import Swal from "sweetalert2";
 import { toast } from "react-toastify";
 import { useSearchParams, Link } from "react-router-dom";
@@ -56,6 +52,21 @@ const DV_REGEX = /^\d$/;
 const NAME_REGEX = /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ\s'.-]{2,}$/;
 const ADDRESS_REGEX = /^[A-Za-z0-9ÁÉÍÓÚÜÑáéíóúüñ#°º\s.,\-\/]+$/;
 
+const calculateDV = (nit) => {
+  if (!nit || isNaN(nit)) return "";
+  const weights = [71, 67, 59, 53, 47, 43, 41, 37, 29, 23, 19, 17, 13, 7, 3];
+  let sum = 0;
+  const nitReverse = nit.toString().split("").reverse();
+
+  for (let i = 0; i < nitReverse.length && i < weights.length; i++) {
+    sum += parseInt(nitReverse[i]) * weights[i];
+  }
+
+  const mod = sum % 11;
+  if (mod === 0 || mod === 1) return mod.toString();
+  return (11 - mod).toString();
+};
+
 //==================================================================
 // 1. COMPONENTE FileInput (¡NUEVA VERSIÓN INTELIGENTE!)
 //==================================================================
@@ -79,9 +90,10 @@ const FileInput = ({ label, name, file, setFile, isRequired = false }) => {
 
   const getIcon = () => {
     const nameToTest = isString ? file : isFile ? file.name : "";
-    if (nameToTest.toLowerCase().endsWith(".pdf"))
+    const cleanName = nameToTest.split("?")[0].toLowerCase();
+    if (cleanName.endsWith(".pdf"))
       return <FaFilePdf style={{ color: "#E53E3E" }} />;
-    if (/\.(jpg|jpeg|png|gif|webp)$/i.test(nameToTest))
+    if (/\.(jpg|jpeg|png|gif|webp)$/i.test(cleanName))
       return <FaFileImage style={{ color: "#38A169" }} />;
     return <FaFileAlt />;
   };
@@ -178,8 +190,9 @@ const DocLink = ({ url, label, onPreview }) => {
   if (!url)
     return <span className="tc-doc-item doc-link-empty">{label}: N/A</span>;
 
-  const isPdf = url.toLowerCase().endsWith(".pdf");
-  const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
+  const cleanUrl = url.split("?")[0].toLowerCase();
+  const isPdf = cleanUrl.endsWith(".pdf");
+  const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(cleanUrl);
   const icon = isPdf ? (
     <FaFilePdf style={{ color: "#E53E3E" }} />
   ) : isImage ? (
@@ -206,144 +219,12 @@ const DocLink = ({ url, label, onPreview }) => {
   );
 };
 
-const useSortableData = (items, config = null) => {
-  // (Esta función no cambia)
-  const [sortConfig, setSortConfig] = useState(config);
-  const sortedItems = useMemo(() => {
-    let sortableItems = [...items];
-    if (sortConfig !== null) {
-      sortableItems.sort((a, b) => {
-        const valA = a[sortConfig.key];
-        const valB = b[sortConfig.key];
-        if (valA === null || valA === undefined) return 1;
-        if (valB === null || valB === undefined) return -1;
-        if (valA < valB) return sortConfig.direction === "ascending" ? -1 : 1;
-        if (valA > valB) return sortConfig.direction === "ascending" ? 1 : -1;
-        return 0;
-      });
-    }
-    return sortableItems;
-  }, [items, sortConfig]);
-
-  const requestSort = (key) => {
-    let direction = "ascending";
-    if (
-      sortConfig &&
-      sortConfig.key === key &&
-      sortConfig.direction === "ascending"
-    ) {
-      direction = "descending";
-    }
-    setSortConfig({ key, direction });
-  };
-  return { items: sortedItems, requestSort, sortConfig };
-};
-
-const HistorialTable = ({
-  isLoading,
-  data,
-  columns,
-  emptyMessage,
-  defaultSortKey = "created_at",
-}) => {
-  // (Esta función no cambia)
-  const { items, requestSort, sortConfig } = useSortableData(data, {
-    key: defaultSortKey,
-    direction: "descending",
-  });
-
-  const getSortIcon = (key) => {
-    if (!sortConfig || sortConfig.key !== key)
-      return <FaSort className="tc-sort-icon" />;
-    return sortConfig.direction === "ascending" ? (
-      <FaSortUp className="tc-sort-icon active" />
-    ) : (
-      <FaSortDown className="tc-sort-icon active" />
-    );
-  };
-
-  return (
-    <AnimatePresence mode="wait">
-      {isLoading ? (
-        <motion.div
-          key="loading"
-          className="tc-historial-message loading"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-        >
-          <FaSpinner className="tc-spinner" />{" "}
-          <span>Cargando historial...</span>
-        </motion.div>
-      ) : items.length === 0 ? (
-        <motion.div
-          key="empty"
-          className="tc-historial-message"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-        >
-          <FaInfoCircle /> <span>{emptyMessage}</span>
-        </motion.div>
-      ) : (
-        <motion.div
-          key="list"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-        >
-          <div className="tc-historial-table-wrapper">
-            <table>
-              <thead>
-                <tr>
-                  {columns.map((col) => (
-                    <th
-                      key={col.key}
-                      className={col.sortable ? "tc-sortable-header" : ""}
-                      style={{ textAlign: "center" }}
-                      onClick={() =>
-                        col.sortable ? requestSort(col.key) : null
-                      }
-                    >
-                      {col.header}
-                      {col.sortable && getSortIcon(col.key)}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {items.map((item) => (
-                  <tr key={item.id}>
-                    {columns.map((col) => (
-                      <td
-                        key={`${item.id}-${col.key}`}
-                        className={`${col.className || ""} ${
-                          col.centered ? "tc-centered-cell" : ""
-                        }`}
-                      >
-                        {col.cell ? col.cell(item) : item[col.key]}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  );
-};
-
 const TrazabilidadPageLayout = ({
   title,
   icon,
   subtitle,
   formContent,
-  historialTitle,
-  historialContent,
   formCardRef,
-  modoPublico,
 }) => {
   // (Esta función no cambia)
   return (
@@ -361,22 +242,6 @@ const TrazabilidadPageLayout = ({
         <p className="tc-subtitle">{subtitle}</p>
         {formContent}
       </motion.div>
-
-      {/* Ocultar historial en modo público */}
-      {!modoPublico && (
-        <motion.div
-          className="tc-card"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <h2 className="tc-title">
-            <FaHistory />
-            {historialTitle}
-          </h2>
-          {historialContent}
-        </motion.div>
-      )}
     </div>
   );
 };
@@ -473,6 +338,7 @@ const CreacionCliente = () => {
   const formCardRef = useRef(null);
   // Estados de control de pasos (navegación visual)
   const [pasoActual, setPasoActual] = useState(1); // 1: datos, 2: documentos
+  const [documentosDescarga, setDocumentosDescarga] = useState([]); // Documentos para descargar
   const [rut, setRut] = useState(null);
   const [camaraComercio, setCamaraComercio] = useState(null);
   const [cedula, setCedula] = useState(null);
@@ -604,37 +470,12 @@ const CreacionCliente = () => {
     setPreviewUrl("");
   };
 
-  // --- (Lógica de Historial no cambia) ---
-  const [historial, setHistorial] = useState([]);
-  const [loadingHistorial, setLoadingHistorial] = useState(true);
-
-  const fetchHistorial = useCallback(async () => {
-    setLoadingHistorial(true);
-    try {
-      const { data } = await apiTrazabilidad.get(
-        "/trazabilidad/clientes/historial"
-      );
-      setHistorial(data || []);
-    } catch (error) {
-      console.error("Error al cargar el historial:", error);
-      if (error.response?.status !== 404 && error.response?.status !== 401) {
-        toast.error("No se pudo cargar el historial.");
-      }
-      setHistorial([]);
-    } finally {
-      setLoadingHistorial(false);
-    }
-  }, []);
-
   useEffect(() => {
     // Solo cargar historial si NO está en modo público
-    if (!modoPublico) {
-      fetchHistorial();
-    }
     return () => {
       if (submitTimeoutRef.current) clearTimeout(submitTimeoutRef.current);
     };
-  }, [fetchHistorial, modoPublico]);
+  }, []);
 
   useEffect(() => {
     if (!modoPublico || !tokenPublico) {
@@ -683,6 +524,23 @@ const CreacionCliente = () => {
       isMounted = false;
     };
   }, [modoPublico, tokenPublico]);
+
+  useEffect(() => {
+    // Cargar documentos públicos para clientes
+    const cargarDocumentos = async () => {
+      try {
+        const { data } = await axios.get(
+          `${
+            import.meta.env.VITE_BACKEND_TRAZABILIDAD_URL
+          }/api/trazabilidad/registro-publico/documentos/cliente`
+        );
+        setDocumentosDescarga(data);
+      } catch (error) {
+        console.error("Error cargando documentos:", error);
+      }
+    };
+    cargarDocumentos();
+  }, []);
 
   useEffect(() => {
     if (formData.fecha_diligenciamiento !== todayIso) {
@@ -878,6 +736,10 @@ const CreacionCliente = () => {
     setFormData((prev) => {
       const next = { ...prev, [name]: finalValue };
 
+      if (name === "nit" && prev.tipo_documento === "NIT") {
+        next.dv = calculateDV(finalValue);
+      }
+
       if (name === "tipo_regimen") {
         if (finalValue === "persona_juridica") {
           next.tipo_documento = "NIT";
@@ -901,6 +763,8 @@ const CreacionCliente = () => {
 
       if (name === "tipo_documento" && finalValue !== "NIT") {
         next.dv = "";
+      } else if (name === "tipo_documento" && finalValue === "NIT") {
+        next.dv = calculateDV(next.nit);
       }
 
       return next;
@@ -1034,6 +898,16 @@ const CreacionCliente = () => {
       nombre_establecimiento: isPersonaJuridica
         ? toNull(formData.nombre_establecimiento)
         : null,
+      primer_nombre: !isPersonaJuridica ? toNull(formData.primer_nombre) : null,
+      segundo_nombre: !isPersonaJuridica
+        ? toNull(formData.segundo_nombre)
+        : null,
+      primer_apellido: !isPersonaJuridica
+        ? toNull(formData.primer_apellido)
+        : null,
+      segundo_apellido: !isPersonaJuridica
+        ? toNull(formData.segundo_apellido)
+        : null,
       codigo_ciiu: toNull(formData.codigo_ciiu),
       descripcion_ciiu: toNull(formData.descripcion_ciiu),
       direccion_domicilio: toNull(formData.direccion_domicilio),
@@ -1062,6 +936,8 @@ const CreacionCliente = () => {
       declara_obligaciones_tributarias: toNull(
         formData.declara_obligaciones_tributarias
       ),
+      cupo: toNull(formData.cupo),
+      plazo: toNull(formData.plazo),
     };
   }, [
     buildNombreNatural,
@@ -1069,6 +945,8 @@ const CreacionCliente = () => {
     formData.codigo_ciiu,
     formData.ciudad,
     formData.ciudad_codigo,
+    formData.cupo,
+    formData.plazo,
     formData.declara_obligaciones_tributarias,
     formData.declara_pep,
     formData.declara_recursos_publicos,
@@ -1084,6 +962,10 @@ const CreacionCliente = () => {
     formData.nombre_establecimiento,
     formData.nit,
     formData.razon_social,
+    formData.primer_nombre,
+    formData.segundo_nombre,
+    formData.primer_apellido,
+    formData.segundo_apellido,
     formData.rep_legal_apellidos,
     formData.rep_legal_nombre,
     formData.rep_legal_num_doc,
@@ -1503,9 +1385,6 @@ const CreacionCliente = () => {
         });
 
         resetForm();
-        if (!modoPublico) {
-          fetchHistorial();
-        }
       } catch (error) {
         console.error("Error al crear cliente:", error);
         const errorMsg = parseApiError(error);
@@ -1528,86 +1407,66 @@ const CreacionCliente = () => {
     }
   };
 
-  // --- (columns no cambia) ---
-  const columns = [
-    {
-      header: "Creado por",
-      key: "profiles",
-      sortable: true,
-      centered: true,
-      className: "tc-centered-cell",
-      cell: (item) => (
-        <div className="tc-user-cell">
-          <FaUser />
-          {item.profiles?.nombre || "Usuario desconocido"}
-        </div>
-      ),
-    },
-    {
-      header: "Fecha Creación",
-      key: "created_at",
-      sortable: true,
-      centered: true,
-      className: "tc-centered-cell",
-      cell: (item) => format(parseISO(item.created_at), "dd/MM/yyyy hh:mm a"),
-    },
-    {
-      header: "Documentos Adjuntos (Ver)",
-      key: "documentos",
-      className: "tc-doc-links-cell tc-centered-cell",
-      cell: (item) => (
-        <div className="tc-doc-list">
-          <DocLink url={item.url_rut} label="RUT" onPreview={openPreview} />
-          <DocLink
-            url={item.url_camara_comercio}
-            label="Cámara de Comercio"
-            onPreview={openPreview}
-          />
-          <DocLink
-            url={item.url_certificacion_bancaria}
-            label="Certificación Bancaria"
-            onPreview={openPreview}
-          />
-          <DocLink
-            url={item.url_cedula}
-            label="Cédula"
-            onPreview={openPreview}
-          />
-          <DocLink
-            url={item.url_certificado_sagrilaft}
-            label="Cert. SAGRILAFT"
-            onPreview={openPreview}
-          />
-          <DocLink
-            url={item.url_composicion_accionaria}
-            label="Composición Accionaria"
-            onPreview={openPreview}
-          />
-        </div>
-      ),
-    },
-    {
-      header: "Acciones",
-      key: "acciones",
-      centered: true,
-      className: "tc-centered-cell",
-      cell: (item) => (
-        <button
-          className="tc-action-btn-edit"
-          title="Editar este registro"
-          onClick={() => handleCargarParaEditar(item)}
-        >
-          <FaEdit />
-        </button>
-      ),
-    },
-  ];
-
   const formulario = (
     <form onSubmit={handleFormSubmit} className="tc-form">
       {/* PASO 1: FORMULARIO DE DATOS */}
       {pasoActual === 1 && (
         <>
+          {documentosDescarga.length > 0 && (
+            <div
+              className="tc-info-box"
+              style={{
+                marginBottom: "20px",
+                background: "#ebf8ff",
+                padding: "15px",
+                borderRadius: "8px",
+                border: "1px solid #bee3f8",
+              }}
+            >
+              <h4
+                style={{
+                  margin: "0 0 10px 0",
+                  color: "#2c5282",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                }}
+              >
+                <FaFileAlt /> Documentos Importantes
+              </h4>
+              <p
+                style={{
+                  fontSize: "0.9rem",
+                  color: "#4a5568",
+                  marginBottom: "10px",
+                }}
+              >
+                Por favor descargue los siguientes documentos necesarios para su
+                registro:
+              </p>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
+                {documentosDescarga.map((doc) => (
+                  <a
+                    key={doc.id}
+                    href={doc.url_archivo}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="tc-doc-button"
+                    style={{
+                      textDecoration: "none",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "5px",
+                      fontSize: "0.85rem",
+                    }}
+                  >
+                    <FaDownload /> {doc.nombre_archivo}
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="tc-form-separator">
             <span>Información General</span>
           </div>
@@ -1677,7 +1536,6 @@ const CreacionCliente = () => {
                 className={`tc-form-input ${
                   formErrors.tipo_documento ? "is-invalid" : ""
                 }`}
-                disabled={isPersonaJuridica}
               >
                 <option value="">Seleccione...</option>
                 {DOCUMENT_OPTIONS.map((option) => (
@@ -2608,10 +2466,8 @@ const CreacionCliente = () => {
             : "Completa la información comercial y adjunta todos los documentos requeridos para la creación y vinculación del cliente."
         }
         formContent={formContent}
-        historialTitle="Historial de Clientes Creados"
-        historialContent={null}
         formCardRef={formCardRef}
-        modoPublico={true}
+        modoPublico={modoPublico}
       />
     </>
   );

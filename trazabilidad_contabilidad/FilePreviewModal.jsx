@@ -1,5 +1,6 @@
 // src/pages/trazabilidad_contabilidad/FilePreviewModal.jsx
 import React from "react";
+import ReactDOM from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaTimes } from "react-icons/fa";
 import { Worker } from "@react-pdf-viewer/core";
@@ -14,8 +15,11 @@ const FilePreviewModal = ({ isOpen, fileUrl, onClose }) => {
   const defaultLayoutPluginInstance = defaultLayoutPlugin();
 
   const isValidUrl = fileUrl && typeof fileUrl === "string";
-  const isPdf = isValidUrl && fileUrl.toLowerCase().endsWith(".pdf");
-  const isImage = isValidUrl && /\.(jpg|jpeg|png|gif|webp)$/i.test(fileUrl);
+  // Limpiar URL de query params para verificar extensión
+  const cleanUrl = isValidUrl ? fileUrl.split("?")[0].toLowerCase() : "";
+
+  const isPdf = isValidUrl && cleanUrl.endsWith(".pdf");
+  const isImage = isValidUrl && /\.(jpg|jpeg|png|gif|webp)$/i.test(cleanUrl);
 
   let content;
   if (isValidUrl) {
@@ -28,12 +32,19 @@ const FilePreviewModal = ({ isOpen, fileUrl, onClose }) => {
         </Worker>
       );
     } else if (isImage) {
-      content = <img src={fileUrl} alt="Vista previa" className="file-preview-image" />;
+      content = (
+        <img src={fileUrl} alt="Vista previa" className="file-preview-image" />
+      );
     } else {
       content = (
         <div className="file-preview-unsupported">
           <p>No se puede previsualizar este tipo de archivo.</p>
-          <a href={fileUrl} target="_blank" rel="noopener noreferrer" className="file-preview-download-btn">
+          <a
+            href={fileUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="file-preview-download-btn"
+          >
             Descargar Archivo
           </a>
         </div>
@@ -47,10 +58,16 @@ const FilePreviewModal = ({ isOpen, fileUrl, onClose }) => {
     );
   }
 
-  return (
+  return ReactDOM.createPortal(
     <AnimatePresence>
       {isOpen && (
-        <motion.div className="file-preview-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}>
+        <motion.div
+          className="file-preview-overlay"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={onClose}
+        >
           <motion.div
             className="file-preview-modal"
             initial={{ scale: 0.9, opacity: 0 }}
@@ -66,7 +83,8 @@ const FilePreviewModal = ({ isOpen, fileUrl, onClose }) => {
           </motion.div>
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 };
 

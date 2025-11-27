@@ -3,12 +3,28 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "./GestionTokens.css";
 
-const GestionTokens = () => {
+const GestionTokens = ({ userRole }) => {
   const [tokens, setTokens] = useState([]);
   const [loading, setLoading] = useState(false);
   const [mensaje, setMensaje] = useState("");
   const [tipoMensaje, setTipoMensaje] = useState(""); // 'success' o 'error'
   const [filtroEstado, setFiltroEstado] = useState("activo"); // 'activo', 'todos', 'usado', 'expirado'
+
+  // Definir permisos basados en el rol
+  const puedeGestionar = (tipo) => {
+    if (!userRole || userRole === "admin" || userRole === "super_admin")
+      return true;
+    // Mapeo de roles a tipos permitidos
+    // admin_empleado -> empleado
+    if (userRole === "admin_empleado" && tipo === "empleado") return true;
+
+    // admin_cliente y admin_proveedor -> cliente y proveedor (Unificados)
+    if (["admin_cliente", "admin_proveedor"].includes(userRole)) {
+      return ["cliente", "proveedor"].includes(tipo);
+    }
+
+    return false;
+  };
 
   // Cargar tokens al montar el componente
   useEffect(() => {
@@ -138,19 +154,25 @@ const GestionTokens = () => {
     return `${window.location.origin}${rutas[tipo]}?token=${token}`;
   };
 
-  // Filtrar tokens según el estado seleccionado
+  // Filtrar tokens según el estado seleccionado y el rol del usuario
   const tokensFiltrados = tokens.filter((token) => {
+    // Filtro por rol
+    if (!puedeGestionar(token.tipo)) return false;
+
     if (filtroEstado === "todos") return true;
     const estado = calcularEstado(token);
     return estado === filtroEstado;
   });
 
-  // Contar tokens por estado
+  // Contar tokens por estado (filtrados por rol)
+  const tokensPermitidos = tokens.filter((t) => puedeGestionar(t.tipo));
   const contadorEstados = {
-    activo: tokens.filter((t) => calcularEstado(t) === "activo").length,
-    usado: tokens.filter((t) => calcularEstado(t) === "usado").length,
-    expirado: tokens.filter((t) => calcularEstado(t) === "expirado").length,
-    todos: tokens.length,
+    activo: tokensPermitidos.filter((t) => calcularEstado(t) === "activo")
+      .length,
+    usado: tokensPermitidos.filter((t) => calcularEstado(t) === "usado").length,
+    expirado: tokensPermitidos.filter((t) => calcularEstado(t) === "expirado")
+      .length,
+    todos: tokensPermitidos.length,
   };
 
   return (
@@ -175,27 +197,33 @@ const GestionTokens = () => {
 
       {/* Botones para generar tokens */}
       <div className="tokens-botones-generar">
-        <button
-          className="tokens-btn-generar tokens-btn-empleado"
-          onClick={() => generarNuevoToken("empleado")}
-          disabled={loading}
-        >
-          ➕ Generar Link Empleado
-        </button>
-        <button
-          className="tokens-btn-generar tokens-btn-cliente"
-          onClick={() => generarNuevoToken("cliente")}
-          disabled={loading}
-        >
-          ➕ Generar Link Cliente
-        </button>
-        <button
-          className="tokens-btn-generar tokens-btn-proveedor"
-          onClick={() => generarNuevoToken("proveedor")}
-          disabled={loading}
-        >
-          ➕ Generar Link Proveedor
-        </button>
+        {puedeGestionar("empleado") && (
+          <button
+            className="tokens-btn-generar tokens-btn-empleado"
+            onClick={() => generarNuevoToken("empleado")}
+            disabled={loading}
+          >
+            ➕ Generar Link Empleado
+          </button>
+        )}
+        {puedeGestionar("cliente") && (
+          <button
+            className="tokens-btn-generar tokens-btn-cliente"
+            onClick={() => generarNuevoToken("cliente")}
+            disabled={loading}
+          >
+            ➕ Generar Link Cliente
+          </button>
+        )}
+        {puedeGestionar("proveedor") && (
+          <button
+            className="tokens-btn-generar tokens-btn-proveedor"
+            onClick={() => generarNuevoToken("proveedor")}
+            disabled={loading}
+          >
+            ➕ Generar Link Proveedor
+          </button>
+        )}
       </div>
 
       {/* Filtros de estado */}

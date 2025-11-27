@@ -8,7 +8,16 @@ import "./PanelAprobaciones.css";
 import ExpedienteEmpleadoView from "./views/ExpedienteEmpleadoView";
 import ExpedienteProveedorView from "./views/ExpedienteProveedorView";
 import ExpedienteClienteView from "./views/ExpedienteClienteView";
-import { FaFolderOpen } from "react-icons/fa";
+import {
+  FaFolderOpen,
+  FaCheck,
+  FaTimes,
+  FaFileAlt,
+  FaFilter,
+  FaHistory,
+  FaClock,
+  FaSearch,
+} from "react-icons/fa";
 
 const TIPOS_FILTRO = [
   { value: "todos", label: "Todos" },
@@ -17,7 +26,7 @@ const TIPOS_FILTRO = [
   { value: "proveedor", label: "Proveedores" },
 ];
 
-const PanelAprobaciones = () => {
+const PanelAprobaciones = ({ userRole }) => {
   const [registrosPendientes, setRegistrosPendientes] = useState([]);
   const [historial, setHistorial] = useState([]);
   const [vistaActual, setVistaActual] = useState("pendientes");
@@ -34,6 +43,39 @@ const PanelAprobaciones = () => {
   // Estados para expedientes en historial
   const [vistaExpediente, setVistaExpediente] = useState(null); // 'empleado', 'proveedor', 'cliente', o null
   const [expedienteId, setExpedienteId] = useState(null);
+
+  // Determinar qué tipos puede ver el usuario
+  const tiposPermitidos = useMemo(() => {
+    if (!userRole || userRole === "admin" || userRole === "super_admin") {
+      return ["empleado", "cliente", "proveedor"];
+    }
+    if (["admin_cliente", "admin_proveedor"].includes(userRole)) {
+      return ["cliente", "proveedor"];
+    }
+    // Si el rol es admin_empleado, retorna ['empleado']
+    const tipo = userRole.replace("admin_", "");
+    return [tipo];
+  }, [userRole]);
+
+  // Ajustar filtro inicial según rol
+  useEffect(() => {
+    if (
+      !userRole ||
+      userRole === "admin" ||
+      userRole === "super_admin" ||
+      userRole === "authenticated"
+    ) {
+      // Si es admin o no tiene rol específico, mantener 'todos' o lo que estaba
+    } else {
+      if (["admin_cliente", "admin_proveedor"].includes(userRole)) {
+        setFiltroTipo("todos");
+      } else {
+        // Si tiene un rol específico, forzar el filtro a su tipo
+        const tipo = userRole.replace("admin_", "");
+        setFiltroTipo(tipo);
+      }
+    }
+  }, [userRole]);
 
   useEffect(() => {
     if (vistaActual === "pendientes") {
@@ -110,36 +152,92 @@ const PanelAprobaciones = () => {
   };
 
   const pendientesFiltrados = useMemo(() => {
-    if (filtroTipo === "todos") {
-      return registrosPendientes;
+    let filtrados = registrosPendientes;
+
+    // 1. Filtrar por permisos de rol (seguridad)
+    if (
+      userRole &&
+      userRole !== "admin" &&
+      userRole !== "super_admin" &&
+      userRole !== "authenticated"
+    ) {
+      if (["admin_cliente", "admin_proveedor"].includes(userRole)) {
+        filtrados = filtrados.filter((r) =>
+          ["cliente", "proveedor"].includes(r.tipo)
+        );
+      } else {
+        const tipoPermitido = userRole.replace("admin_", "");
+        filtrados = filtrados.filter((r) => r.tipo === tipoPermitido);
+      }
     }
-    return registrosPendientes.filter(
-      (registro) => registro.tipo === filtroTipo
-    );
-  }, [registrosPendientes, filtroTipo]);
+
+    // 2. Filtrar por selección de UI
+    if (filtroTipo === "todos") {
+      return filtrados;
+    }
+    return filtrados.filter((registro) => registro.tipo === filtroTipo);
+  }, [registrosPendientes, filtroTipo, userRole]);
 
   const historialFiltrado = useMemo(() => {
-    if (filtroTipo === "todos") {
-      return historial;
+    let filtrados = historial;
+
+    // 1. Filtrar por permisos de rol (seguridad)
+    if (
+      userRole &&
+      userRole !== "admin" &&
+      userRole !== "super_admin" &&
+      userRole !== "authenticated"
+    ) {
+      if (["admin_cliente", "admin_proveedor"].includes(userRole)) {
+        filtrados = filtrados.filter((r) =>
+          ["cliente", "proveedor"].includes(r.tipo)
+        );
+      } else {
+        const tipoPermitido = userRole.replace("admin_", "");
+        filtrados = filtrados.filter((r) => r.tipo === tipoPermitido);
+      }
     }
-    return historial.filter((registro) => registro.tipo === filtroTipo);
-  }, [historial, filtroTipo]);
+
+    // 2. Filtrar por selección de UI
+    if (filtroTipo === "todos") {
+      return filtrados;
+    }
+    return filtrados.filter((registro) => registro.tipo === filtroTipo);
+  }, [historial, filtroTipo, userRole]);
 
   const contadorPorTipo = useMemo(() => {
     const base = vistaActual === "pendientes" ? registrosPendientes : historial;
+    // Filtrar base por rol primero para que los conteos sean correctos
+    let basePermitida = base;
+    if (
+      userRole &&
+      userRole !== "admin" &&
+      userRole !== "super_admin" &&
+      userRole !== "authenticated"
+    ) {
+      if (["admin_cliente", "admin_proveedor"].includes(userRole)) {
+        basePermitida = base.filter((r) =>
+          ["cliente", "proveedor"].includes(r.tipo)
+        );
+      } else {
+        const tipoPermitido = userRole.replace("admin_", "");
+        basePermitida = base.filter((r) => r.tipo === tipoPermitido);
+      }
+    }
+
     const conteo = {
-      todos: base.length,
+      todos: basePermitida.length,
       empleado: 0,
       cliente: 0,
       proveedor: 0,
     };
-    base.forEach((registro) => {
+    basePermitida.forEach((registro) => {
       if (conteo[registro.tipo] !== undefined) {
         conteo[registro.tipo] += 1;
       }
     });
     return conteo;
-  }, [registrosPendientes, historial, vistaActual]);
+  }, [registrosPendientes, historial, vistaActual, userRole]);
 
   useEffect(() => {
     if (vistaActual !== "pendientes") return;
@@ -587,6 +685,9 @@ const PanelAprobaciones = () => {
     return (
       <div className="pendientes-layout">
         <aside className="lista-registros">
+          <div className="lista-header">
+            <h3>Solicitudes ({pendientesFiltrados.length})</h3>
+          </div>
           <ul className="registro-lista">
             {pendientesFiltrados.map((registro) => {
               const resumen = obtenerResumenLista(registro);
@@ -599,7 +700,7 @@ const PanelAprobaciones = () => {
                   }`}
                   onClick={() => handleSeleccionRegistro(registro)}
                 >
-                  <div className="registro-item-header">
+                  <div className="registro-item-top">
                     <span className={`badge-tipo ${registro.tipo}`}>
                       {registro.tipo}
                     </span>
@@ -607,10 +708,10 @@ const PanelAprobaciones = () => {
                       {formatearFecha(registro.created_at)}
                     </span>
                   </div>
-                  <p className="registro-item-resumen">
-                    {resumen.titulo}
-                    <span>{resumen.meta}</span>
-                  </p>
+                  <div className="registro-item-content">
+                    <h4 className="registro-item-titulo">{resumen.titulo}</h4>
+                    <p className="registro-item-meta">{resumen.meta}</p>
+                  </div>
                 </li>
               );
             })}
@@ -674,7 +775,7 @@ const PanelAprobaciones = () => {
                   onClick={aprobarRegistro}
                   disabled={loading}
                 >
-                  Aprobar registro
+                  <FaCheck /> Aprobar registro
                 </button>
                 <button
                   type="button"
@@ -682,7 +783,7 @@ const PanelAprobaciones = () => {
                   onClick={abrirModalRechazo}
                   disabled={loading}
                 >
-                  Rechazar registro
+                  <FaTimes /> Rechazar registro
                 </button>
               </div>
             </>
@@ -699,110 +800,127 @@ const PanelAprobaciones = () => {
   const renderHistorial = () => {
     if (historialFiltrado.length === 0) {
       return (
-        <div className="estado">
-          {loading
-            ? "Cargando historial..."
-            : "No hay historial para este filtro."}
+        <div className="estado-vacio">
+          <div className="icono-vacio">📜</div>
+          <h3>Historial vacío</h3>
+          <p>No hay registros en el historial para el filtro seleccionado.</p>
         </div>
       );
     }
 
     return (
-      <div className="historial-wrapper">
-        <table className="historial-tabla">
-          <thead>
-            <tr>
-              <th>Tipo</th>
-              <th>Registro</th>
-              <th>Fecha de registro</th>
-              <th>Estado</th>
-              <th>Fecha decisión</th>
-              <th>Motivo rechazo</th>
-              <th>Expediente</th>
-            </tr>
-          </thead>
-          <tbody>
-            {historialFiltrado.map((registro) => {
-              const resumen = obtenerResumenLista(registro);
-              const estado = registro.estado || "pendiente";
-              const fechaDecision = registro.fecha_aprobacion
-                ? formatearFecha(registro.fecha_aprobacion)
-                : registro.fecha_rechazo
-                ? formatearFecha(registro.fecha_rechazo)
-                : "N/A";
+      <div className="historial-container">
+        <div className="historial-table-wrapper">
+          <table className="historial-tabla">
+            <thead>
+              <tr>
+                <th>Tipo</th>
+                <th>Solicitante / Entidad</th>
+                <th>Fecha Registro</th>
+                <th>Estado</th>
+                <th>Fecha Decisión</th>
+                <th>Detalles</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {historialFiltrado.map((registro) => {
+                const resumen = obtenerResumenLista(registro);
+                const estado = registro.estado || "pendiente";
+                const fechaDecision = registro.fecha_aprobacion
+                  ? formatearFecha(registro.fecha_aprobacion)
+                  : registro.fecha_rechazo
+                  ? formatearFecha(registro.fecha_rechazo)
+                  : "N/A";
 
-              return (
-                <tr key={registro.id}>
-                  <td>
-                    <span className={`badge-tipo ${registro.tipo}`}>
-                      {registro.tipo}
-                    </span>
-                  </td>
-                  <td>
-                    <div className="historial-resumen">{resumen.titulo}</div>
-                    <div className="historial-meta">{resumen.meta}</div>
-                  </td>
-                  <td>{formatearFecha(registro.created_at)}</td>
-                  <td>
-                    <span className={`badge-estado estado-${estado}`}>
-                      {estado}
-                    </span>
-                  </td>
-                  <td>{fechaDecision}</td>
-                  <td>{registro.motivo_rechazo || "N/A"}</td>
-                  <td>
-                    {estado === "aprobado" && registro.registro_aprobado_id && (
-                      <button
-                        type="button"
-                        className="btn-ver-expediente"
-                        onClick={() =>
-                          abrirExpediente(
-                            registro.tipo,
-                            registro.registro_aprobado_id
-                          )
-                        }
-                        title="Ver expediente completo"
-                      >
-                        <FaFolderOpen /> Ver Expediente
-                      </button>
-                    )}
-                    {estado === "rechazado" && (
-                      <span style={{ color: "#6b7280", fontSize: "0.875rem" }}>
-                        —
+                return (
+                  <tr key={registro.id}>
+                    <td>
+                      <span className={`badge-tipo-sm ${registro.tipo}`}>
+                        {registro.tipo}
                       </span>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                    </td>
+                    <td>
+                      <div className="historial-nombre">{resumen.titulo}</div>
+                      <div className="historial-subtext">{resumen.meta}</div>
+                    </td>
+                    <td>{formatearFecha(registro.created_at)}</td>
+                    <td>
+                      <span className={`badge-estado estado-${estado}`}>
+                        {estado}
+                      </span>
+                    </td>
+                    <td>
+                      <div className="fecha-decision">{fechaDecision}</div>
+                      {registro.motivo_rechazo && (
+                        <div
+                          className="motivo-rechazo-tooltip"
+                          title={registro.motivo_rechazo}
+                        >
+                          (Ver motivo)
+                        </div>
+                      )}
+                    </td>
+                    <td>
+                      {registro.motivo_rechazo ? (
+                        <span className="texto-motivo">
+                          {registro.motivo_rechazo}
+                        </span>
+                      ) : (
+                        <span className="texto-ok">Sin observaciones</span>
+                      )}
+                    </td>
+                    <td>
+                      {estado === "aprobado" &&
+                      registro.registro_aprobado_id ? (
+                        <button
+                          type="button"
+                          className="btn-icon-expediente"
+                          onClick={() =>
+                            abrirExpediente(
+                              registro.tipo,
+                              registro.registro_aprobado_id
+                            )
+                          }
+                          title="Ver expediente completo"
+                        >
+                          <FaFolderOpen />
+                        </button>
+                      ) : (
+                        <span className="accion-na">—</span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
     );
   };
 
   // Si estamos viendo un expediente, mostrar el componente correspondiente
   if (vistaExpediente && expedienteId) {
+    let content = null;
     if (vistaExpediente === "empleado") {
-      return (
+      content = (
         <ExpedienteEmpleadoView
           empleadoId={expedienteId}
           onBack={cerrarExpediente}
           onPreview={(url) => setArchivoPreview({ url, nombre: "Documento" })}
         />
       );
-    }
-    if (vistaExpediente === "proveedor") {
-      return (
+    } else if (vistaExpediente === "proveedor") {
+      content = (
         <ExpedienteProveedorView
           proveedorId={expedienteId}
           onBack={cerrarExpediente}
           onPreview={(url) => setArchivoPreview({ url, nombre: "Documento" })}
         />
       );
-    }
-    if (vistaExpediente === "cliente") {
-      return (
+    } else if (vistaExpediente === "cliente") {
+      content = (
         <ExpedienteClienteView
           clienteId={expedienteId}
           onBack={cerrarExpediente}
@@ -810,93 +928,153 @@ const PanelAprobaciones = () => {
         />
       );
     }
+
+    if (content) {
+      return (
+        <>
+          {content}
+          {archivoPreview && (
+            <FilePreviewModal
+              isOpen
+              fileUrl={archivoPreview.url}
+              onClose={() => setArchivoPreview(null)}
+            />
+          )}
+        </>
+      );
+    }
   }
 
   return (
     <div className="panel-aprobaciones-container">
-      <div className="panel-header">
-        <h1>Panel de Aprobaciones</h1>
-        <p className="panel-subtitle">
-          Revisa los registros generados desde los formularios públicos,
-          controla los documentos y deja trazabilidad de cada decisión.
-        </p>
+      <div className="panel-header-main">
+        <div className="header-content">
+          <h1>Panel de Aprobaciones</h1>
+          <p className="panel-subtitle">
+            Gestión centralizada de solicitudes y trazabilidad documental.
+          </p>
+        </div>
+        <div className="header-stats">
+          <div className="stat-item">
+            <span className="stat-value">{registrosPendientes.length}</span>
+            <span className="stat-label">Pendientes</span>
+          </div>
+        </div>
       </div>
 
       {mensaje && (
         <div
-          className={`alert ${
+          className={`alert-message ${
             tipoMensaje === "success" ? "alert-success" : "alert-error"
           }`}
         >
+          {tipoMensaje === "success" ? <FaCheck /> : <FaTimes />}
           {mensaje}
         </div>
       )}
 
-      <div className="panel-controls">
-        <div className="tabs">
+      <div className="panel-controls-wrapper">
+        <div className="tabs-container">
           <button
             type="button"
-            className={`tab ${
-              vistaActual === "pendientes" ? "tab-activa" : ""
+            className={`tab-button ${
+              vistaActual === "pendientes" ? "tab-active" : ""
             }`}
             onClick={() => setVistaActual("pendientes")}
           >
-            Pendientes
+            <FaClock /> Pendientes
           </button>
           <button
             type="button"
-            className={`tab ${vistaActual === "historial" ? "tab-activa" : ""}`}
+            className={`tab-button ${
+              vistaActual === "historial" ? "tab-active" : ""
+            }`}
             onClick={() => setVistaActual("historial")}
           >
-            Historial
+            <FaHistory /> Historial
           </button>
         </div>
 
-        <div className="tipo-filtro">
-          {TIPOS_FILTRO.map(({ value, label }) => {
-            const count = contadorPorTipo[value] ?? 0;
-            return (
-              <button
-                key={value}
-                type="button"
-                className={`filtro-chip ${
-                  filtroTipo === value ? "filtro-chip-activa" : ""
-                }`}
-                onClick={() => setFiltroTipo(value)}
-              >
-                {label}
-                <span className="filtro-chip-count">{count}</span>
-              </button>
-            );
-          })}
+        <div className="filtros-container">
+          <div className="filtro-label">
+            <FaFilter /> Filtrar por:
+          </div>
+          <div className="filtros-list">
+            {TIPOS_FILTRO.filter((f) => {
+              if (
+                !userRole ||
+                userRole === "admin" ||
+                userRole === "super_admin" ||
+                userRole === "authenticated"
+              )
+                return true;
+
+              if (["admin_cliente", "admin_proveedor"].includes(userRole)) {
+                return ["cliente", "proveedor", "todos"].includes(f.value);
+              }
+
+              const tipoPermitido = userRole.replace("admin_", "");
+              return f.value === tipoPermitido || f.value === "todos";
+            }).map(({ value, label }) => {
+              const count = contadorPorTipo[value] ?? 0;
+              if (
+                value === "todos" &&
+                userRole &&
+                userRole !== "admin" &&
+                userRole !== "super_admin" &&
+                userRole !== "authenticated" &&
+                !["admin_cliente", "admin_proveedor"].includes(userRole)
+              )
+                return null;
+
+              return (
+                <button
+                  key={value}
+                  type="button"
+                  className={`filtro-chip ${
+                    filtroTipo === value ? "filtro-chip-active" : ""
+                  }`}
+                  onClick={() => setFiltroTipo(value)}
+                >
+                  {label}
+                  <span className="filtro-count">{count}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
-      {vistaActual === "pendientes" ? renderPendientes() : renderHistorial()}
+      <div className="panel-content-area">
+        {vistaActual === "pendientes" ? renderPendientes() : renderHistorial()}
+      </div>
 
       {modalRechazoAbierto && (
-        <div className="modal-overlay" onClick={cerrarModalRechazo}>
+        <div className="modal-overlay-backdrop" onClick={cerrarModalRechazo}>
           <div
-            className="modal-contenido"
+            className="modal-card"
             onClick={(event) => event.stopPropagation()}
           >
-            <h2>Rechazar registro</h2>
-            <p>Describe brevemente el motivo del rechazo.</p>
-            <textarea
-              className="textarea-motivo"
-              placeholder="Motivo del rechazo..."
-              value={motivoRechazo}
-              onChange={(event) => setMotivoRechazo(event.target.value)}
-            />
-            <div className="modal-botones">
-              <button
-                type="button"
-                className="btn-confirmar-rechazo"
-                onClick={rechazarRegistro}
-                disabled={loading || !motivoRechazo.trim()}
-              >
-                Confirmar rechazo
+            <div className="modal-header">
+              <h2>Rechazar Solicitud</h2>
+              <button className="btn-close-modal" onClick={cerrarModalRechazo}>
+                <FaTimes />
               </button>
+            </div>
+            <div className="modal-body">
+              <p>
+                Por favor, indica el motivo por el cual se rechaza esta
+                solicitud. Esta información será visible en el historial.
+              </p>
+              <textarea
+                className="textarea-motivo"
+                placeholder="Escribe el motivo del rechazo aquí..."
+                value={motivoRechazo}
+                onChange={(event) => setMotivoRechazo(event.target.value)}
+                autoFocus
+              />
+            </div>
+            <div className="modal-footer">
               <button
                 type="button"
                 className="btn-cancelar"
@@ -904,6 +1082,14 @@ const PanelAprobaciones = () => {
                 disabled={loading}
               >
                 Cancelar
+              </button>
+              <button
+                type="button"
+                className="btn-confirmar-rechazo"
+                onClick={rechazarRegistro}
+                disabled={loading || !motivoRechazo.trim()}
+              >
+                Confirmar Rechazo
               </button>
             </div>
           </div>

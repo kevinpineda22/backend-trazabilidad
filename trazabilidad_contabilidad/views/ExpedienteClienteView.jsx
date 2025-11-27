@@ -62,9 +62,10 @@ const ExpedienteClienteView = ({ clienteId, onBack, onPreview }) => {
 
   const getFileIcon = (fileNameOrUrl) => {
     if (!fileNameOrUrl) return <FaFileAlt className="file-icon other" />;
-    if (fileNameOrUrl.toLowerCase().endsWith(".pdf"))
+    const cleanName = fileNameOrUrl.split("?")[0].toLowerCase();
+    if (cleanName.endsWith(".pdf"))
       return <FaFilePdf className="file-icon pdf" />;
-    if (/\.(jpg|jpeg|png|gif|webp)$/i.test(fileNameOrUrl))
+    if (/\.(jpg|jpeg|png|gif|webp)$/i.test(cleanName))
       return <FaFileImage className="file-icon image" />;
     return <FaFileAlt className="file-icon other" />;
   };

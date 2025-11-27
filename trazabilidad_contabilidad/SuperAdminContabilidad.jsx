@@ -1,13 +1,7 @@
 // src/pages/trazabilidad_contabilidad/SuperAdminContabilidad.jsx
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  FaArrowLeft,
-  FaChartBar,
-  FaUsers,
-  FaHardHat,
-  FaUserTie,
-} from "react-icons/fa";
+import { FaArrowLeft, FaUsers, FaHardHat, FaUserTie } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 
@@ -19,38 +13,67 @@ import FilePreviewModal from "./FilePreviewModal";
 import BotonSidebar from "./components/BotonSidebar";
 
 // Vistas (ahora importadas)
-import DashboardView from "./views/DashboardView";
 import HistorialEmpleadosAdminView from "./views/HistorialEmpleadosAdminView";
 import HistorialProveedoresAdminView from "./views/HistorialProveedoresAdminView";
 import HistorialClientesAdminView from "./views/HistorialClientesAdminView";
 // Vistas de expedientes
 import ExpedienteEmpleadoView from "./views/ExpedienteEmpleadoView.jsx";
 import ExpedienteProveedorView from "./views/ExpedienteProveedorView.jsx";
+import ExpedienteClienteView from "./views/ExpedienteClienteView.jsx";
 
 const VISTAS = {
-  DASHBOARD: "dashboard",
   EMPLEADOS: "empleados",
   PROVEEDORES: "proveedores",
   CLIENTES: "clientes",
   EXPEDIENTE_EMPLEADO: "expediente_empleado",
   EXPEDIENTE_PROVEEDOR: "expediente_proveedor",
+  EXPEDIENTE_CLIENTE: "expediente_cliente",
 };
 
 const TITULOS_VISTA = {
-  [VISTAS.DASHBOARD]: "Dashboard de Contabilidad",
   [VISTAS.EMPLEADOS]: "Archivador General de Empleados",
   [VISTAS.PROVEEDORES]: "Archivador General de Proveedores",
-  [VISTAS.CLIENTES]: "Historial General de Clientes",
+  [VISTAS.CLIENTES]: "Archivador General de Clientes",
   [VISTAS.EXPEDIENTE_EMPLEADO]: "Expediente Digital del Empleado",
   [VISTAS.EXPEDIENTE_PROVEEDOR]: "Expediente Digital del Proveedor",
+  [VISTAS.EXPEDIENTE_CLIENTE]: "Expediente Digital del Cliente",
 };
 
 const SuperAdminContabilidad = () => {
-  const [vista, setVista] = useState(VISTAS.DASHBOARD);
+  const [userRole] = useState(() => {
+    try {
+      const info = localStorage.getItem("empleado_info");
+      return info ? JSON.parse(info).role : null;
+    } catch (e) {
+      return null;
+    }
+  });
+
+  const getAllowedViews = (role) => {
+    if (!role) return [VISTAS.EMPLEADOS, VISTAS.PROVEEDORES, VISTAS.CLIENTES]; // Fallback si no hay rol
+    if (["super_admin", "admin"].includes(role)) {
+      return [VISTAS.EMPLEADOS, VISTAS.PROVEEDORES, VISTAS.CLIENTES];
+    }
+    if (role === "admin_empleado") {
+      return [VISTAS.EMPLEADOS];
+    }
+    if (["admin_cliente", "admin_proveedor"].includes(role)) {
+      return [VISTAS.CLIENTES, VISTAS.PROVEEDORES];
+    }
+    return [];
+  };
+
+  const allowedViews = getAllowedViews(userRole);
+
+  const [vista, setVista] = useState(() => {
+    if (allowedViews.length > 0) return allowedViews[0];
+    return VISTAS.EMPLEADOS;
+  });
   const [modalOpen, setModalOpen] = useState(false);
   const [previewUrl, setPreviewUrl] = useState("");
   const [selectedEmpleadoId, setSelectedEmpleadoId] = useState(null);
   const [selectedProveedorId, setSelectedProveedorId] = useState(null);
+  const [selectedClienteId, setSelectedClienteId] = useState(null);
 
   const openPreview = (url) => {
     setPreviewUrl(url);
@@ -83,11 +106,20 @@ const SuperAdminContabilidad = () => {
     setVista(VISTAS.PROVEEDORES);
   };
 
+  // Funciones de navegación para clientes
+  const openExpedienteCliente = (clienteId) => {
+    setSelectedClienteId(clienteId);
+    setVista(VISTAS.EXPEDIENTE_CLIENTE);
+  };
+
+  const showClientesList = () => {
+    setSelectedClienteId(null);
+    setVista(VISTAS.CLIENTES);
+  };
+
   // Este render es mucho más limpio
   const renderVista = () => {
     switch (vista) {
-      case VISTAS.DASHBOARD:
-        return <DashboardView />;
       case VISTAS.EMPLEADOS:
         return (
           <HistorialEmpleadosAdminView
@@ -102,7 +134,12 @@ const SuperAdminContabilidad = () => {
           />
         );
       case VISTAS.CLIENTES:
-        return <HistorialClientesAdminView onPreview={openPreview} />;
+        return (
+          <HistorialClientesAdminView
+            onPreview={openPreview}
+            onOpenExpediente={openExpedienteCliente}
+          />
+        );
       case VISTAS.EXPEDIENTE_EMPLEADO:
         return (
           <ExpedienteEmpleadoView
@@ -119,8 +156,21 @@ const SuperAdminContabilidad = () => {
             onPreview={openPreview}
           />
         );
+      case VISTAS.EXPEDIENTE_CLIENTE:
+        return (
+          <ExpedienteClienteView
+            clienteId={selectedClienteId}
+            onBack={showClientesList}
+            onPreview={openPreview}
+          />
+        );
       default:
-        return <DashboardView />;
+        return (
+          <HistorialEmpleadosAdminView
+            onPreview={openPreview}
+            onOpenExpediente={openExpedienteEmpleado}
+          />
+        );
     }
   };
 
@@ -157,34 +207,33 @@ const SuperAdminContabilidad = () => {
         </div>
 
         <nav className="admin-cont-sidebar-nav">
-          <BotonSidebar
-            vista={VISTAS.DASHBOARD}
-            vistaActual={vista}
-            setVista={setVista}
-            icono={<FaChartBar />}
-            label="Dashboard"
-          />
-          <BotonSidebar
-            vista={VISTAS.EMPLEADOS}
-            vistaActual={vista}
-            setVista={setVista}
-            icono={<FaUsers />}
-            label="Archivador Empleados"
-          />
-          <BotonSidebar
-            vista={VISTAS.PROVEEDORES}
-            vistaActual={vista}
-            setVista={setVista}
-            icono={<FaHardHat />}
-            label="Archivador Proveedores"
-          />
-          <BotonSidebar
-            vista={VISTAS.CLIENTES}
-            vistaActual={vista}
-            setVista={setVista}
-            icono={<FaUserTie />}
-            label="Historial Clientes"
-          />
+          {allowedViews.includes(VISTAS.EMPLEADOS) && (
+            <BotonSidebar
+              vista={VISTAS.EMPLEADOS}
+              vistaActual={vista}
+              setVista={setVista}
+              icono={<FaUsers />}
+              label="Archivador Empleados"
+            />
+          )}
+          {allowedViews.includes(VISTAS.PROVEEDORES) && (
+            <BotonSidebar
+              vista={VISTAS.PROVEEDORES}
+              vistaActual={vista}
+              setVista={setVista}
+              icono={<FaHardHat />}
+              label="Archivador Proveedores"
+            />
+          )}
+          {allowedViews.includes(VISTAS.CLIENTES) && (
+            <BotonSidebar
+              vista={VISTAS.CLIENTES}
+              vistaActual={vista}
+              setVista={setVista}
+              icono={<FaUserTie />}
+              label="Archivador Clientes"
+            />
+          )}
         </nav>
       </motion.div>
 

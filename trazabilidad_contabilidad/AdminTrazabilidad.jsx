@@ -1,10 +1,17 @@
 // src/pages/trazabilidad_contabilidad/AdminTrazabilidad.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaArrowLeft, FaKey, FaCheckCircle, FaChartBar } from "react-icons/fa";
+import {
+  FaArrowLeft,
+  FaKey,
+  FaCheckCircle,
+  FaChartBar,
+  FaFolderOpen,
+} from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { supabase } from "../../supabaseClient";
 
 // Estilos
 import "./AdminTrazabilidad.css";
@@ -12,33 +19,77 @@ import "./AdminTrazabilidad.css";
 // Componentes
 import PanelAprobaciones from "./PanelAprobaciones";
 import GestionTokens from "./GestionTokens";
+import GestionDocumentos from "./GestionDocumentos";
+import DashboardView from "./views/DashboardView";
 
 const VISTAS = {
   DASHBOARD: "dashboard",
   TOKENS: "tokens",
   APROBACIONES: "aprobaciones",
+  DOCUMENTOS: "documentos",
 };
 
 const TITULOS_VISTA = {
   [VISTAS.DASHBOARD]: "Panel de Administración - Trazabilidad",
   [VISTAS.TOKENS]: "Gestión de Tokens",
   [VISTAS.APROBACIONES]: "Panel de Aprobaciones",
+  [VISTAS.DOCUMENTOS]: "Gestión de Documentos",
 };
 
 const AdminTrazabilidad = () => {
   const [vista, setVista] = useState(VISTAS.DASHBOARD);
+  const [userRole, setUserRole] = useState(null);
+
+  useEffect(() => {
+    const fetchRole = async () => {
+      const token = localStorage.getItem("token");
+      if (token) {
+        try {
+          const payload = JSON.parse(atob(token.split(".")[1]));
+          const userId = payload.sub || payload.user_id;
+
+          // 1. Intentar obtener el rol actualizado desde la base de datos
+          if (userId) {
+            const { data, error } = await supabase
+              .from("profiles")
+              .select("role")
+              .eq("user_id", userId)
+              .single();
+
+            if (data && data.role) {
+              setUserRole(data.role);
+              return;
+            }
+          }
+
+          // 2. Fallback: rol en el token (user_metadata)
+          const role =
+            payload.user_metadata?.role ||
+            payload.app_metadata?.role ||
+            payload.role ||
+            "authenticated";
+          setUserRole(role);
+        } catch (e) {
+          console.error("Error decodificando token:", e);
+        }
+      }
+    };
+    fetchRole();
+  }, []);
 
   // Función para renderizar la vista según la selección
   const renderVista = () => {
     switch (vista) {
       case VISTAS.DASHBOARD:
-        return <DashboardView onNavigate={setVista} />;
+        return <DashboardView onNavigate={setVista} userRole={userRole} />;
       case VISTAS.TOKENS:
-        return <GestionTokens />;
+        return <GestionTokens userRole={userRole} />;
       case VISTAS.APROBACIONES:
-        return <PanelAprobaciones />;
+        return <PanelAprobaciones userRole={userRole} />;
+      case VISTAS.DOCUMENTOS:
+        return <GestionDocumentos userRole={userRole} />;
       default:
-        return <DashboardView onNavigate={setVista} />;
+        return <DashboardView onNavigate={setVista} userRole={userRole} />;
     }
   };
 
@@ -89,6 +140,12 @@ const AdminTrazabilidad = () => {
             activo={vista === VISTAS.APROBACIONES}
             onClick={() => setVista(VISTAS.APROBACIONES)}
           />
+          <BotonSidebar
+            icono={FaFolderOpen}
+            texto="Documentos"
+            activo={vista === VISTAS.DOCUMENTOS}
+            onClick={() => setVista(VISTAS.DOCUMENTOS)}
+          />
         </nav>
 
         <div className="admin-traz-sidebar-footer">
@@ -131,75 +188,6 @@ const BotonSidebar = ({ icono: Icono, texto, activo, onClick }) => (
     <Icono size={20} className="admin-traz-sidebar-icon" />
     <span className="admin-traz-sidebar-text">{texto}</span>
   </button>
-);
-
-// Vista del Dashboard
-const DashboardView = ({ onNavigate }) => {
-  return (
-    <div className="admin-traz-dashboard">
-      <div className="admin-traz-welcome">
-        <h2>Bienvenido al Panel de Administración</h2>
-        <p>Gestiona tokens y aprobaciones del sistema de trazabilidad</p>
-      </div>
-
-      <div className="admin-traz-cards-grid">
-        <DashboardCard
-          icono={FaKey}
-          titulo="Gestión de Tokens"
-          descripcion="Genera y administra tokens de acceso para empleados, clientes y proveedores"
-          onClick={() => onNavigate(VISTAS.TOKENS)}
-          color="blue"
-        />
-        <DashboardCard
-          icono={FaCheckCircle}
-          titulo="Panel de Aprobaciones"
-          descripcion="Revisa y aprueba o rechaza los registros pendientes de validación"
-          onClick={() => onNavigate(VISTAS.APROBACIONES)}
-          color="green"
-        />
-      </div>
-
-      <div className="admin-traz-info-section">
-        <div className="admin-traz-info-card">
-          <h3>Sistema de Trazabilidad</h3>
-          <p>
-            Este panel te permite gestionar de forma centralizada todos los
-            aspectos relacionados con la trazabilidad de empleados, clientes y
-            proveedores.
-          </p>
-          <ul>
-            <li>✓ Generación de tokens únicos por tipo de registro</li>
-            <li>✓ Validación y aprobación de documentos</li>
-            <li>✓ Historial completo de aprobaciones y rechazos</li>
-            <li>✓ Gestión de accesos públicos controlados</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Componente Card del Dashboard
-const DashboardCard = ({
-  icono: Icono,
-  titulo,
-  descripcion,
-  onClick,
-  color,
-}) => (
-  <motion.div
-    className={`admin-traz-dashboard-card ${color}`}
-    onClick={onClick}
-    whileHover={{ scale: 1.02, y: -5 }}
-    whileTap={{ scale: 0.98 }}
-  >
-    <div className="admin-traz-card-icon">
-      <Icono size={32} />
-    </div>
-    <h3 className="admin-traz-card-title">{titulo}</h3>
-    <p className="admin-traz-card-description">{descripcion}</p>
-    <div className="admin-traz-card-arrow">→</div>
-  </motion.div>
 );
 
 export default AdminTrazabilidad;

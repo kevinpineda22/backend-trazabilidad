@@ -14,15 +14,13 @@ import {
   FaTimesCircle,
   FaFilePdf,
   FaFileImage,
-  FaHistory,
+  FaFileSignature,
+  FaCheckCircle,
+  FaEdit,
   FaSpinner,
   FaInfoCircle,
-  FaSort,
-  FaSortUp,
-  FaSortDown,
-  FaEdit,
 } from "react-icons/fa";
-import { format, parseISO } from "date-fns";
+import { format } from "date-fns";
 import Swal from "sweetalert2";
 import { toast } from "react-toastify";
 import { useSearchParams } from "react-router-dom";
@@ -32,6 +30,7 @@ import axios from "axios";
 import { apiTrazabilidad } from "../../services/apiTrazabilidad";
 import { uploadFileToBucket } from "../../supabaseClient";
 import FilePreviewModal from "./FilePreviewModal";
+import HabeasDataModal from "./HabeasDataModal";
 import "./CreacionSubirEmpleado.css"; // Clases tc-
 
 // CONFIGURACIÓN CENTRALIZADA
@@ -42,6 +41,30 @@ const SWAL_CUSTOM_CLASSES = {
   title: "tc-swal-title",
   confirmButton: "tc-swal-confirm",
   cancelButton: "tc-swal-cancel",
+};
+
+const DOCUMENT_OPTIONS = [
+  { value: "Cedula de ciudadanía", label: "Cédula de ciudadanía" },
+  { value: "Cedula de extranjería", label: "Cédula de extranjería" },
+  { value: "Pasaporte", label: "Pasaporte" },
+  { value: "NIT", label: "NIT" },
+  { value: "PEP", label: "PEP" },
+  { value: "PPT", label: "PPT" },
+];
+
+const calculateDV = (nit) => {
+  if (!nit || isNaN(nit)) return "";
+  const weights = [71, 67, 59, 53, 47, 43, 41, 37, 29, 23, 19, 17, 13, 7, 3];
+  let sum = 0;
+  const nitReverse = nit.toString().split("").reverse();
+
+  for (let i = 0; i < nitReverse.length && i < weights.length; i++) {
+    sum += parseInt(nitReverse[i]) * weights[i];
+  }
+
+  const mod = sum % 11;
+  if (mod === 0 || mod === 1) return mod.toString();
+  return (11 - mod).toString();
 };
 
 //==================================================================
@@ -67,9 +90,10 @@ const FileInput = ({ label, name, file, setFile, isRequired = false }) => {
 
   const getIcon = () => {
     const nameToTest = isString ? file : isFile ? file.name : "";
-    if (nameToTest.toLowerCase().endsWith(".pdf"))
+    const cleanName = nameToTest.split("?")[0].toLowerCase();
+    if (cleanName.endsWith(".pdf"))
       return <FaFilePdf style={{ color: "#E53E3E" }} />;
-    if (/\.(jpg|jpeg|png|gif|webp)$/i.test(nameToTest))
+    if (/\.(jpg|jpeg|png|gif|webp)$/i.test(cleanName))
       return <FaFileImage style={{ color: "#38A169" }} />;
     return <FaFileAlt />;
   };
@@ -166,8 +190,9 @@ const DocLink = ({ url, label, onPreview }) => {
   if (!url)
     return <span className="tc-doc-item doc-link-empty">{label}: N/A</span>;
 
-  const isPdf = url.toLowerCase().endsWith(".pdf");
-  const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
+  const cleanUrl = url.split("?")[0].toLowerCase();
+  const isPdf = cleanUrl.endsWith(".pdf");
+  const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(cleanUrl);
   const icon = isPdf ? (
     <FaFilePdf style={{ color: "#E53E3E" }} />
   ) : isImage ? (
@@ -194,144 +219,12 @@ const DocLink = ({ url, label, onPreview }) => {
   );
 };
 
-const useSortableData = (items, config = null) => {
-  // (Esta función no cambia)
-  const [sortConfig, setSortConfig] = useState(config);
-  const sortedItems = useMemo(() => {
-    let sortableItems = [...items];
-    if (sortConfig !== null) {
-      sortableItems.sort((a, b) => {
-        const valA = a[sortConfig.key];
-        const valB = b[sortConfig.key];
-        if (valA === null || valA === undefined) return 1;
-        if (valB === null || valB === undefined) return -1;
-        if (valA < valB) return sortConfig.direction === "ascending" ? -1 : 1;
-        if (valA > valB) return sortConfig.direction === "ascending" ? 1 : -1;
-        return 0;
-      });
-    }
-    return sortableItems;
-  }, [items, sortConfig]);
-
-  const requestSort = (key) => {
-    let direction = "ascending";
-    if (
-      sortConfig &&
-      sortConfig.key === key &&
-      sortConfig.direction === "ascending"
-    ) {
-      direction = "descending";
-    }
-    setSortConfig({ key, direction });
-  };
-  return { items: sortedItems, requestSort, sortConfig };
-};
-
-const HistorialTable = ({
-  isLoading,
-  data,
-  columns,
-  emptyMessage,
-  defaultSortKey = "created_at",
-}) => {
-  // (Esta función no cambia)
-  const { items, requestSort, sortConfig } = useSortableData(data, {
-    key: defaultSortKey,
-    direction: "descending",
-  });
-
-  const getSortIcon = (key) => {
-    if (!sortConfig || sortConfig.key !== key)
-      return <FaSort className="tc-sort-icon" />;
-    return sortConfig.direction === "ascending" ? (
-      <FaSortUp className="tc-sort-icon active" />
-    ) : (
-      <FaSortDown className="tc-sort-icon active" />
-    );
-  };
-
-  return (
-    <AnimatePresence mode="wait">
-      {isLoading ? (
-        <motion.div
-          key="loading"
-          className="tc-historial-message loading"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-        >
-          <FaSpinner className="tc-spinner" />{" "}
-          <span>Cargando historial...</span>
-        </motion.div>
-      ) : items.length === 0 ? (
-        <motion.div
-          key="empty"
-          className="tc-historial-message"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-        >
-          <FaInfoCircle /> <span>{emptyMessage}</span>
-        </motion.div>
-      ) : (
-        <motion.div
-          key="list"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-        >
-          <div className="tc-historial-table-wrapper">
-            <table>
-              <thead>
-                <tr>
-                  {columns.map((col) => (
-                    <th
-                      key={col.key}
-                      className={col.sortable ? "tc-sortable-header" : ""}
-                      style={{ textAlign: "center" }}
-                      onClick={() =>
-                        col.sortable ? requestSort(col.key) : null
-                      }
-                    >
-                      {col.header}
-                      {col.sortable && getSortIcon(col.key)}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {items.map((item) => (
-                  <tr key={item.id}>
-                    {columns.map((col) => (
-                      <td
-                        key={`${item.id}-${col.key}`}
-                        className={`${col.className || ""} ${
-                          col.centered ? "tc-centered-cell" : ""
-                        }`}
-                      >
-                        {col.cell ? col.cell(item) : item[col.key]}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  );
-};
-
 const TrazabilidadPageLayout = ({
   title,
   icon,
   subtitle,
   formContent,
-  historialTitle,
-  historialContent,
   formCardRef,
-  modoPublico,
 }) => {
   // (Esta función no cambia)
   return (
@@ -349,22 +242,6 @@ const TrazabilidadPageLayout = ({
         <p className="tc-subtitle">{subtitle}</p>
         {formContent}
       </motion.div>
-
-      {/* Ocultar historial en modo público */}
-      {!modoPublico && (
-        <motion.div
-          className="tc-card"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <h2 className="tc-title">
-            <FaHistory />
-            {historialTitle}
-          </h2>
-          {historialContent}
-        </motion.div>
-      )}
     </div>
   );
 };
@@ -420,7 +297,9 @@ const CreacionSubirEmpleado = () => {
   const formCardRef = useRef(null);
   const [nombre, setNombre] = useState("");
   const [apellidos, setApellidos] = useState("");
+  const [tipoDocumento, setTipoDocumento] = useState("Cedula de ciudadanía");
   const [cedulaInput, setCedulaInput] = useState("");
+  const [dv, setDv] = useState("");
   const [contacto, setContacto] = useState("");
   const [correo, setCorreo] = useState("");
   const [direccion, setDireccion] = useState("");
@@ -428,14 +307,13 @@ const CreacionSubirEmpleado = () => {
   const [cedulaFile, setCedulaFile] = useState(null);
   const [certificadoBancario, setCertificadoBancario] = useState(null);
   const [habeasData, setHabeasData] = useState(null);
+  const [habeasModalOpen, setHabeasModalOpen] = useState(false);
   const [formErrors, setFormErrors] = useState({});
   const [modalOpen, setModalOpen] = useState(false);
   const [previewUrl, setPreviewUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const submitTimeoutRef = useRef(null);
-  const [historial, setHistorial] = useState([]);
-  const [loadingHistorial, setLoadingHistorial] = useState(true);
   const openPreview = (url) => {
     setPreviewUrl(url);
     setModalOpen(true);
@@ -445,34 +323,12 @@ const CreacionSubirEmpleado = () => {
     setPreviewUrl("");
   };
 
-  // --- (fetchHistorial no cambia) ---
-  const fetchHistorial = useCallback(async () => {
-    setLoadingHistorial(true);
-    try {
-      const { data } = await apiTrazabilidad.get(
-        "/trazabilidad/empleados/historial"
-      );
-      setHistorial(data || []);
-    } catch (error) {
-      console.error("Error al cargar el historial:", error);
-      if (error.response?.status !== 404 && error.response?.status !== 401) {
-        toast.error("No se pudo cargar el historial.");
-      }
-      setHistorial([]);
-    } finally {
-      setLoadingHistorial(false);
-    }
-  }, []);
-
   useEffect(() => {
     // Solo cargar historial si NO está en modo público
-    if (!modoPublico) {
-      fetchHistorial();
-    }
     return () => {
       if (submitTimeoutRef.current) clearTimeout(submitTimeoutRef.current);
     };
-  }, [fetchHistorial, modoPublico]);
+  }, []);
 
   useEffect(() => {
     if (!modoPublico || !tokenPublico) {
@@ -527,7 +383,9 @@ const CreacionSubirEmpleado = () => {
     setIdParaEditar(null);
     setNombre("");
     setApellidos("");
+    setTipoDocumento("Cedula de ciudadanía");
     setCedulaInput("");
+    setDv("");
     setContacto("");
     setCorreo("");
     setDireccion("");
@@ -537,16 +395,34 @@ const CreacionSubirEmpleado = () => {
     setHabeasData(null);
     setFormErrors({});
 
-    const inputs = [
-      "hoja_de_vida",
-      "cedula_file",
-      "certificado_bancario",
-      "habeas_data",
-    ];
+    const inputs = ["hoja_de_vida", "cedula_file", "certificado_bancario"];
     inputs.forEach((id) => {
       const input = document.getElementById(id);
       if (input) input.value = null;
     });
+  };
+
+  // Helper para convertir dataURL a File
+  const dataURLtoFile = (dataurl, filename) => {
+    let arr = dataurl.split(","),
+      mime = arr[0].match(/:(.*?);/)[1],
+      bstr = atob(arr[1]),
+      n = bstr.length,
+      u8arr = new Uint8Array(n);
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new File([u8arr], filename, { type: mime });
+  };
+
+  const handleSaveHabeasSignature = (dataURL) => {
+    // Convertir la firma (imagen base64) a un archivo
+    const file = dataURLtoFile(
+      dataURL,
+      `habeas_data_firmado_${Date.now()}.png`
+    );
+    setHabeasData(file);
+    setFormErrors((prev) => ({ ...prev, habeasData: null }));
   };
 
   // --- (handleCargarParaEditar no cambia) ---
@@ -554,7 +430,9 @@ const CreacionSubirEmpleado = () => {
     setIdParaEditar(item.id);
     setNombre(item.nombre || "");
     setApellidos(item.apellidos || "");
+    setTipoDocumento(item.tipo_documento || "Cedula de ciudadanía");
     setCedulaInput(item.cedula || "");
+    setDv(item.dv || "");
     setContacto(item.contacto || "");
     setCorreo(item.correo_electronico || "");
     setDireccion(item.direccion || "");
@@ -601,8 +479,9 @@ const CreacionSubirEmpleado = () => {
     );
 
     try {
+      const docPrefix = payload.tipo_documento === "NIT" ? "NIT" : "DOC";
       const safeFolderName =
-        `CC${payload.cedula}_${payload.nombre}_${payload.apellidos}`
+        `${docPrefix}${payload.cedula}_${payload.nombre}_${payload.apellidos}`
           .replace(/[^a-zA-Z0-9 ]/g, "")
           .replace(/ /g, "_")
           .toUpperCase();
@@ -689,9 +568,6 @@ const CreacionSubirEmpleado = () => {
       // ----------------------------------------------------
 
       resetForm();
-      if (!modoPublico) {
-        fetchHistorial();
-      }
     } catch (error) {
       console.error(
         `Error al ${enModoEdicion ? "actualizar" : "crear"} empleado:`,
@@ -734,9 +610,15 @@ const CreacionSubirEmpleado = () => {
     const errors = {};
     if (!nombre.trim()) errors.nombre = "Nombre es requerido.";
     if (!apellidos.trim()) errors.apellidos = "Apellidos son requeridos.";
-    if (!cedulaInput.trim()) errors.cedulaInput = "Cédula es requerida.";
+    if (!tipoDocumento)
+      errors.tipoDocumento = "Tipo de documento es requerido.";
+    if (!cedulaInput.trim())
+      errors.cedulaInput = "Número de documento es requerido.";
+    if (tipoDocumento === "NIT" && !dv)
+      errors.dv = "Dígito de verificación es requerido.";
+
     if (!hojaDeVida) errors.hojaDeVida = "Hoja de Vida es requerida.";
-    if (!cedulaFile) errors.cedulaFile = "Cédula adjunta es requerida.";
+    if (!cedulaFile) errors.cedulaFile = "Documento adjunto es requerido.";
     if (!certificadoBancario)
       errors.certificadoBancario = "Certificado bancario es requerido.";
     if (!habeasData) errors.habeasData = "Habeas Data es requerido.";
@@ -790,7 +672,9 @@ const CreacionSubirEmpleado = () => {
     const payload = {
       nombre,
       apellidos,
+      tipo_documento: tipoDocumento,
       cedula: cedulaInput,
+      dv: tipoDocumento === "NIT" ? dv : null,
       contacto,
       correo_electronico: correo,
       direccion,
@@ -802,7 +686,9 @@ const CreacionSubirEmpleado = () => {
         : `¿Confirmar ${
             enModoEdicion ? "actualización" : "creación"
           } del empleado?`,
-      html: `<div style="text-align: left; margin-top: 1rem;"><p><strong>Nombre:</strong> ${nombre} ${apellidos}</p><p><strong>Cédula:</strong> ${cedulaInput}</p></div>`,
+      html: `<div style="text-align: left; margin-top: 1rem;"><p><strong>Nombre:</strong> ${nombre} ${apellidos}</p><p><strong>Documento:</strong> ${tipoDocumento} ${cedulaInput}${
+        dv ? `-${dv}` : ""
+      }</p></div>`,
       icon: "question",
     };
 
@@ -814,102 +700,6 @@ const CreacionSubirEmpleado = () => {
 
     await handleApiSubmit(payload, confirmationDetails, successMessage);
   };
-
-  // --- (columns no cambia) ---
-  const columns = [
-    {
-      header: "Creado Por",
-      key: "profiles",
-      sortable: true,
-      centered: true,
-      className: "tc-centered-cell",
-      cell: (item) => (
-        <div className="tc-user-cell">
-          <FaUser />
-          {item.profiles?.nombre || "N/A"}
-        </div>
-      ),
-    },
-    {
-      header: "Fecha Creación",
-      key: "created_at",
-      sortable: true,
-      centered: true,
-      className: "tc-centered-cell",
-      cell: (item) => format(parseISO(item.created_at), "dd/MM/yy hh:mm a"),
-    },
-    {
-      header: "Nombre Completo",
-      key: "nombre",
-      sortable: true,
-      cell: (item) => `${item.nombre} ${item.apellidos}`,
-    },
-    {
-      header: "Cédula",
-      key: "cedula",
-      sortable: true,
-      centered: true,
-      className: "tc-centered-cell",
-      cell: (item) => item.cedula || "N/A",
-    },
-    {
-      header: "Correo Electrónico",
-      key: "correo_electronico",
-      sortable: true,
-      cell: (item) => item.correo_electronico || "N/A",
-    },
-    {
-      header: "Contacto",
-      key: "contacto",
-      centered: true,
-      className: "tc-centered-cell",
-      cell: (item) => item.contacto || "N/A",
-    },
-    {
-      header: "Documentos (Ver)",
-      key: "documentos",
-      className: "tc-doc-links-cell tc-centered-cell",
-      cell: (item) => (
-        <div className="tc-doc-list">
-          <DocLink
-            url={item.url_hoja_de_vida}
-            label="Hoja de Vida"
-            onPreview={openPreview}
-          />
-          <DocLink
-            url={item.url_cedula}
-            label="Cédula"
-            onPreview={openPreview}
-          />
-          <DocLink
-            url={item.url_certificado_bancario}
-            label="Cert. Bancario"
-            onPreview={openPreview}
-          />
-          <DocLink
-            url={item.url_habeas_data}
-            label="Habeas Data"
-            onPreview={openPreview}
-          />
-        </div>
-      ),
-    },
-    {
-      header: "Acciones",
-      key: "acciones",
-      centered: true,
-      className: "tc-centered-cell",
-      cell: (item) => (
-        <button
-          className="tc-action-btn-edit"
-          title="Editar este registro"
-          onClick={() => handleCargarParaEditar(item)}
-        >
-          <FaEdit />
-        </button>
-      ),
-    },
-  ];
 
   // --- (formContent no cambia) ---
   const formulario = (
@@ -953,15 +743,54 @@ const CreacionSubirEmpleado = () => {
             <span className="tc-validation-error">{formErrors.apellidos}</span>
           )}
         </div>
+
+        <div className="tc-form-group">
+          <label htmlFor="tipo_documento">
+            Tipo de Documento <span className="required">*</span>
+          </label>
+          <select
+            id="tipo_documento"
+            value={tipoDocumento}
+            onChange={(e) => {
+              setTipoDocumento(e.target.value);
+              if (e.target.value === "NIT") {
+                setDv(calculateDV(cedulaInput));
+              } else {
+                setDv("");
+              }
+            }}
+            className={`tc-form-input ${
+              formErrors.tipoDocumento ? "is-invalid" : ""
+            }`}
+          >
+            {DOCUMENT_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+          {formErrors.tipoDocumento && (
+            <span className="tc-validation-error">
+              {formErrors.tipoDocumento}
+            </span>
+          )}
+        </div>
+
         <div className="tc-form-group">
           <label htmlFor="cedula_input">
-            Cédula (N°) <span className="required">*</span>
+            Número de Documento <span className="required">*</span>
           </label>
           <input
             type="text"
             id="cedula_input"
             value={cedulaInput}
-            onChange={(e) => setCedulaInput(e.target.value)}
+            onChange={(e) => {
+              const val = e.target.value.replace(/[^0-9]/g, "");
+              setCedulaInput(val);
+              if (tipoDocumento === "NIT") {
+                setDv(calculateDV(val));
+              }
+            }}
             placeholder="Ej: 10203040"
             required
             className={`tc-form-input ${
@@ -974,6 +803,25 @@ const CreacionSubirEmpleado = () => {
             </span>
           )}
         </div>
+
+        {tipoDocumento === "NIT" && (
+          <div className="tc-form-group">
+            <label htmlFor="dv">
+              DV <span className="required">*</span>
+            </label>
+            <input
+              type="text"
+              id="dv"
+              value={dv}
+              readOnly
+              className={`tc-form-input ${formErrors.dv ? "is-invalid" : ""}`}
+              style={{ backgroundColor: "#f0f0f0" }}
+            />
+            {formErrors.dv && (
+              <span className="tc-validation-error">{formErrors.dv}</span>
+            )}
+          </div>
+        )}
 
         {/* Fila 2 */}
         <div className="tc-form-group">
@@ -1039,7 +887,7 @@ const CreacionSubirEmpleado = () => {
           isRequired={true}
         />
         <FileInput
-          label="Cédula Adjunta"
+          label="Documento de Identidad Adjunto"
           name="cedula_file"
           file={cedulaFile}
           setFile={setCedulaFile}
@@ -1052,13 +900,56 @@ const CreacionSubirEmpleado = () => {
           setFile={setCertificadoBancario}
           isRequired={true}
         />
-        <FileInput
-          label="Habeas Data"
-          name="habeas_data"
-          file={habeasData}
-          setFile={setHabeasData}
-          isRequired={true}
-        />
+
+        {/* Campo Especial para Habeas Data */}
+        <div
+          className={`tc-form-group ${habeasData ? "tc-file-selected" : ""}`}
+        >
+          <label>
+            Habeas Data y Autorización <span className="required">*</span>
+          </label>
+          <div className="tc-file-input-wrapper">
+            {!habeasData ? (
+              <button
+                type="button"
+                className="tc-file-label"
+                onClick={() => setHabeasModalOpen(true)}
+                style={{
+                  width: "100%",
+                  border: "none",
+                  background: "transparent",
+                }}
+              >
+                <FaFileSignature /> <span>Leer y Firmar Documento</span>
+              </button>
+            ) : (
+              <div className="tc-file-preview tc-file-new">
+                <FaCheckCircle style={{ color: "#38A169" }} />
+                <span className="tc-file-name">Documento Firmado</span>
+                <button
+                  type="button"
+                  onClick={() => setHabeasModalOpen(true)}
+                  className="tc-file-change-btn"
+                  title="Volver a firmar"
+                  style={{ marginRight: "10px" }}
+                >
+                  Ver/Firmar
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setHabeasData(null);
+                  }}
+                  className="tc-file-remove-btn"
+                  title="Quitar firma"
+                >
+                  <FaTimesCircle />
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Errores de validación */}
@@ -1162,6 +1053,11 @@ const CreacionSubirEmpleado = () => {
         onClose={closePreview}
         fileUrl={previewUrl}
       />
+      <HabeasDataModal
+        isOpen={habeasModalOpen}
+        onClose={() => setHabeasModalOpen(false)}
+        onSave={handleSaveHabeasSignature}
+      />
       <TrazabilidadPageLayout
         title={
           enModoEdicion
@@ -1181,15 +1077,6 @@ const CreacionSubirEmpleado = () => {
             : "Diligencia los datos y adjunta los documentos requeridos para el ingreso del nuevo empleado."
         }
         formContent={formContent}
-        historialTitle="Historial de Creaciones"
-        historialContent={
-          <HistorialTable
-            isLoading={loadingHistorial}
-            data={historial}
-            columns={columns}
-            emptyMessage="No has creado ningún empleado todavía."
-          />
-        }
         formCardRef={formCardRef}
         modoPublico={modoPublico}
       />
