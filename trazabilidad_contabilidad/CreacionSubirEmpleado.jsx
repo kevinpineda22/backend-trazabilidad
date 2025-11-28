@@ -24,7 +24,7 @@ import {
 import { format } from "date-fns";
 import Swal from "sweetalert2";
 import { toast } from "react-toastify";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom";
 import axios from "axios";
 
 // Importaciones locales
@@ -314,6 +314,7 @@ const CreacionSubirEmpleado = () => {
   const [habeasData, setHabeasData] = useState(null);
   const [autorizacionFirma, setAutorizacionFirma] = useState(null); // Nuevo estado
   const [habeasModalOpen, setHabeasModalOpen] = useState(false);
+  const [aceptaTerminos, setAceptaTerminos] = useState(false);
   const [formErrors, setFormErrors] = useState({});
   const [modalOpen, setModalOpen] = useState(false);
   const [previewUrl, setPreviewUrl] = useState("");
@@ -400,6 +401,7 @@ const CreacionSubirEmpleado = () => {
     setCertificadoBancario(null);
     setHabeasData(null);
     setAutorizacionFirma(null);
+    setAceptaTerminos(false);
     setFormErrors({});
 
     const inputs = [
@@ -453,6 +455,7 @@ const CreacionSubirEmpleado = () => {
     setCertificadoBancario(item.url_certificado_bancario || null);
     setHabeasData(item.url_habeas_data || null);
     setAutorizacionFirma(item.url_autorizacion_firma || null);
+    setAceptaTerminos(true); // Si ya existe, asumimos que aceptó
     setFormErrors({});
     if (formCardRef.current) {
       formCardRef.current.scrollIntoView({ behavior: "smooth" });
@@ -640,6 +643,8 @@ const CreacionSubirEmpleado = () => {
     if (!habeasData) errors.habeasData = "Habeas Data es requerido.";
     if (!autorizacionFirma)
       errors.autorizacionFirma = "Autorización de firma es requerida.";
+    if (!aceptaTerminos)
+      errors.aceptaTerminos = "Debes aceptar el tratamiento de datos.";
 
     const emailError = validateEmail(correo);
     if (correo && emailError) errors.correo = emailError;
@@ -993,10 +998,9 @@ const CreacionSubirEmpleado = () => {
               <li>Escanea el documento firmado.</li>
               <li>Sube el archivo escaneado en el campo de abajo.</li>
             </ol>
-            <a
-              href={URL_PLANTILLA_AUTORIZACION}
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              type="button"
+              onClick={() => openPreview(URL_PLANTILLA_AUTORIZACION)}
               className="tc-download-btn"
               style={{
                 display: "inline-flex",
@@ -1006,12 +1010,13 @@ const CreacionSubirEmpleado = () => {
                 backgroundColor: "#3182ce",
                 color: "white",
                 borderRadius: "4px",
-                textDecoration: "none",
+                border: "none",
+                cursor: "pointer",
                 fontSize: "0.9rem",
               }}
             >
-              <FaDownload /> Descargar Formato
-            </a>
+              <FaFilePdf /> Visualizar y Descargar Formato
+            </button>
           </div>
           <FileInput
             label="Subir Autorización Firmada"
@@ -1056,6 +1061,61 @@ const CreacionSubirEmpleado = () => {
             </span>
           )}
         </div>
+      )}
+
+      <div
+        className={`tc-terms-group ${
+          formErrors.aceptaTerminos ? "has-error" : ""
+        }`}
+        style={{ marginTop: "2rem" }}
+      >
+        <input
+          id="aceptaTerminos"
+          type="checkbox"
+          checked={aceptaTerminos}
+          onChange={(event) => {
+            setAceptaTerminos(event.target.checked);
+            if (event.target.checked) {
+              setFormErrors((prev) => ({
+                ...prev,
+                aceptaTerminos: undefined,
+              }));
+            }
+          }}
+        />
+        <div className="tc-terms-text">
+          <p className="tc-terms-title">
+            Aceptar términos y condiciones de envío de información.
+            <span className="tc-terms-links">
+              <Link
+                to="/politicas"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="tc-terms-link"
+              >
+                Tratamiento de datos
+              </Link>
+              <span className="tc-terms-divider">•</span>
+              <Link
+                to="/declaracion-origen-fondos"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="tc-terms-link"
+              >
+                Declaraciones legales
+              </Link>
+            </span>
+          </p>
+          <label htmlFor="aceptaTerminos" className="tc-terms-label">
+            He leído y estoy de acuerdo con las políticas y lineamientos
+            generales de protección de datos personales, SAGRILAFT y las
+            declaraciones de origen de fondos, transparencia y gestión de
+            riesgos de SUPERMERCADOS MERKAHORRO S.A.S.
+          </label>
+        </div>
+      </div>
+      {formErrors.aceptaTerminos && (
+        <span className="tc-validation-error">{formErrors.aceptaTerminos}</span>
       )}
 
       {/* Botones de Acción */}

@@ -96,6 +96,7 @@ export const aprobarRegistro = async (req, res) => {
                 datos.url_certificado_bancario
               ),
               url_habeas_data: normalizar(datos.url_habeas_data),
+              url_autorizacion_firma: normalizar(datos.url_autorizacion_firma),
               fecha_contratacion: normalizar(fechaContratacion), // Nuevo campo
             },
           };

@@ -30,6 +30,7 @@ export const registrarEmpleadoPublico = async (req, res) => {
       url_cedula,
       url_certificado_bancario,
       url_habeas_data,
+      url_autorizacion_firma,
     } = req.body;
 
     const { data: tokenData } = await supabaseAxios.get(
@@ -62,11 +63,12 @@ export const registrarEmpleadoPublico = async (req, res) => {
       !url_hoja_de_vida ||
       !url_cedula ||
       !url_certificado_bancario ||
-      !url_habeas_data
+      !url_habeas_data ||
+      !url_autorizacion_firma
     ) {
       return res.status(400).json({
         message:
-          "Todos los documentos son obligatorios (CV, Cédula, Cert. Bancario y Habeas Data).",
+          "Todos los documentos son obligatorios (CV, Cédula, Cert. Bancario, Habeas Data y Autorización Firma).",
       });
     }
 
@@ -86,6 +88,7 @@ export const registrarEmpleadoPublico = async (req, res) => {
         url_cedula,
         url_certificado_bancario,
         url_habeas_data,
+        url_autorizacion_firma,
       },
       created_at: new Date().toISOString(),
     };
