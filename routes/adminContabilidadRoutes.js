@@ -6,6 +6,7 @@ import {
   getHistorialClientesAdmin,
   getDashboardStats,
   getExpedienteProveedorAdmin,
+  getExpedienteClienteAdmin,
 } from "../controllers/adminContabilidadController.js";
 
 const router = express.Router();
@@ -28,6 +29,12 @@ router.get(
   "/expediente-proveedor/:id",
   authMiddleware,
   getExpedienteProveedorAdmin
+);
+
+router.get(
+  "/expediente-cliente/:id",
+  authMiddleware,
+  getExpedienteClienteAdmin
 );
 
 export default router;

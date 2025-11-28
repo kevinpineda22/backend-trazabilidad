@@ -1,9 +1,9 @@
-// src/pages/trazabilidad_contabilidad/views/ExpedienteProveedorView.jsx
+// src/pages/trazabilidad_contabilidad/views/ExpedienteClienteView.jsx
 import React, { useState, useEffect } from "react";
 import { apiTrazabilidad as api } from "../../../services/apiTrazabilidad";
 import {
   FaArrowLeft,
-  FaBuilding,
+  FaUserTie,
   FaFilePdf,
   FaFileImage,
   FaFileAlt,
@@ -25,15 +25,15 @@ const InfoItem = ({ label, value }) => (
   </div>
 );
 
-const ExpedienteProveedorView = ({ proveedorId, onBack, onPreview }) => {
-  const [proveedor, setProveedor] = useState(null);
+const ExpedienteClienteView = ({ clienteId, onBack, onPreview }) => {
+  const [cliente, setCliente] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!proveedorId) {
+    if (!clienteId) {
       setLoading(false);
-      setError("No se ha seleccionado un proveedor.");
+      setError("No se ha seleccionado un cliente.");
       return;
     }
 
@@ -41,12 +41,12 @@ const ExpedienteProveedorView = ({ proveedorId, onBack, onPreview }) => {
       try {
         setLoading(true);
         const { data } = await api.get(
-          `/trazabilidad/admin/expediente-proveedor/${proveedorId}`
+          `/trazabilidad/admin/expediente-cliente/${clienteId}`
         );
-        setProveedor(data.proveedor);
+        setCliente(data.cliente);
         setError(null);
       } catch (err) {
-        console.error("Error fetching expediente proveedor:", err);
+        console.error("Error fetching expediente cliente:", err);
         const errorMsg =
           err.response?.data?.message || "No se pudo cargar el expediente.";
         setError(errorMsg);
@@ -57,7 +57,7 @@ const ExpedienteProveedorView = ({ proveedorId, onBack, onPreview }) => {
     };
 
     fetchExpediente();
-  }, [proveedorId]);
+  }, [clienteId]);
 
   const getFileIcon = (fileNameOrUrl) => {
     if (!fileNameOrUrl) return <FaFileAlt className="file-icon other" />;
@@ -78,27 +78,24 @@ const ExpedienteProveedorView = ({ proveedorId, onBack, onPreview }) => {
     }
   };
 
-  // Crear array de documentos a partir del objeto proveedor
+  // Crear array de documentos a partir del objeto cliente
   let documentosDefinidos = [];
-  if (proveedor) {
+  if (cliente) {
     documentosDefinidos = [
-      { label: "RUT", url: proveedor.url_rut },
-      { label: "Cámara de Comercio", url: proveedor.url_camara_comercio },
+      { label: "RUT", url: cliente.url_rut },
+      { label: "Cámara de Comercio", url: cliente.url_camara_comercio },
       {
         label: "Certificación Bancaria",
-        url: proveedor.url_certificacion_bancaria,
+        url: cliente.url_certificacion_bancaria,
       },
-      {
-        label: "Documento Identidad Rep. Legal",
-        url: proveedor.url_doc_identidad_rep_legal,
-      },
+      { label: "Cédula", url: cliente.url_cedula },
       {
         label: "Composición Accionaria",
-        url: proveedor.url_composicion_accionaria,
+        url: cliente.url_composicion_accionaria,
       },
       {
         label: "Certificado SAGRILAFT",
-        url: proveedor.url_certificado_sagrilaft,
+        url: cliente.url_certificado_sagrilaft,
       },
     ];
   }
@@ -125,20 +122,22 @@ const ExpedienteProveedorView = ({ proveedorId, onBack, onPreview }) => {
           </div>
         )}
 
-        {proveedor && (
+        {cliente && (
           <>
             {/* ENCABEZADO */}
             <div className="expediente-header">
-              <FaBuilding className="header-icon" />
+              <FaUserTie className="header-icon" />
               <div className="header-info">
                 <h1 className="header-title">
-                  {proveedor.razon_social ||
-                    proveedor.nombre_contacto ||
-                    "Proveedor"}
+                  {cliente.razon_social ||
+                    `${cliente.primer_nombre || ""} ${
+                      cliente.primer_apellido || ""
+                    }`.trim() ||
+                    "Cliente"}
                 </h1>
                 <span className="header-subtitle">
-                  {proveedor.tipo_documento}: {proveedor.nit}
-                  {proveedor.dv ? `-${proveedor.dv}` : ""}
+                  {cliente.tipo_documento}: {cliente.nit}
+                  {cliente.dv ? `-${cliente.dv}` : ""}
                 </span>
               </div>
             </div>
@@ -147,41 +146,37 @@ const ExpedienteProveedorView = ({ proveedorId, onBack, onPreview }) => {
             <div className="expediente-info-card">
               <h2 className="info-card-title">Información General</h2>
               <div className="info-card-grid">
-                <InfoItem
-                  label="Cupo Aprobado"
-                  value={proveedor.cupo_aprobado}
-                />
+                <InfoItem label="Cupo Solicitado" value={cliente.cupo} />
+                <InfoItem label="Plazo" value={cliente.plazo} />
                 <InfoItem
                   label="Tipo de Régimen"
-                  value={proveedor.tipo_regimen}
+                  value={cliente.tipo_regimen}
                 />
                 <InfoItem
                   label="Tipo de Documento"
-                  value={proveedor.tipo_documento}
+                  value={cliente.tipo_documento}
                 />
                 <InfoItem
                   label="Número de Documento"
                   value={
-                    proveedor.nit
-                      ? `${proveedor.nit}${
-                          proveedor.dv ? `-${proveedor.dv}` : ""
-                        }`
+                    cliente.nit
+                      ? `${cliente.nit}${cliente.dv ? `-${cliente.dv}` : ""}`
                       : "N/A"
                   }
                 />
-                <InfoItem label="Razón Social" value={proveedor.razon_social} />
+                <InfoItem label="Razón Social" value={cliente.razon_social} />
                 <InfoItem
                   label="Nombre Establecimiento"
-                  value={proveedor.nombre_establecimiento}
+                  value={cliente.nombre_establecimiento}
                 />
-                <InfoItem label="Código CIIU" value={proveedor.codigo_ciiu} />
+                <InfoItem label="Código CIIU" value={cliente.codigo_ciiu} />
                 <InfoItem
                   label="Descripción CIIU"
-                  value={proveedor.descripcion_ciiu}
+                  value={cliente.descripcion_ciiu}
                 />
                 <InfoItem
                   label="Fecha Diligenciamiento"
-                  value={formatFechaCorta(proveedor.fecha_diligenciamiento)}
+                  value={formatFechaCorta(cliente.fecha_diligenciamiento)}
                 />
               </div>
             </div>
@@ -192,46 +187,46 @@ const ExpedienteProveedorView = ({ proveedorId, onBack, onPreview }) => {
               <div className="info-card-grid">
                 <InfoItem
                   label="Dirección Domicilio"
-                  value={proveedor.direccion_domicilio}
+                  value={cliente.direccion_domicilio}
                 />
-                <InfoItem label="Departamento" value={proveedor.departamento} />
-                <InfoItem label="Ciudad" value={proveedor.ciudad} />
+                <InfoItem label="Departamento" value={cliente.departamento} />
+                <InfoItem label="Ciudad" value={cliente.ciudad} />
                 <InfoItem
                   label="Nombre Contacto"
-                  value={proveedor.nombre_contacto}
+                  value={cliente.nombre_contacto}
                 />
                 <InfoItem
                   label="Email Contacto"
-                  value={proveedor.email_contacto}
+                  value={cliente.email_contacto}
                 />
                 <InfoItem
                   label="Teléfono Contacto"
-                  value={proveedor.telefono_contacto}
+                  value={cliente.telefono_contacto}
                 />
                 <InfoItem
                   label="Email Factura Electrónica"
-                  value={proveedor.email_factura_electronica}
+                  value={cliente.email_factura_electronica}
                 />
               </div>
             </div>
 
             {/* TARJETA DE REPRESENTANTE LEGAL */}
-            {proveedor.tipo_regimen === "persona_juridica" && (
+            {cliente.tipo_regimen === "persona_juridica" && (
               <div className="expediente-info-card">
                 <h2 className="info-card-title">Representante Legal</h2>
                 <div className="info-card-grid">
-                  <InfoItem label="Nombre" value={proveedor.rep_legal_nombre} />
+                  <InfoItem label="Nombre" value={cliente.rep_legal_nombre} />
                   <InfoItem
                     label="Apellidos"
-                    value={proveedor.rep_legal_apellidos}
+                    value={cliente.rep_legal_apellidos}
                   />
                   <InfoItem
                     label="Tipo de Documento"
-                    value={proveedor.rep_legal_tipo_doc}
+                    value={cliente.rep_legal_tipo_doc}
                   />
                   <InfoItem
                     label="Número de Documento"
-                    value={proveedor.rep_legal_num_doc}
+                    value={cliente.rep_legal_num_doc}
                   />
                 </div>
               </div>
@@ -241,14 +236,14 @@ const ExpedienteProveedorView = ({ proveedorId, onBack, onPreview }) => {
             <div className="expediente-info-card">
               <h2 className="info-card-title">Declaraciones</h2>
               <div className="info-card-grid">
-                <InfoItem label="Declara PEP" value={proveedor.declara_pep} />
+                <InfoItem label="Declara PEP" value={cliente.declara_pep} />
                 <InfoItem
                   label="Recursos Públicos"
-                  value={proveedor.declara_recursos_publicos}
+                  value={cliente.declara_recursos_publicos}
                 />
                 <InfoItem
                   label="Obligaciones Tributarias"
-                  value={proveedor.declara_obligaciones_tributarias}
+                  value={cliente.declara_obligaciones_tributarias}
                 />
               </div>
             </div>
@@ -257,14 +252,11 @@ const ExpedienteProveedorView = ({ proveedorId, onBack, onPreview }) => {
             <div className="expediente-info-card">
               <h2 className="info-card-title">Información de Registro</h2>
               <div className="info-card-grid">
-                <InfoItem
-                  label="Creado por"
-                  value={proveedor.profiles?.nombre}
-                />
+                <InfoItem label="Creado por" value={cliente.profiles?.nombre} />
                 <InfoItem
                   label="Fecha Creación"
                   value={format(
-                    parseISO(proveedor.created_at),
+                    parseISO(cliente.created_at),
                     "dd/MM/yyyy hh:mm a"
                   )}
                 />
@@ -276,7 +268,7 @@ const ExpedienteProveedorView = ({ proveedorId, onBack, onPreview }) => {
         {/* LISTA DE DOCUMENTOS */}
         <div className="expediente-file-list">
           <h2 className="file-list-title">Documentos del Expediente</h2>
-          {proveedor &&
+          {cliente &&
           documentosDefinidos.filter((doc) => doc.url).length > 0 ? (
             <ul>
               {documentosDefinidos
@@ -315,7 +307,7 @@ const ExpedienteProveedorView = ({ proveedorId, onBack, onPreview }) => {
                 style={{ marginTop: "1rem" }}
               >
                 <FaInfoCircle />
-                <span>No se encontraron documentos para este proveedor.</span>
+                <span>No se encontraron documentos para este cliente.</span>
               </div>
             )
           )}
@@ -325,4 +317,4 @@ const ExpedienteProveedorView = ({ proveedorId, onBack, onPreview }) => {
   );
 };
 
-export default ExpedienteProveedorView;
+export default ExpedienteClienteView;
