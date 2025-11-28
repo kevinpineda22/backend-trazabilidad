@@ -147,6 +147,17 @@ const ExpedienteEmpleadoView = ({ empleadoId, onBack, onPreview }) => {
                   value={empleado.profiles?.nombre}
                 />
                 <InfoItem
+                  label="Fecha Contratación"
+                  value={
+                    empleado.fecha_contratacion
+                      ? format(
+                          parseISO(empleado.fecha_contratacion),
+                          "dd/MM/yyyy"
+                        )
+                      : "N/A"
+                  }
+                />
+                <InfoItem
                   label="Fecha Creación"
                   value={format(
                     parseISO(empleado.created_at),

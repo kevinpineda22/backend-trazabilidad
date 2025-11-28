@@ -46,6 +46,7 @@ const HistorialEmpleadosAdminView = ({ onPreview, onOpenExpediente }) => {
             <th>Creado por</th>
             <th>Nombre Empleado</th>
             <th>Cédula</th>
+            <th>Fecha Contratación</th>
             <th>Fecha Creación</th>
             <th>Expediente</th>
           </tr>
@@ -64,6 +65,11 @@ const HistorialEmpleadosAdminView = ({ onPreview, onOpenExpediente }) => {
               </td>
               <td className="admin-cont-cell-centered">
                 {emp.cedula || "N/A"}
+              </td>
+              <td className="admin-cont-cell-centered">
+                {emp.fecha_contratacion
+                  ? format(parseISO(emp.fecha_contratacion), "dd/MM/yyyy")
+                  : "N/A"}
               </td>
               <td className="admin-cont-cell-centered">
                 {format(parseISO(emp.created_at), "dd/MM/yy hh:mm a")}

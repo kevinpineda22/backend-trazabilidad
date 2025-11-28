@@ -35,7 +35,7 @@ export const obtenerPendientes = async (req, res) => {
 export const aprobarRegistro = async (req, res) => {
   try {
     const { id } = req.params;
-    const { cupoAprobado, datosAprobados } = req.body;
+    const { cupoAprobado, datosAprobados, fechaContratacion } = req.body;
     const user_id = req.user?.id;
 
     if (!user_id) {
@@ -96,6 +96,7 @@ export const aprobarRegistro = async (req, res) => {
                 datos.url_certificado_bancario
               ),
               url_habeas_data: normalizar(datos.url_habeas_data),
+              fecha_contratacion: normalizar(fechaContratacion), // Nuevo campo
             },
           };
         }

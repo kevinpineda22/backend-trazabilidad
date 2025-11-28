@@ -78,6 +78,7 @@ const PanelAprobaciones = ({ userRole }) => {
   const [modalRechazoAbierto, setModalRechazoAbierto] = useState(false);
   const [archivoPreview, setArchivoPreview] = useState(null);
   const [cupoAprobado, setCupoAprobado] = useState("");
+  const [fechaContratacion, setFechaContratacion] = useState(""); // Nuevo estado
   const [datosEditables, setDatosEditables] = useState({});
   const mensajeTimeout = useRef(null);
 
@@ -648,6 +649,7 @@ const PanelAprobaciones = ({ userRole }) => {
   const handleSeleccionRegistro = (registro) => {
     setRegistroSeleccionado(registro);
     setCupoAprobado("");
+    setFechaContratacion(""); // Resetear fecha
     if (registro?.datos) {
       setDatosEditables({ ...registro.datos });
     } else {
@@ -672,6 +674,9 @@ const PanelAprobaciones = ({ userRole }) => {
       }
       if (registroSeleccionado.tipo === "cliente") {
         payload.datosAprobados = datosEditables;
+      }
+      if (registroSeleccionado.tipo === "empleado") {
+        payload.fechaContratacion = fechaContratacion;
       }
 
       await axios.post(
@@ -882,6 +887,18 @@ const PanelAprobaciones = ({ userRole }) => {
                     value={cupoAprobado}
                     onChange={(e) => setCupoAprobado(e.target.value)}
                     placeholder="Ingrese el cupo aprobado (números o letras)"
+                    className="input-cupo-aprobado"
+                  />
+                </div>
+              )}
+
+              {registroSeleccionado.tipo === "empleado" && (
+                <div className="detalle-cupo-aprobado">
+                  <label>Fecha de Contratación</label>
+                  <input
+                    type="date"
+                    value={fechaContratacion}
+                    onChange={(e) => setFechaContratacion(e.target.value)}
                     className="input-cupo-aprobado"
                   />
                 </div>
