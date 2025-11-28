@@ -7,6 +7,7 @@ import {
   FaCheckCircle,
   FaChartBar,
   FaFolderOpen,
+  FaUsers,
 } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
@@ -15,18 +16,27 @@ import { supabase } from "../../supabaseClient";
 
 // Estilos
 import "./AdminTrazabilidad.css";
+// Importamos estilos de contabilidad para que funcionen las vistas compartidas
+import "./SuperAdminContabilidad.css";
 
 // Componentes
 import PanelAprobaciones from "./PanelAprobaciones";
 import GestionTokens from "./GestionTokens";
 import GestionDocumentos from "./GestionDocumentos";
 import DashboardView from "./views/DashboardView";
+import FilePreviewModal from "./FilePreviewModal";
+
+// Vistas compartidas
+import HistorialEmpleadosAdminView from "./views/HistorialEmpleadosAdminView";
+import ExpedienteEmpleadoView from "./views/ExpedienteEmpleadoView";
 
 const VISTAS = {
   DASHBOARD: "dashboard",
   TOKENS: "tokens",
   APROBACIONES: "aprobaciones",
   DOCUMENTOS: "documentos",
+  EMPLEADOS: "empleados",
+  EXPEDIENTE_EMPLEADO: "expediente_empleado",
 };
 
 const TITULOS_VISTA = {
@@ -34,11 +44,18 @@ const TITULOS_VISTA = {
   [VISTAS.TOKENS]: "Gestión de Tokens",
   [VISTAS.APROBACIONES]: "Panel de Aprobaciones",
   [VISTAS.DOCUMENTOS]: "Gestión de Documentos",
+  [VISTAS.EMPLEADOS]: "Archivador General de Empleados",
+  [VISTAS.EXPEDIENTE_EMPLEADO]: "Expediente Digital del Empleado",
 };
 
 const AdminTrazabilidad = () => {
   const [vista, setVista] = useState(VISTAS.DASHBOARD);
   const [userRole, setUserRole] = useState(null);
+
+  // Estado para el modal de previsualización y expedientes
+  const [modalOpen, setModalOpen] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState("");
+  const [selectedEmpleadoId, setSelectedEmpleadoId] = useState(null);
 
   useEffect(() => {
     const fetchRole = async () => {
@@ -88,9 +105,44 @@ const AdminTrazabilidad = () => {
         return <PanelAprobaciones userRole={userRole} />;
       case VISTAS.DOCUMENTOS:
         return <GestionDocumentos userRole={userRole} />;
+      case VISTAS.EMPLEADOS:
+        return (
+          <HistorialEmpleadosAdminView
+            onPreview={openPreview}
+            onOpenExpediente={openExpedienteEmpleado}
+          />
+        );
+      case VISTAS.EXPEDIENTE_EMPLEADO:
+        return (
+          <ExpedienteEmpleadoView
+            empleadoId={selectedEmpleadoId}
+            onBack={showEmpleadosList}
+            onPreview={openPreview}
+          />
+        );
       default:
         return <DashboardView onNavigate={setVista} userRole={userRole} />;
     }
+  };
+
+  const openPreview = (url) => {
+    setPreviewUrl(url);
+    setModalOpen(true);
+  };
+  const closePreview = () => {
+    setModalOpen(false);
+    setPreviewUrl("");
+  };
+
+  // Funciones de navegación para empleados
+  const openExpedienteEmpleado = (empleadoId) => {
+    setSelectedEmpleadoId(empleadoId);
+    setVista(VISTAS.EXPEDIENTE_EMPLEADO);
+  };
+
+  const showEmpleadosList = () => {
+    setSelectedEmpleadoId(null);
+    setVista(VISTAS.EMPLEADOS);
   };
 
   return (
@@ -105,6 +157,11 @@ const AdminTrazabilidad = () => {
         pauseOnFocusLoss
         draggable
         pauseOnHover
+      />
+      <FilePreviewModal
+        isOpen={modalOpen}
+        onClose={closePreview}
+        fileUrl={previewUrl}
       />
 
       {/* Sidebar */}
@@ -139,6 +196,12 @@ const AdminTrazabilidad = () => {
             texto="Aprobaciones"
             activo={vista === VISTAS.APROBACIONES}
             onClick={() => setVista(VISTAS.APROBACIONES)}
+          />
+          <BotonSidebar
+            icono={FaUsers}
+            texto="Archivador Empleados"
+            activo={vista === VISTAS.EMPLEADOS}
+            onClick={() => setVista(VISTAS.EMPLEADOS)}
           />
           <BotonSidebar
             icono={FaFolderOpen}

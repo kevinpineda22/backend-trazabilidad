@@ -44,7 +44,7 @@ const ExpedienteEmpleadoView = ({ empleadoId, onBack, onPreview }) => {
         setLoading(true);
         // El backend ahora solo nos devuelve el 'empleado'
         const { data } = await api.get(
-          `/trazabilidad/empleados/admin/expediente/${empleadoId}`
+          `/trazabilidad/admin/expediente-empleado/${empleadoId}`
         );
         setEmpleado(data.empleado); // ¡Solo guardamos el empleado!
         setError(null);
