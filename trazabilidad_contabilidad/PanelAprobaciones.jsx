@@ -379,6 +379,7 @@ const PanelAprobaciones = ({ userRole }) => {
               url: datos.url_certificado_bancario,
             },
             { label: "Habeas Data", url: datos.url_habeas_data },
+            { label: "Autorización Firma", url: datos.url_autorizacion_firma },
           ]),
         };
       }

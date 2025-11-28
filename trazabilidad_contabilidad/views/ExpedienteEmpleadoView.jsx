@@ -82,6 +82,7 @@ const ExpedienteEmpleadoView = ({ empleadoId, onBack, onPreview }) => {
       { label: "Cédula", url: empleado.url_cedula },
       { label: "Certificado Bancario", url: empleado.url_certificado_bancario },
       { label: "Habeas Data", url: empleado.url_habeas_data },
+      { label: "Autorización Firma", url: empleado.url_autorizacion_firma },
     ];
   }
   // ------------------------------------

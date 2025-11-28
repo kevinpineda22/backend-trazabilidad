@@ -26,6 +26,7 @@ export const createEmpleadoContabilidad = async (req, res) => {
       url_cedula,
       url_certificado_bancario,
       url_habeas_data,
+      url_autorizacion_firma,
     } = req.body;
 
     if (!nombre || !apellidos || !cedula) {
@@ -38,11 +39,12 @@ export const createEmpleadoContabilidad = async (req, res) => {
       !url_hoja_de_vida ||
       !url_cedula ||
       !url_certificado_bancario ||
-      !url_habeas_data
+      !url_habeas_data ||
+      !url_autorizacion_firma
     ) {
       return res.status(400).json({
         message:
-          "Faltan URLs de documentos obligatorios (CV, Cédula, Cert. Bancario y Habeas Data).",
+          "Faltan URLs de documentos obligatorios (CV, Cédula, Cert. Bancario, Habeas Data y Autorización Firma).",
       });
     }
 
@@ -58,6 +60,7 @@ export const createEmpleadoContabilidad = async (req, res) => {
       url_cedula,
       url_certificado_bancario,
       url_habeas_data,
+      url_autorizacion_firma,
     };
 
     const { data } = await supabaseAxios.post(
@@ -184,6 +187,7 @@ export const updateEmpleadoContabilidad = async (req, res) => {
       url_cedula,
       url_certificado_bancario,
       url_habeas_data,
+      url_autorizacion_firma,
     } = req.body;
 
     // Construir el payload dinámicamente (Mejor Práctica de PATCH)
@@ -203,6 +207,8 @@ export const updateEmpleadoContabilidad = async (req, res) => {
       payload.url_certificado_bancario = url_certificado_bancario;
     if (url_habeas_data !== undefined)
       payload.url_habeas_data = url_habeas_data;
+    if (url_autorizacion_firma !== undefined)
+      payload.url_autorizacion_firma = url_autorizacion_firma;
 
     // Si el payload está vacío, no hay nada que actualizar.
     if (Object.keys(payload).length === 0) {
@@ -221,11 +227,9 @@ export const updateEmpleadoContabilidad = async (req, res) => {
 
     // Si data está vacío, no se encontró un registro que coincida con (id Y user_id).
     if (!data || data.length === 0) {
-      return res
-        .status(404)
-        .json({
-          message: "Registro no encontrado o no tiene permiso para editarlo.",
-        });
+      return res.status(404).json({
+        message: "Registro no encontrado o no tiene permiso para editarlo.",
+      });
     }
 
     res.status(200).json(data[0]); // Devuelve el objeto actualizado

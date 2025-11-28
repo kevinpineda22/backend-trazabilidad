@@ -19,6 +19,7 @@ import {
   FaEdit,
   FaSpinner,
   FaInfoCircle,
+  FaDownload,
 } from "react-icons/fa";
 import { format } from "date-fns";
 import Swal from "sweetalert2";
@@ -36,6 +37,10 @@ import "./CreacionSubirEmpleado.css"; // Clases tc-
 // CONFIGURACIÓN CENTRALIZADA
 const BUCKET_NAME = "documentos_contabilidad";
 const FOLDER_BASE = "empleados";
+// TODO: Reemplaza esta URL con la URL pública real de tu archivo en Supabase
+const URL_PLANTILLA_AUTORIZACION =
+  "https://pitpougbnibmfrjykzet.supabase.co/storage/v1/object/public/documentos_contabilidad/empleados/ACUERDOFIRMAELECTRONICA.pdf";
+
 const SWAL_CUSTOM_CLASSES = {
   container: "tc-swal-container",
   title: "tc-swal-title",
@@ -307,6 +312,7 @@ const CreacionSubirEmpleado = () => {
   const [cedulaFile, setCedulaFile] = useState(null);
   const [certificadoBancario, setCertificadoBancario] = useState(null);
   const [habeasData, setHabeasData] = useState(null);
+  const [autorizacionFirma, setAutorizacionFirma] = useState(null); // Nuevo estado
   const [habeasModalOpen, setHabeasModalOpen] = useState(false);
   const [formErrors, setFormErrors] = useState({});
   const [modalOpen, setModalOpen] = useState(false);
@@ -393,9 +399,15 @@ const CreacionSubirEmpleado = () => {
     setCedulaFile(null);
     setCertificadoBancario(null);
     setHabeasData(null);
+    setAutorizacionFirma(null);
     setFormErrors({});
 
-    const inputs = ["hoja_de_vida", "cedula_file", "certificado_bancario"];
+    const inputs = [
+      "hoja_de_vida",
+      "cedula_file",
+      "certificado_bancario",
+      "autorizacion_firma",
+    ];
     inputs.forEach((id) => {
       const input = document.getElementById(id);
       if (input) input.value = null;
@@ -440,6 +452,7 @@ const CreacionSubirEmpleado = () => {
     setCedulaFile(item.url_cedula || null);
     setCertificadoBancario(item.url_certificado_bancario || null);
     setHabeasData(item.url_habeas_data || null);
+    setAutorizacionFirma(item.url_autorizacion_firma || null);
     setFormErrors({});
     if (formCardRef.current) {
       formCardRef.current.scrollIntoView({ behavior: "smooth" });
@@ -503,11 +516,13 @@ const CreacionSubirEmpleado = () => {
         url_cedula,
         url_certificado_bancario,
         url_habeas_data,
+        url_autorizacion_firma,
       ] = await Promise.all([
         uploadFileOrKeepUrl(hojaDeVida, "hoja_de_vida"),
         uploadFileOrKeepUrl(cedulaFile, "cedula"),
         uploadFileOrKeepUrl(certificadoBancario, "certificado_bancario"),
         uploadFileOrKeepUrl(habeasData, "habeas_data"),
+        uploadFileOrKeepUrl(autorizacionFirma, "autorizacion_firma"),
       ]);
 
       const finalPayload = {
@@ -516,6 +531,7 @@ const CreacionSubirEmpleado = () => {
         url_cedula,
         url_certificado_bancario,
         url_habeas_data,
+        url_autorizacion_firma,
       };
 
       // Modo público: enviar a registro-publico
@@ -622,6 +638,8 @@ const CreacionSubirEmpleado = () => {
     if (!certificadoBancario)
       errors.certificadoBancario = "Certificado bancario es requerido.";
     if (!habeasData) errors.habeasData = "Habeas Data es requerido.";
+    if (!autorizacionFirma)
+      errors.autorizacionFirma = "Autorización de firma es requerida.";
 
     const emailError = validateEmail(correo);
     if (correo && emailError) errors.correo = emailError;
@@ -950,13 +968,67 @@ const CreacionSubirEmpleado = () => {
             )}
           </div>
         </div>
+
+        {/* Campo Especial para Autorización de Firma */}
+        <div className="tc-form-group" style={{ gridColumn: "1 / -1" }}>
+          <label>
+            Autorización de Firma <span className="required">*</span>
+          </label>
+          <div
+            className="tc-instruction-box"
+            style={{
+              marginBottom: "1rem",
+              padding: "1rem",
+              backgroundColor: "#f8f9fa",
+              borderRadius: "8px",
+              border: "1px solid #e2e8f0",
+            }}
+          >
+            <p style={{ marginBottom: "0.5rem" }}>
+              <strong>Instrucciones:</strong>
+            </p>
+            <ol style={{ marginLeft: "1.5rem", marginBottom: "1rem" }}>
+              <li>Descarga el formato de autorización.</li>
+              <li>Imprímelo y fírmalo físicamente.</li>
+              <li>Escanea el documento firmado.</li>
+              <li>Sube el archivo escaneado en el campo de abajo.</li>
+            </ol>
+            <a
+              href={URL_PLANTILLA_AUTORIZACION}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="tc-download-btn"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.5rem",
+                padding: "0.5rem 1rem",
+                backgroundColor: "#3182ce",
+                color: "white",
+                borderRadius: "4px",
+                textDecoration: "none",
+                fontSize: "0.9rem",
+              }}
+            >
+              <FaDownload /> Descargar Formato
+            </a>
+          </div>
+          <FileInput
+            label="Subir Autorización Firmada"
+            name="autorizacion_firma"
+            file={autorizacionFirma}
+            setFile={setAutorizacionFirma}
+            isRequired={true}
+          />
+        </div>
       </div>
 
       {/* Errores de validación */}
       {(formErrors.hojaDeVida ||
         formErrors.cedulaFile ||
         formErrors.certificadoBancario ||
-        formErrors.habeasData) && (
+        formErrors.habeasData ||
+        formErrors.autorizacionFirma) && (
         <div className="tc-error-summary">
           {formErrors.hojaDeVida && (
             <span className="tc-validation-error">
@@ -976,6 +1048,11 @@ const CreacionSubirEmpleado = () => {
           {formErrors.habeasData && (
             <span className="tc-validation-error">
               ⚠️ {formErrors.habeasData}
+            </span>
+          )}
+          {formErrors.autorizacionFirma && (
+            <span className="tc-validation-error">
+              ⚠️ {formErrors.autorizacionFirma}
             </span>
           )}
         </div>
@@ -998,7 +1075,8 @@ const CreacionSubirEmpleado = () => {
             !hojaDeVida ||
             !cedulaFile ||
             !certificadoBancario ||
-            !habeasData
+            !habeasData ||
+            !autorizacionFirma
           }
         >
           {loading || isSubmitting ? (
