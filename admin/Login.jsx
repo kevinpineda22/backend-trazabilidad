@@ -94,11 +94,27 @@ export const Login = () => {
 
     const userRole = profileData.role;
 
-    const { data: roleConfig, error: roleConfigErr } = await supabase
+    let { data: roleConfig, error: roleConfigErr } = await supabase
       .from("role_permissions")
       .select("permissions, redirect")
       .eq("role", userRole)
       .maybeSingle();
+
+    // Si no se encuentra configuración para admin_clientes, usar la de admin_proveedores
+    if (
+      (!roleConfig || !roleConfig.permissions) &&
+      userRole === "admin_clientes"
+    ) {
+      const { data: fallbackConfig } = await supabase
+        .from("role_permissions")
+        .select("permissions, redirect")
+        .eq("role", "admin_proveedores")
+        .maybeSingle();
+
+      if (fallbackConfig) {
+        roleConfig = fallbackConfig;
+      }
+    }
 
     // Si hay error de base de datos (no de "no encontrado"), reportarlo
     if (roleConfigErr) {
@@ -136,9 +152,12 @@ export const Login = () => {
     // Si el usuario es admin_proveedor o admin_cliente, redirigir al panel de acceso
     // para que puedan elegir entre las diferentes opciones disponibles
     if (
-      ["admin_proveedor", "admin_proveedores", "admin_cliente"].includes(
-        userRole
-      )
+      [
+        "admin_proveedor",
+        "admin_proveedores",
+        "admin_cliente",
+        "admin_clientes",
+      ].includes(userRole)
     ) {
       config.redirect = "/acceso";
     }

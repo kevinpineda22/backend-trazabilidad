@@ -3,7 +3,14 @@ import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { apiTrazabilidad as api } from "../../../services/apiTrazabilidad";
 import { format, parseISO } from "date-fns";
-import { FaUser, FaFolderOpen } from "react-icons/fa";
+import {
+  FaUser,
+  FaFolderOpen,
+  FaArchive,
+  FaUndo,
+  FaEye,
+  FaEyeSlash,
+} from "react-icons/fa";
 
 // Importación de componentes reutilizables
 import Loader from "../components/Loader";
@@ -12,78 +19,183 @@ import HistorialTabla from "../components/HistorialTabla";
 import AdminDocLink from "../components/AdminDocLink";
 
 const HistorialClientesAdminView = ({ onPreview, onOpenExpediente }) => {
-  // 1. Definición de Estado
   const [historial, setHistorial] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [mostrarArchivados, setMostrarArchivados] = useState(false);
 
-  // 2. Efecto para Cargar Datos
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const { data } = await api.get("/trazabilidad/admin/historial-clientes");
+      setHistorial(data || []);
+    } catch (error) {
+      console.error("Error al cargar el historial de clientes:", error);
+      toast.error("Error al cargar el historial de clientes.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        // El endpoint de admin ya trae todos los campos (select=*)
-        const { data } = await api.get(
-          "/trazabilidad/admin/historial-clientes"
-        );
-        setHistorial(data || []);
-      } catch (error) {
-        console.error("Error al cargar el historial de clientes:", error);
-        toast.error("Error al cargar el historial de clientes.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchData();
-  }, []); // Se ejecuta una vez al montar el componente    // 3. Manejo de Estados de Carga y Vacío
-  if (loading) {
-    return <Loader />;
-  }
+  }, []);
+
+  const handleArchivar = async (id) => {
+    if (!window.confirm("¿Estás seguro de archivar este cliente?")) return;
+    try {
+      await api.post("/trazabilidad/admin/archivar-entidad", {
+        tipo: "cliente",
+        id,
+      });
+      toast.success("Cliente archivado correctamente.");
+      fetchData();
+    } catch (error) {
+      console.error(error);
+      toast.error("Error al archivar el cliente.");
+    }
+  };
+
+  const handleRestaurar = async (id) => {
+    if (!window.confirm("¿Estás seguro de restaurar este cliente?")) return;
+    try {
+      await api.post("/trazabilidad/admin/restaurar-entidad", {
+        tipo: "cliente",
+        id,
+      });
+      toast.success("Cliente restaurado correctamente.");
+      fetchData();
+    } catch (error) {
+      console.error(error);
+      toast.error("Error al restaurar el cliente.");
+    }
+  };
+
+  const registrosFiltrados = historial.filter(
+    (item) => !!item.is_archivado === mostrarArchivados
+  );
+
+  if (loading) return <Loader />;
 
   if (historial.length === 0) {
     return <MensajeVacio mensaje="No se han creado clientes." />;
   }
 
-  // 4. Renderizado del Componente
   return (
     <div className="admin-cont-historial-wrapper">
-      <HistorialTabla>
-        <thead>
-          <tr className="admin-cont-table-header-centered">
-            <th>Creado por</th>
-            <th>Fecha Creación</th>
-            <th>Cupo</th>
-            <th>Plazo</th>
-            <th>Expediente</th>
-          </tr>
-        </thead>
-        <tbody>
-          {historial.map((cli) => (
-            <tr key={cli.id}>
-              <td className="admin-cont-cell-centered">
-                <div className="user-cell">
-                  <FaUser />
-                  {cli.profiles?.nombre || "N/A"}
-                </div>
-              </td>
-              <td className="admin-cont-cell-centered">
-                {format(parseISO(cli.created_at), "dd/MM/yy hh:mm a")}
-              </td>
-              <td className="admin-cont-cell-centered">{cli.cupo || "N/A"}</td>
-              <td className="admin-cont-cell-centered">{cli.plazo || "N/A"}</td>
-              <td className="admin-cont-cell-centered">
-                <button
-                  onClick={() => onOpenExpediente(cli.id)}
-                  className="admin-cont-expediente-button"
-                  title="Ver expediente digital"
-                >
-                  <FaFolderOpen /> Ver Expediente
-                </button>
-              </td>
+      <div
+        className="admin-cont-toolbar"
+        style={{
+          display: "flex",
+          justifyContent: "flex-end",
+          marginBottom: "1rem",
+        }}
+      >
+        <button
+          className="btn-toggle-archivados"
+          onClick={() => setMostrarArchivados(!mostrarArchivados)}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "0.5rem",
+            padding: "0.5rem 1rem",
+            borderRadius: "6px",
+            border: "1px solid #ccc",
+            background: mostrarArchivados ? "#e2e8f0" : "#fff",
+            cursor: "pointer",
+            fontWeight: "500",
+            color: "#333",
+          }}
+        >
+          {mostrarArchivados ? <FaEyeSlash /> : <FaEye />}
+          {mostrarArchivados ? "Ver Activos" : "Ver Archivados"}
+        </button>
+      </div>
+
+      {registrosFiltrados.length === 0 ? (
+        <MensajeVacio
+          mensaje={
+            mostrarArchivados
+              ? "No hay clientes archivados."
+              : "No hay clientes activos."
+          }
+        />
+      ) : (
+        <HistorialTabla>
+          <thead>
+            <tr className="admin-cont-table-header-centered">
+              <th>Creado por</th>
+              <th>Fecha Creación</th>
+              <th>Cupo</th>
+              <th>Plazo</th>
+              <th>Expediente</th>
+              <th>Acciones</th>
             </tr>
-          ))}
-        </tbody>
-      </HistorialTabla>
+          </thead>
+          <tbody>
+            {registrosFiltrados.map((cli) => (
+              <tr key={cli.id}>
+                <td className="admin-cont-cell-centered">
+                  <div className="user-cell">
+                    <FaUser />
+                    {cli.profiles?.nombre || "N/A"}
+                  </div>
+                </td>
+                <td className="admin-cont-cell-centered">
+                  {format(parseISO(cli.created_at), "dd/MM/yy hh:mm a")}
+                </td>
+                <td className="admin-cont-cell-centered">
+                  {cli.cupo || "N/A"}
+                </td>
+                <td className="admin-cont-cell-centered">
+                  {cli.plazo || "N/A"}
+                </td>
+                <td className="admin-cont-cell-centered">
+                  <button
+                    onClick={() => onOpenExpediente(cli.id)}
+                    className="admin-cont-expediente-button"
+                    title="Ver expediente digital"
+                  >
+                    <FaFolderOpen /> Ver Expediente
+                  </button>
+                </td>
+                <td className="admin-cont-cell-centered">
+                  {mostrarArchivados ? (
+                    <button
+                      onClick={() => handleRestaurar(cli.id)}
+                      className="btn-icon-restaurar"
+                      title="Restaurar"
+                      style={{
+                        border: "none",
+                        background: "none",
+                        cursor: "pointer",
+                        color: "#2ecc71",
+                        fontSize: "1.2rem",
+                      }}
+                    >
+                      <FaUndo />
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => handleArchivar(cli.id)}
+                      className="btn-icon-archivar"
+                      title="Archivar"
+                      style={{
+                        border: "none",
+                        background: "none",
+                        cursor: "pointer",
+                        color: "#e74c3c",
+                        fontSize: "1.2rem",
+                      }}
+                    >
+                      <FaArchive />
+                    </button>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </HistorialTabla>
+      )}
     </div>
   );
 };

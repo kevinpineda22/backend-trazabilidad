@@ -260,6 +260,15 @@ export const aprobarRegistro = async (req, res) => {
       "Error al aprobar registro:",
       error.response?.data || error.message
     );
+
+    if (error.response?.data?.code === "23505") {
+      return res.status(409).json({
+        message:
+          "Error: Ya existe un registro con este documento/NIT en el sistema.",
+        details: error.response.data.details,
+      });
+    }
+
     res.status(500).json({
       message: "Error al aprobar registro.",
       error: error.message,
@@ -336,7 +345,7 @@ export const obtenerHistorial = async (req, res) => {
     }
 
     const { data } = await supabaseAxios.get(
-      `/registros_pendientes?select=*&estado=neq.pendiente&order=created_at.desc`
+      `/registros_pendientes?select=*&estado=in.(aprobado,rechazado)&order=created_at.desc`
     );
 
     res.status(200).json(data || []);
@@ -344,6 +353,142 @@ export const obtenerHistorial = async (req, res) => {
     console.error("Error al obtener historial:", error);
     res.status(500).json({
       message: "Error al obtener historial.",
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * @route GET /api/trazabilidad/aprobaciones/archivados
+ * Obtiene los registros archivados
+ */
+export const obtenerArchivados = async (req, res) => {
+  try {
+    const user_id = req.user?.id;
+
+    if (!user_id) {
+      return res.status(401).json({ message: "Usuario no autenticado." });
+    }
+
+    const { data } = await supabaseAxios.get(
+      `/registros_pendientes?select=*&estado=in.(archivado_aprobado,archivado_rechazado)&order=created_at.desc`
+    );
+
+    res.status(200).json(data || []);
+  } catch (error) {
+    console.error("Error al obtener archivados:", error);
+    res.status(500).json({
+      message: "Error al obtener archivados.",
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * @route POST /api/trazabilidad/aprobaciones/archivar/:id
+ * Archiva un registro del historial
+ */
+export const archivarRegistro = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user_id = req.user?.id;
+
+    if (!user_id) {
+      return res.status(401).json({ message: "Usuario no autenticado." });
+    }
+
+    // Obtener el registro actual
+    const { data: registroActual } = await supabaseAxios.get(
+      `/registros_pendientes?id=eq.${id}`
+    );
+
+    if (!registroActual || registroActual.length === 0) {
+      return res.status(404).json({ message: "Registro no encontrado." });
+    }
+
+    const estadoActual = registroActual[0].estado;
+    let nuevoEstado = "";
+
+    if (estadoActual === "aprobado") {
+      nuevoEstado = "archivado_aprobado";
+    } else if (estadoActual === "rechazado") {
+      nuevoEstado = "archivado_rechazado";
+    } else {
+      return res
+        .status(400)
+        .json({
+          message: "Solo se pueden archivar registros aprobados o rechazados.",
+        });
+    }
+
+    const { data } = await supabaseAxios.patch(
+      `/registros_pendientes?id=eq.${id}`,
+      { estado: nuevoEstado },
+      { headers: { Prefer: "return=representation" } }
+    );
+
+    res.status(200).json({
+      message: "Registro archivado exitosamente.",
+      data: data[0],
+    });
+  } catch (error) {
+    console.error("Error al archivar registro:", error);
+    res.status(500).json({
+      message: "Error al archivar registro.",
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * @route POST /api/trazabilidad/aprobaciones/restaurar/:id
+ * Restaura un registro archivado al historial
+ */
+export const restaurarRegistro = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user_id = req.user?.id;
+
+    if (!user_id) {
+      return res.status(401).json({ message: "Usuario no autenticado." });
+    }
+
+    // Obtener el registro actual
+    const { data: registroActual } = await supabaseAxios.get(
+      `/registros_pendientes?id=eq.${id}`
+    );
+
+    if (!registroActual || registroActual.length === 0) {
+      return res.status(404).json({ message: "Registro no encontrado." });
+    }
+
+    const estadoActual = registroActual[0].estado;
+    let nuevoEstado = "";
+
+    if (estadoActual === "archivado_aprobado") {
+      nuevoEstado = "aprobado";
+    } else if (estadoActual === "archivado_rechazado") {
+      nuevoEstado = "rechazado";
+    } else {
+      return res
+        .status(400)
+        .json({ message: "El registro no está archivado correctamente." });
+    }
+
+    const { data } = await supabaseAxios.patch(
+      `/registros_pendientes?id=eq.${id}`,
+      { estado: nuevoEstado },
+      { headers: { Prefer: "return=representation" } }
+    );
+
+    res.status(200).json({
+      message: "Registro restaurado exitosamente.",
+      data: data[0],
+    });
+  } catch (error) {
+    console.error("Error al restaurar registro:", error);
+    res.status(500).json({
+      message: "Error al restaurar registro.",
       error: error.message,
     });
   }

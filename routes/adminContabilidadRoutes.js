@@ -8,6 +8,8 @@ import {
   getExpedienteProveedorAdmin,
   getExpedienteClienteAdmin,
   getExpedienteEmpleadoAdmin,
+  archivarEntidad,
+  restaurarEntidad,
 } from "../controllers/adminContabilidadController.js";
 
 const router = express.Router();
@@ -43,5 +45,9 @@ router.get(
   authMiddleware,
   getExpedienteEmpleadoAdmin
 );
+
+// Rutas para archivar/restaurar entidades
+router.post("/archivar-entidad", authMiddleware, archivarEntidad);
+router.post("/restaurar-entidad", authMiddleware, restaurarEntidad);
 
 export default router;

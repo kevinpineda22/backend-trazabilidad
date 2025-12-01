@@ -92,9 +92,12 @@ const PanelAprobaciones = ({ userRole }) => {
       return ["empleado", "cliente", "proveedor"];
     }
     if (
-      ["admin_cliente", "admin_proveedor", "admin_proveedores"].includes(
-        userRole
-      )
+      [
+        "admin_cliente",
+        "admin_clientes",
+        "admin_proveedor",
+        "admin_proveedores",
+      ].includes(userRole)
     ) {
       return ["cliente", "proveedor"];
     }
@@ -114,9 +117,12 @@ const PanelAprobaciones = ({ userRole }) => {
       // Si es admin o no tiene rol específico, mantener 'todos' o lo que estaba
     } else {
       if (
-        ["admin_cliente", "admin_proveedor", "admin_proveedores"].includes(
-          userRole
-        )
+        [
+          "admin_cliente",
+          "admin_clientes",
+          "admin_proveedor",
+          "admin_proveedores",
+        ].includes(userRole)
       ) {
         setFiltroTipo("todos");
       } else {
@@ -130,7 +136,7 @@ const PanelAprobaciones = ({ userRole }) => {
   useEffect(() => {
     if (vistaActual === "pendientes") {
       cargarPendientes();
-    } else {
+    } else if (vistaActual === "historial") {
       cargarHistorial();
     }
   }, [vistaActual]);
@@ -212,9 +218,12 @@ const PanelAprobaciones = ({ userRole }) => {
       userRole !== "authenticated"
     ) {
       if (
-        ["admin_cliente", "admin_proveedor", "admin_proveedores"].includes(
-          userRole
-        )
+        [
+          "admin_cliente",
+          "admin_clientes",
+          "admin_proveedor",
+          "admin_proveedores",
+        ].includes(userRole)
       ) {
         filtrados = filtrados.filter((r) =>
           ["cliente", "proveedor"].includes(r.tipo)
@@ -243,9 +252,12 @@ const PanelAprobaciones = ({ userRole }) => {
       userRole !== "authenticated"
     ) {
       if (
-        ["admin_cliente", "admin_proveedor", "admin_proveedores"].includes(
-          userRole
-        )
+        [
+          "admin_cliente",
+          "admin_clientes",
+          "admin_proveedor",
+          "admin_proveedores",
+        ].includes(userRole)
       ) {
         filtrados = filtrados.filter((r) =>
           ["cliente", "proveedor"].includes(r.tipo)
@@ -264,7 +276,10 @@ const PanelAprobaciones = ({ userRole }) => {
   }, [historial, filtroTipo, userRole]);
 
   const contadorPorTipo = useMemo(() => {
-    const base = vistaActual === "pendientes" ? registrosPendientes : historial;
+    let base = [];
+    if (vistaActual === "pendientes") base = registrosPendientes;
+    else if (vistaActual === "historial") base = historial;
+
     // Filtrar base por rol primero para que los conteos sean correctos
     let basePermitida = base;
     if (
@@ -274,9 +289,12 @@ const PanelAprobaciones = ({ userRole }) => {
       userRole !== "authenticated"
     ) {
       if (
-        ["admin_cliente", "admin_proveedor", "admin_proveedores"].includes(
-          userRole
-        )
+        [
+          "admin_cliente",
+          "admin_clientes",
+          "admin_proveedor",
+          "admin_proveedores",
+        ].includes(userRole)
       ) {
         basePermitida = base.filter((r) =>
           ["cliente", "proveedor"].includes(r.tipo)
@@ -693,7 +711,9 @@ const PanelAprobaciones = ({ userRole }) => {
       await Promise.all([cargarPendientes(), cargarHistorial()]);
     } catch (error) {
       console.error("Error al aprobar:", error);
-      mostrarMensaje("Error al aprobar el registro.", "error");
+      const msg =
+        error.response?.data?.message || "Error al aprobar el registro.";
+      mostrarMensaje(msg, "error");
     } finally {
       setLoading(false);
     }
@@ -1008,24 +1028,24 @@ const PanelAprobaciones = ({ userRole }) => {
                       )}
                     </td>
                     <td>
-                      {estado === "aprobado" &&
-                      registro.registro_aprobado_id ? (
-                        <button
-                          type="button"
-                          className="btn-icon-expediente"
-                          onClick={() =>
-                            abrirExpediente(
-                              registro.tipo,
-                              registro.registro_aprobado_id
-                            )
-                          }
-                          title="Ver expediente completo"
-                        >
-                          <FaFolderOpen />
-                        </button>
-                      ) : (
-                        <span className="accion-na">—</span>
-                      )}
+                      <div className="acciones-historial">
+                        {estado === "aprobado" &&
+                        registro.registro_aprobado_id ? (
+                          <button
+                            type="button"
+                            className="btn-icon-expediente"
+                            onClick={() =>
+                              abrirExpediente(
+                                registro.tipo,
+                                registro.registro_aprobado_id
+                              )
+                            }
+                            title="Ver expediente completo"
+                          >
+                            <FaFolderOpen />
+                          </button>
+                        ) : null}
+                      </div>
                     </td>
                   </tr>
                 );

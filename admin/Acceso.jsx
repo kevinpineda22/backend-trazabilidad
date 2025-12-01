@@ -70,7 +70,9 @@ const MemoizedAccessButton = memo(
       ref={provided.innerRef}
       {...provided.draggableProps}
       {...provided.dragHandleProps}
-      className={`draggable-link-card ${snapshot.isDragging ? "is-dragging" : ""}`}
+      className={`draggable-link-card ${
+        snapshot.isDragging ? "is-dragging" : ""
+      }`}
       onClick={() => handleNavigation(item.path)}
     >
       <button className="acc-panel-button">
@@ -111,21 +113,26 @@ export const Acceso = () => {
   const getLogoUrl = useCallback((company) => {
     if (!company) return "/logos/logo-default.svg";
     const companyMap = {
-      'Merkahorro': 'logoMK.webp',
-      'Construahorro': 'logoConstruahorro.webp',
-      'Megamayoristas': 'logoMegamayoristas.webp',
+      Merkahorro: "logoMK.webp",
+      Construahorro: "logoConstruahorro.webp",
+      Megamayoristas: "logoMegamayoristas.webp",
     };
-    const fileName = companyMap[company] || 'logo-default.svg';
+    const fileName = companyMap[company] || "logo-default.svg";
     return `/${fileName}`;
   }, []);
 
-  const handleNavigation = useCallback((path) => {
-    navigate(path, { state: { correoUsuario } });
-  }, [navigate, correoUsuario]);
+  const handleNavigation = useCallback(
+    (path) => {
+      navigate(path, { state: { correoUsuario } });
+    },
+    [navigate, correoUsuario]
+  );
 
   useEffect(() => {
     const getUserId = async () => {
-      const { data, error } = await supabaseQuery(() => supabase.auth.getUser());
+      const { data, error } = await supabaseQuery(() =>
+        supabase.auth.getUser()
+      );
       if (error || !data?.user) {
         handleLogout();
         return;
@@ -164,19 +171,42 @@ export const Acceso = () => {
       // GUARDAR proceso EN localStorage PARA USO EN OTROS COMPONENTES
       localStorage.setItem("userProceso", proceso);
 
-      const { data: roleConfig } = await supabaseQuery(() =>
+      let { data: roleConfig } = await supabaseQuery(() =>
         supabase
-          .from('role_permissions')
-          .select('permissions')
-          .eq('role', userRole)
+          .from("role_permissions")
+          .select("permissions")
+          .eq("role", userRole)
           .maybeSingle()
       );
 
+      // Fallback para admin_clientes si no tiene configuración propia
+      if (
+        (!roleConfig || !roleConfig.permissions) &&
+        userRole === "admin_clientes"
+      ) {
+        const { data: fallbackConfig } = await supabaseQuery(() =>
+          supabase
+            .from("role_permissions")
+            .select("permissions")
+            .eq("role", "admin_proveedores")
+            .maybeSingle()
+        );
+        if (fallbackConfig) {
+          roleConfig = fallbackConfig;
+        }
+      }
+
       let permisosActuales = roleConfig?.permissions || [];
-      if (profileData.personal_routes && profileData.personal_routes.length > 0) {
+      if (
+        profileData.personal_routes &&
+        profileData.personal_routes.length > 0
+      ) {
         permisosActuales = profileData.personal_routes;
       }
-      localStorage.setItem("rutas_permitidas", JSON.stringify(permisosActuales));
+      localStorage.setItem(
+        "rutas_permitidas",
+        JSON.stringify(permisosActuales)
+      );
 
       const { data, error: structureError } = await supabaseQuery(() =>
         supabase
@@ -186,8 +216,12 @@ export const Acceso = () => {
           .single()
       );
 
-      let estructuraGuardada = data?.structure || { sin_carpeta: permisosActuales };
-      const permisosActualesMap = new Map(permisosActuales.map((p) => [p.path, p]));
+      let estructuraGuardada = data?.structure || {
+        sin_carpeta: permisosActuales,
+      };
+      const permisosActualesMap = new Map(
+        permisosActuales.map((p) => [p.path, p])
+      );
       const estructuraSincronizada = { sin_carpeta: [] };
       for (const carpeta in estructuraGuardada) {
         const itemsValidos = estructuraGuardada[carpeta].filter((item) =>
@@ -198,9 +232,15 @@ export const Acceso = () => {
         }
       }
 
-      const todosLosItemsEnEstructura = Object.values(estructuraSincronizada).flat();
-      const itemsEnEstructuraPaths = new Set(todosLosItemsEnEstructura.map((i) => i.path));
-      const nuevosPermisos = permisosActuales.filter((permiso) => !itemsEnEstructuraPaths.has(permiso.path));
+      const todosLosItemsEnEstructura = Object.values(
+        estructuraSincronizada
+      ).flat();
+      const itemsEnEstructuraPaths = new Set(
+        todosLosItemsEnEstructura.map((i) => i.path)
+      );
+      const nuevosPermisos = permisosActuales.filter(
+        (permiso) => !itemsEnEstructuraPaths.has(permiso.path)
+      );
       if (!estructuraSincronizada.sin_carpeta) {
         estructuraSincronizada.sin_carpeta = [];
       }
@@ -210,7 +250,13 @@ export const Acceso = () => {
       await guardarEstructura(estructuraSincronizada, true);
 
       const hour = new Date().getHours();
-      setGreeting(hour < 12 ? "¡Buenos días" : hour < 18 ? "¡Buenas tardes" : "¡Buenas noches");
+      setGreeting(
+        hour < 12
+          ? "¡Buenos días"
+          : hour < 18
+          ? "¡Buenas tardes"
+          : "¡Buenas noches"
+      );
       setUserName(empleado.nombre || "Usuario");
 
       const initialOpenState = {};
@@ -250,11 +296,48 @@ export const Acceso = () => {
       prevBtnText: "Anterior",
       doneBtnText: "¡Entendido!",
       steps: [
-        { popover: { title: "Bienvenido al Tour de Organización", description: "Te mostraremos cómo puedes ordenar tus accesos directos en carpetas personalizadas." } },
-        { element: "#main-access-grid .draggable-link-card:first-child", popover: { title: "Paso 1: Arrastra un Acceso", description: "Haz clic en cualquier parte de una tarjeta de acceso y, sin soltar, muévela.", side: "bottom", align: "start" } },
-        { element: "#folder-grid", popover: { title: "Paso 2: Organiza en Carpetas", description: "Arrastra el acceso sobre una carpeta para organizarlo dentro de ella.", side: "top" } },
-        { element: "#main-access-grid", popover: { title: "Paso 3: Devuelve Accesos", description: "Si quieres sacar un acceso de una carpeta, simplemente arrástralo desde adentro y suéltalo en esta área principal.", side: "top" } },
-        { popover: { title: "¡Todo Listo!", description: "Ahora tienes el control total para organizar tu panel como más te guste." } },
+        {
+          popover: {
+            title: "Bienvenido al Tour de Organización",
+            description:
+              "Te mostraremos cómo puedes ordenar tus accesos directos en carpetas personalizadas.",
+          },
+        },
+        {
+          element: "#main-access-grid .draggable-link-card:first-child",
+          popover: {
+            title: "Paso 1: Arrastra un Acceso",
+            description:
+              "Haz clic en cualquier parte de una tarjeta de acceso y, sin soltar, muévela.",
+            side: "bottom",
+            align: "start",
+          },
+        },
+        {
+          element: "#folder-grid",
+          popover: {
+            title: "Paso 2: Organiza en Carpetas",
+            description:
+              "Arrastra el acceso sobre una carpeta para organizarlo dentro de ella.",
+            side: "top",
+          },
+        },
+        {
+          element: "#main-access-grid",
+          popover: {
+            title: "Paso 3: Devuelve Accesos",
+            description:
+              "Si quieres sacar un acceso de una carpeta, simplemente arrástralo desde adentro y suéltalo en esta área principal.",
+            side: "top",
+          },
+        },
+        {
+          popover: {
+            title: "¡Todo Listo!",
+            description:
+              "Ahora tienes el control total para organizar tu panel como más te guste.",
+          },
+        },
       ],
     });
     driverObj.drive();
@@ -307,7 +390,10 @@ export const Acceso = () => {
 
   const renombrarCarpeta = (nombreViejo) => {
     const nombreNuevo = nuevoNombre.trim();
-    if (!nombreNuevo || (estructura[nombreNuevo] && nombreNuevo !== nombreViejo)) {
+    if (
+      !nombreNuevo ||
+      (estructura[nombreNuevo] && nombreNuevo !== nombreViejo)
+    ) {
       setEditando(null);
       return;
     }
@@ -346,7 +432,10 @@ export const Acceso = () => {
           </div>
 
           <div className="acc-home-container">
-            <div className="acc-home-icon-wrapper" onClick={() => handleNavigation("/")}>
+            <div
+              className="acc-home-icon-wrapper"
+              onClick={() => handleNavigation("/")}
+            >
               <FaHome className="acc-home-icon" />
               <span className="acc-home-label">Inicio</span>
             </div>
@@ -364,7 +453,8 @@ export const Acceso = () => {
             </span>
           </h2>
           <h4 className="acc-motivational-quote">
-            “La unidad nace cuando dejamos de lado el ‘yo’ para construir el ‘nosotros’.”
+            “La unidad nace cuando dejamos de lado el ‘yo’ para construir el
+            ‘nosotros’.”
           </h4>
         </div>
 
@@ -374,10 +464,16 @@ export const Acceso = () => {
               id="main-access-grid"
               ref={provided.innerRef}
               {...provided.droppableProps}
-              className={`acc-panel-links ${snapshot.isDraggingOver ? "is-drop-target" : ""}`}
+              className={`acc-panel-links ${
+                snapshot.isDraggingOver ? "is-drop-target" : ""
+              }`}
             >
               {(estructura.sin_carpeta || []).map((item, index) => (
-                <Draggable key={item.path} draggableId={item.path} index={index}>
+                <Draggable
+                  key={item.path}
+                  draggableId={item.path}
+                  index={index}
+                >
                   {(provided, snapshot) => (
                     <MemoizedAccessButton
                       item={item}
@@ -394,7 +490,11 @@ export const Acceso = () => {
         </Droppable>
 
         <div className="tour-button-container">
-          <button onClick={startTour} className="tour-button" title="Aprende cómo organizar tus accesos">
+          <button
+            onClick={startTour}
+            className="tour-button"
+            title="Aprende cómo organizar tus accesos"
+          >
             <FaQuestionCircle />
             <span className="tour-button-text">Ayuda</span>
           </button>
@@ -404,14 +504,23 @@ export const Acceso = () => {
           {Object.keys(estructura)
             .filter((c) => c !== "sin_carpeta")
             .map((carpeta) => (
-              <Droppable key={carpeta} droppableId={carpeta} isDropDisabled={!openFolders[carpeta]}>
+              <Droppable
+                key={carpeta}
+                droppableId={carpeta}
+                isDropDisabled={!openFolders[carpeta]}
+              >
                 {(provided, snapshot) => (
                   <div
                     ref={provided.innerRef}
                     {...provided.droppableProps}
-                    className={`folder-card ${snapshot.isDraggingOver ? "is-drop-target" : ""}`}
+                    className={`folder-card ${
+                      snapshot.isDraggingOver ? "is-drop-target" : ""
+                    }`}
                   >
-                    <div className="folder-card-header" onClick={() => toggleFolder(carpeta)}>
+                    <div
+                      className="folder-card-header"
+                      onClick={() => toggleFolder(carpeta)}
+                    >
                       <div className="folder-title-group">
                         <FaFolder />
                         {editando === carpeta ? (
@@ -420,7 +529,9 @@ export const Acceso = () => {
                             value={nuevoNombre}
                             onChange={(e) => setNuevoNombre(e.target.value)}
                             onBlur={() => renombrarCarpeta(carpeta)}
-                            onKeyDown={(e) => e.key === "Enter" && renombrarCarpeta(carpeta)}
+                            onKeyDown={(e) =>
+                              e.key === "Enter" && renombrarCarpeta(carpeta)
+                            }
                             autoFocus
                             onClick={(e) => e.stopPropagation()}
                             className="rename-input"
@@ -440,17 +551,32 @@ export const Acceso = () => {
                         >
                           <FaEdit />
                         </button>
-                        <button onClick={(e) => eliminarCarpeta(e, carpeta)} title="Eliminar">
+                        <button
+                          onClick={(e) => eliminarCarpeta(e, carpeta)}
+                          title="Eliminar"
+                        >
                           <FaTrashAlt />
                         </button>
-                        <span className={`folder-toggle-icon ${openFolders[carpeta] ? "open" : ""}`}>
+                        <span
+                          className={`folder-toggle-icon ${
+                            openFolders[carpeta] ? "open" : ""
+                          }`}
+                        >
                           <FaChevronDown />
                         </span>
                       </div>
                     </div>
-                    <div className={`folder-card-content ${openFolders[carpeta] ? "open" : ""}`}>
+                    <div
+                      className={`folder-card-content ${
+                        openFolders[carpeta] ? "open" : ""
+                      }`}
+                    >
                       {(estructura[carpeta] || []).map((item, index) => (
-                        <Draggable key={item.path} draggableId={item.path} index={index}>
+                        <Draggable
+                          key={item.path}
+                          draggableId={item.path}
+                          index={index}
+                        >
                           {(provided) => (
                             <div
                               ref={provided.innerRef}
@@ -462,7 +588,9 @@ export const Acceso = () => {
                               <span className="link-item-icon">
                                 {iconMap[item.label] || <FaClipboardList />}
                               </span>
-                              <span className="link-item-text">{item.label}</span>
+                              <span className="link-item-text">
+                                {item.label}
+                              </span>
                             </div>
                           )}
                         </Draggable>
@@ -473,7 +601,11 @@ export const Acceso = () => {
                 )}
               </Droppable>
             ))}
-          <form className="create-folder-card" onSubmit={agregarCarpeta} id="create-folder-card">
+          <form
+            className="create-folder-card"
+            onSubmit={agregarCarpeta}
+            id="create-folder-card"
+          >
             <input
               type="text"
               placeholder="Crear nueva carpeta..."
@@ -481,7 +613,11 @@ export const Acceso = () => {
               onChange={(e) => setNuevaCarpetaNombre(e.target.value)}
               className="create-folder-input"
             />
-            <button type="submit" className="create-folder-button" title="Crear Carpeta">
+            <button
+              type="submit"
+              className="create-folder-button"
+              title="Crear Carpeta"
+            >
               <FaFolderPlus />
             </button>
           </form>
@@ -490,7 +626,8 @@ export const Acceso = () => {
         <div className="acc-user-info-container">
           <p className="acc-panel-user-info">
             <span className="acc-user-label">Sesión:</span> {correoUsuario} |{" "}
-            <span className="acc-user-label">Dirección:</span> {empleado.area || "No definida"} |{" "}
+            <span className="acc-user-label">Dirección:</span>{" "}
+            {empleado.area || "No definida"} |{" "}
             <span className="acc-user-label">Área:</span> {userProceso}
           </p>
         </div>

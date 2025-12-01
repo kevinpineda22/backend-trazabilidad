@@ -21,7 +21,7 @@ const GestionTokens = ({ userRole }) => {
 
     // admin_cliente y admin_proveedor -> cliente y proveedor (Unificados)
     if (
-      ["admin_cliente", "admin_proveedor", "admin_proveedores"].includes(
+      ["admin_cliente", "admin_clientes", "admin_proveedor", "admin_proveedores"].includes(
         userRole
       )
     ) {
