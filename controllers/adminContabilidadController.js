@@ -124,32 +124,77 @@ export const getHistorialClientesAdmin = async (req, res) => {
 export const archivarEntidad = async (req, res) => {
   try {
     const { tipo, id } = req.body; // tipo: 'empleado'|'cliente'|'proveedor', id: ID de la entidad
+    const user_id = req.user?.id;
+
+    if (!user_id) {
+      return res.status(401).json({ message: "Usuario no autenticado." });
+    }
+
     if (!tipo || !id) {
       return res.status(400).json({ message: "Tipo e ID son requeridos." });
     }
 
-    // Buscar el registro en registros_pendientes
+    // 1. Buscar el registro en registros_pendientes
     const { data: registros, error: searchError } = await supabaseAxios.get(
       `/registros_pendientes?select=id&tipo=eq.${tipo}&registro_aprobado_id=eq.${id}`
     );
 
     if (searchError) throw searchError;
-    if (!registros || registros.length === 0) {
-      return res.status(404).json({
-        message: "No se encontró el registro de aprobación asociado.",
-      });
+
+    // 2. Si existe, actualizar estado
+    if (registros && registros.length > 0) {
+      const updates = registros.map((r) =>
+        supabaseAxios.patch(`/registros_pendientes?id=eq.${r.id}`, {
+          estado: "archivado_aprobado",
+        })
+      );
+      await Promise.all(updates);
+      return res
+        .status(200)
+        .json({ message: "Entidad archivada correctamente." });
     }
 
-    // Actualizar todos los registros encontrados (debería ser uno, pero por seguridad)
-    const updates = registros.map((r) =>
-      supabaseAxios.patch(`/registros_pendientes?id=eq.${r.id}`, {
-        estado: "archivado_aprobado",
-      })
+    // 3. Si NO existe, crear un registro "fake" para soportar archivado de datos antiguos o creados manualmente
+    const tableMap = {
+      empleado: "empleados_contabilidad",
+      cliente: "clientes_contabilidad",
+      proveedor: "proveedores_contabilidad",
+    };
+
+    const tableName = tableMap[tipo];
+    if (!tableName) {
+      return res.status(400).json({ message: "Tipo de entidad no válido." });
+    }
+
+    // Verificar que la entidad exista realmente en su tabla
+    const { data: entityData, error: entityError } = await supabaseAxios.get(
+      `/${tableName}?id=eq.${id}&select=*`
     );
 
-    await Promise.all(updates);
+    if (entityError) throw entityError;
+    if (!entityData || entityData.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "La entidad no existe en la base de datos." });
+    }
 
-    res.status(200).json({ message: "Entidad archivada correctamente." });
+    // Crear registro en registros_pendientes con los datos actuales
+    const datosSnapshot = entityData[0];
+
+    await supabaseAxios.post(`/registros_pendientes`, {
+      tipo,
+      estado: "archivado_aprobado",
+      user_id: user_id, // El admin que archiva figura como creador del registro de historial
+      datos: datosSnapshot,
+      registro_aprobado_id: id,
+      created_at: new Date().toISOString(),
+      fecha_aprobacion: new Date().toISOString(), // Simulamos fecha de aprobación actual
+      aprobado_por: user_id,
+    });
+
+    res
+      .status(200)
+      .json({ message: "Entidad archivada correctamente (registro creado)." });
   } catch (error) {
     console.error("Error al archivar entidad:", error);
     res

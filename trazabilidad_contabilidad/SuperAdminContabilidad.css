@@ -98,19 +98,19 @@
 }
 
 .admin-cont-back-button {
-    position: absolute !important;
-    top: 1rem !important;
-    left: 1rem !important;
-    color: var(--admin-cont-text-light);
-    background: rgba(255, 255, 255, 0.12);
-    border-radius: 50%;
-    width: 36px;
-    height: 36px;
-    display: flex !important;
-    align-items: center;
-    justify-content: center;
-    transition: all var(--admin-cont-transition);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  position: absolute !important;
+  top: 1rem !important;
+  left: 1rem !important;
+  color: var(--admin-cont-text-light);
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--admin-cont-transition);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .admin-cont-back-button:hover {
@@ -787,4 +787,133 @@
   .user-cell {
     justify-content: center;
   }
+}
+
+/* --- Botones de Acción (Archivar / Restaurar) --- */
+.btn-icon-archivar,
+.btn-icon-restaurar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 1rem;
+  background: transparent;
+}
+
+.btn-icon-archivar {
+  color: #ef4444; /* Red 500 */
+  background-color: #fee2e2; /* Red 100 */
+}
+
+.btn-icon-archivar:hover {
+  background-color: #fecaca; /* Red 200 */
+  transform: scale(1.05);
+}
+
+.btn-icon-restaurar {
+  color: #10b981; /* Emerald 500 */
+  background-color: #d1fae5; /* Emerald 100 */
+}
+
+.btn-icon-restaurar:hover {
+  background-color: #a7f3d0; /* Emerald 200 */
+  transform: scale(1.05);
+}
+
+/* --- Botón Toggle Archivados --- */
+.btn-toggle-archivados {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.7rem 1.5rem;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  color: #64748b;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  letter-spacing: 0.02em;
+}
+
+.btn-toggle-archivados:hover {
+  border-color: #cbd5e1;
+  color: #334155;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.08);
+  background: #f8fafc;
+}
+
+.btn-toggle-archivados:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Estado Activo (Botón "Ver Activos" - Para volver) */
+.btn-toggle-archivados.active {
+  background: linear-gradient(
+    135deg,
+    var(--admin-cont-primary-medium) 0%,
+    var(--admin-cont-primary-dark) 100%
+  );
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 4px 15px rgba(59, 26, 154, 0.25);
+}
+
+.btn-toggle-archivados.active:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(59, 26, 154, 0.35);
+  filter: brightness(1.1);
+}
+
+.btn-toggle-archivados svg {
+  font-size: 1.1rem;
+  transition: transform 0.3s ease;
+}
+
+.btn-toggle-archivados:hover svg {
+  transform: scale(1.1);
+}
+
+/* --- Personalización de Toastify (Alertas) --- */
+.Toastify__toast {
+  border-radius: 12px !important;
+  font-family: "Poppins", sans-serif !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
+}
+
+.Toastify__toast--success {
+  background: #ecfdf5 !important;
+  color: #065f46 !important;
+  border-left: 6px solid #10b981 !important;
+}
+
+.Toastify__toast--error {
+  background: #fef2f2 !important;
+  color: #991b1b !important;
+  border-left: 6px solid #ef4444 !important;
+}
+
+.Toastify__toast--info {
+  background: #eff6ff !important;
+  color: #1e40af !important;
+  border-left: 6px solid #3b82f6 !important;
+}
+
+.Toastify__toast-icon {
+  width: 24px !important;
+}
+
+.Toastify__progress-bar {
+  height: 4px !important;
 }

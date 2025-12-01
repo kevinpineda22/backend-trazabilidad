@@ -789,6 +789,80 @@
   color: #86efac;
 }
 
+/* Estilos para edición de cliente */
+.detalle-grid-editable {
+  padding: 2rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  background: white;
+  animation: fadeIn 0.3s ease;
+  border-bottom: 1px solid var(--aprob-gray-100);
+}
+
+.detalle-campo-editable {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.detalle-campo-editable label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--aprob-gray-700);
+  margin-bottom: 0.25rem;
+}
+
+.input-editable {
+  padding: 0.6rem 0.8rem;
+  border: 1px solid var(--aprob-gray-300);
+  border-radius: var(--aprob-radius);
+  font-size: 0.95rem;
+  color: var(--aprob-gray-900);
+  transition: all 0.2s ease;
+  background-color: #fff;
+  width: 100%;
+}
+
+.input-editable:focus {
+  outline: none;
+  border-color: var(--aprob-primary);
+  box-shadow: 0 0 0 3px var(--aprob-primary-light);
+}
+
+.input-editable:hover {
+  border-color: var(--aprob-gray-400);
+}
+
+.btn-editar-cliente {
+  background: none;
+  border: 1px solid var(--aprob-primary);
+  color: var(--aprob-primary);
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.btn-editar-cliente:hover {
+  background-color: var(--aprob-primary-light);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
   .pendientes-layout {
@@ -828,4 +902,44 @@
     width: 100%;
     justify-content: center;
   }
+}
+
+.detalle-editable-header {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--aprob-gray-200);
+  padding-bottom: 1rem;
+}
+
+.detalle-editable-header h3 {
+  margin: 0;
+  color: var(--aprob-gray-700);
+  font-size: 1.1rem;
+}
+
+.btn-cancelar-edicion {
+  background: none;
+  border: none;
+  color: var(--aprob-danger);
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border-radius: var(--aprob-radius);
+  transition: all 0.2s;
+}
+
+.btn-cancelar-edicion:hover {
+  background-color: var(--aprob-danger-light);
+}
+
+.detalle-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
 }

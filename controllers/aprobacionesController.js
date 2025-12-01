@@ -35,7 +35,13 @@ export const obtenerPendientes = async (req, res) => {
 export const aprobarRegistro = async (req, res) => {
   try {
     const { id } = req.params;
-    const { cupoAprobado, datosAprobados, fechaContratacion } = req.body;
+    const {
+      cupoAprobado,
+      datosAprobados,
+      fechaContratacion,
+      nombreCargo,
+      sede,
+    } = req.body;
     const user_id = req.user?.id;
 
     if (!user_id) {
@@ -98,6 +104,8 @@ export const aprobarRegistro = async (req, res) => {
               url_habeas_data: normalizar(datos.url_habeas_data),
               url_autorizacion_firma: normalizar(datos.url_autorizacion_firma),
               fecha_contratacion: normalizar(fechaContratacion), // Nuevo campo
+              nombre_cargo: normalizar(nombreCargo),
+              sede: normalizar(sede),
             },
           };
         }
@@ -414,11 +422,9 @@ export const archivarRegistro = async (req, res) => {
     } else if (estadoActual === "rechazado") {
       nuevoEstado = "archivado_rechazado";
     } else {
-      return res
-        .status(400)
-        .json({
-          message: "Solo se pueden archivar registros aprobados o rechazados.",
-        });
+      return res.status(400).json({
+        message: "Solo se pueden archivar registros aprobados o rechazados.",
+      });
     }
 
     const { data } = await supabaseAxios.patch(

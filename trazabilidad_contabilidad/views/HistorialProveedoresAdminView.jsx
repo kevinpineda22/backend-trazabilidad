@@ -78,7 +78,7 @@ const HistorialProveedoresAdminView = ({ onOpenExpediente }) => {
     return <MensajeVacio mensaje="No se han creado proveedores." />;
 
   return (
-    <div className="admin-cont-historial-wrapper">
+    <>
       <div
         className="admin-cont-toolbar"
         style={{
@@ -88,120 +88,98 @@ const HistorialProveedoresAdminView = ({ onOpenExpediente }) => {
         }}
       >
         <button
-          className="btn-toggle-archivados"
+          className={`btn-toggle-archivados ${
+            mostrarArchivados ? "active" : ""
+          }`}
           onClick={() => setMostrarArchivados(!mostrarArchivados)}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "0.5rem",
-            padding: "0.5rem 1rem",
-            borderRadius: "6px",
-            border: "1px solid #ccc",
-            background: mostrarArchivados ? "#e2e8f0" : "#fff",
-            cursor: "pointer",
-            fontWeight: "500",
-            color: "#333",
-          }}
         >
           {mostrarArchivados ? <FaEyeSlash /> : <FaEye />}
           {mostrarArchivados ? "Ver Activos" : "Ver Archivados"}
         </button>
       </div>
 
-      {registrosFiltrados.length === 0 ? (
-        <MensajeVacio
-          mensaje={
-            mostrarArchivados
-              ? "No hay proveedores archivados."
-              : "No hay proveedores activos."
-          }
-        />
-      ) : (
-        <HistorialTabla>
-          <thead>
-            <tr className="admin-cont-table-header-centered">
-              <th>Creado por</th>
-              <th>Fecha Creación</th>
-              <th>Razón Social / Nombre</th>
-              <th>NIT / Documento</th>
-              <th>Cupo Aprobado</th>
-              <th>Tipo Régimen</th>
-              <th>Expediente</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {registrosFiltrados.map((prov) => (
-              <tr key={prov.id}>
-                <td className="admin-cont-cell-centered">
-                  <div className="user-cell">
-                    <FaUser />
-                    {prov.profiles?.nombre || "N/A"}
-                  </div>
-                </td>
-                <td className="admin-cont-cell-centered">
-                  {format(parseISO(prov.created_at), "dd/MM/yy hh:mm a")}
-                </td>
-                <td>{prov.razon_social || prov.nombre_contacto || "N/A"}</td>
-                <td className="admin-cont-cell-centered">
-                  {prov.nit
-                    ? `${prov.nit}${prov.dv ? `-${prov.dv}` : ""}`
-                    : "N/A"}
-                </td>
-                <td className="admin-cont-cell-centered">
-                  {prov.cupo_aprobado || "N/A"}
-                </td>
-                <td className="admin-cont-cell-centered">
-                  {prov.tipo_regimen || "N/A"}
-                </td>
-                <td className="admin-cont-cell-centered">
-                  <button
-                    onClick={() => onOpenExpediente(prov.id)}
-                    className="admin-cont-expediente-button"
-                    title="Ver expediente completo"
-                  >
-                    <FaFolderOpen /> Ver Expediente
-                  </button>
-                </td>
-                <td className="admin-cont-cell-centered">
-                  {mostrarArchivados ? (
-                    <button
-                      onClick={() => handleRestaurar(prov.id)}
-                      className="btn-icon-restaurar"
-                      title="Restaurar"
-                      style={{
-                        border: "none",
-                        background: "none",
-                        cursor: "pointer",
-                        color: "#2ecc71",
-                        fontSize: "1.2rem",
-                      }}
-                    >
-                      <FaUndo />
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => handleArchivar(prov.id)}
-                      className="btn-icon-archivar"
-                      title="Archivar"
-                      style={{
-                        border: "none",
-                        background: "none",
-                        cursor: "pointer",
-                        color: "#e74c3c",
-                        fontSize: "1.2rem",
-                      }}
-                    >
-                      <FaArchive />
-                    </button>
-                  )}
-                </td>
+      <div className="admin-cont-historial-wrapper">
+        {registrosFiltrados.length === 0 ? (
+          <MensajeVacio
+            mensaje={
+              mostrarArchivados
+                ? "No hay proveedores archivados."
+                : "No hay proveedores activos."
+            }
+          />
+        ) : (
+          <HistorialTabla>
+            <thead>
+              <tr className="admin-cont-table-header-centered">
+                <th>Creado por</th>
+                <th>Fecha Creación</th>
+                <th>Razón Social / Nombre</th>
+                <th>NIT / Documento</th>
+                <th>Cupo Aprobado</th>
+                <th>Tipo Régimen</th>
+                <th>Expediente</th>
+                <th>Acciones</th>
               </tr>
-            ))}
-          </tbody>
-        </HistorialTabla>
-      )}
-    </div>
+            </thead>
+            <tbody>
+              {registrosFiltrados.map((prov) => (
+                <tr key={prov.id}>
+                  <td className="admin-cont-cell-centered">
+                    <div className="user-cell">
+                      <FaUser />
+                      {prov.profiles?.nombre || "N/A"}
+                    </div>
+                  </td>
+                  <td className="admin-cont-cell-centered">
+                    {format(parseISO(prov.created_at), "dd/MM/yy hh:mm a")}
+                  </td>
+                  <td>{prov.razon_social || prov.nombre_contacto || "N/A"}</td>
+                  <td className="admin-cont-cell-centered">
+                    {prov.nit
+                      ? `${prov.nit}${prov.dv ? `-${prov.dv}` : ""}`
+                      : "N/A"}
+                  </td>
+                  <td className="admin-cont-cell-centered">
+                    {prov.cupo_aprobado || "N/A"}
+                  </td>
+                  <td className="admin-cont-cell-centered">
+                    {prov.tipo_regimen || "N/A"}
+                  </td>
+                  <td className="admin-cont-cell-centered">
+                    <button
+                      onClick={() => onOpenExpediente(prov.id)}
+                      className="admin-cont-expediente-button"
+                      title="Ver expediente completo"
+                    >
+                      <FaFolderOpen /> Ver Expediente
+                    </button>
+                  </td>
+                  <td className="admin-cont-cell-centered">
+                    {mostrarArchivados ? (
+                      <button
+                        onClick={() => handleRestaurar(prov.id)}
+                        className="btn-icon-restaurar"
+                        title="Restaurar"
+                      >
+                        <FaUndo />
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handleArchivar(prov.id)}
+                        className="btn-icon-archivar"
+                        title="Archivar"
+                      >
+                        <FaArchive />
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </HistorialTabla>
+        )}
+      </div>
+    </>
   );
 };
 

@@ -79,6 +79,8 @@ const PanelAprobaciones = ({ userRole }) => {
   const [archivoPreview, setArchivoPreview] = useState(null);
   const [cupoAprobado, setCupoAprobado] = useState("");
   const [fechaContratacion, setFechaContratacion] = useState(""); // Nuevo estado
+  const [nombreCargo, setNombreCargo] = useState(""); // Nuevo estado: Nombre de Cargo
+  const [sede, setSede] = useState(""); // Nuevo estado: Sede
   const [datosEditables, setDatosEditables] = useState({});
   const mensajeTimeout = useRef(null);
 
@@ -669,6 +671,8 @@ const PanelAprobaciones = ({ userRole }) => {
     setRegistroSeleccionado(registro);
     setCupoAprobado("");
     setFechaContratacion(""); // Resetear fecha
+    setNombreCargo(""); // Resetear cargo
+    setSede(""); // Resetear sede
     if (registro?.datos) {
       setDatosEditables({ ...registro.datos });
     } else {
@@ -696,6 +700,8 @@ const PanelAprobaciones = ({ userRole }) => {
       }
       if (registroSeleccionado.tipo === "empleado") {
         payload.fechaContratacion = fechaContratacion;
+        payload.nombreCargo = nombreCargo;
+        payload.sede = sede;
       }
 
       await axios.post(
@@ -920,6 +926,26 @@ const PanelAprobaciones = ({ userRole }) => {
                     type="date"
                     value={fechaContratacion}
                     onChange={(e) => setFechaContratacion(e.target.value)}
+                    className="input-cupo-aprobado"
+                  />
+                  <label style={{ marginTop: "10px", display: "block" }}>
+                    Nombre de Cargo
+                  </label>
+                  <input
+                    type="text"
+                    value={nombreCargo}
+                    onChange={(e) => setNombreCargo(e.target.value)}
+                    placeholder="Ingrese el cargo"
+                    className="input-cupo-aprobado"
+                  />
+                  <label style={{ marginTop: "10px", display: "block" }}>
+                    Sede
+                  </label>
+                  <input
+                    type="text"
+                    value={sede}
+                    onChange={(e) => setSede(e.target.value)}
+                    placeholder="Ingrese la sede"
                     className="input-cupo-aprobado"
                   />
                 </div>

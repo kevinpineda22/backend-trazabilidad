@@ -81,7 +81,7 @@ const HistorialClientesAdminView = ({ onPreview, onOpenExpediente }) => {
   }
 
   return (
-    <div className="admin-cont-historial-wrapper">
+    <>
       <div
         className="admin-cont-toolbar"
         style={{
@@ -91,112 +91,90 @@ const HistorialClientesAdminView = ({ onPreview, onOpenExpediente }) => {
         }}
       >
         <button
-          className="btn-toggle-archivados"
+          className={`btn-toggle-archivados ${
+            mostrarArchivados ? "active" : ""
+          }`}
           onClick={() => setMostrarArchivados(!mostrarArchivados)}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "0.5rem",
-            padding: "0.5rem 1rem",
-            borderRadius: "6px",
-            border: "1px solid #ccc",
-            background: mostrarArchivados ? "#e2e8f0" : "#fff",
-            cursor: "pointer",
-            fontWeight: "500",
-            color: "#333",
-          }}
         >
           {mostrarArchivados ? <FaEyeSlash /> : <FaEye />}
           {mostrarArchivados ? "Ver Activos" : "Ver Archivados"}
         </button>
       </div>
 
-      {registrosFiltrados.length === 0 ? (
-        <MensajeVacio
-          mensaje={
-            mostrarArchivados
-              ? "No hay clientes archivados."
-              : "No hay clientes activos."
-          }
-        />
-      ) : (
-        <HistorialTabla>
-          <thead>
-            <tr className="admin-cont-table-header-centered">
-              <th>Creado por</th>
-              <th>Fecha Creación</th>
-              <th>Cupo</th>
-              <th>Plazo</th>
-              <th>Expediente</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {registrosFiltrados.map((cli) => (
-              <tr key={cli.id}>
-                <td className="admin-cont-cell-centered">
-                  <div className="user-cell">
-                    <FaUser />
-                    {cli.profiles?.nombre || "N/A"}
-                  </div>
-                </td>
-                <td className="admin-cont-cell-centered">
-                  {format(parseISO(cli.created_at), "dd/MM/yy hh:mm a")}
-                </td>
-                <td className="admin-cont-cell-centered">
-                  {cli.cupo || "N/A"}
-                </td>
-                <td className="admin-cont-cell-centered">
-                  {cli.plazo || "N/A"}
-                </td>
-                <td className="admin-cont-cell-centered">
-                  <button
-                    onClick={() => onOpenExpediente(cli.id)}
-                    className="admin-cont-expediente-button"
-                    title="Ver expediente digital"
-                  >
-                    <FaFolderOpen /> Ver Expediente
-                  </button>
-                </td>
-                <td className="admin-cont-cell-centered">
-                  {mostrarArchivados ? (
-                    <button
-                      onClick={() => handleRestaurar(cli.id)}
-                      className="btn-icon-restaurar"
-                      title="Restaurar"
-                      style={{
-                        border: "none",
-                        background: "none",
-                        cursor: "pointer",
-                        color: "#2ecc71",
-                        fontSize: "1.2rem",
-                      }}
-                    >
-                      <FaUndo />
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => handleArchivar(cli.id)}
-                      className="btn-icon-archivar"
-                      title="Archivar"
-                      style={{
-                        border: "none",
-                        background: "none",
-                        cursor: "pointer",
-                        color: "#e74c3c",
-                        fontSize: "1.2rem",
-                      }}
-                    >
-                      <FaArchive />
-                    </button>
-                  )}
-                </td>
+      <div className="admin-cont-historial-wrapper">
+        {registrosFiltrados.length === 0 ? (
+          <MensajeVacio
+            mensaje={
+              mostrarArchivados
+                ? "No hay clientes archivados."
+                : "No hay clientes activos."
+            }
+          />
+        ) : (
+          <HistorialTabla>
+            <thead>
+              <tr className="admin-cont-table-header-centered">
+                <th>Creado por</th>
+                <th>Fecha Creación</th>
+                <th>Cupo</th>
+                <th>Plazo</th>
+                <th>Expediente</th>
+                <th>Acciones</th>
               </tr>
-            ))}
-          </tbody>
-        </HistorialTabla>
-      )}
-    </div>
+            </thead>
+            <tbody>
+              {registrosFiltrados.map((cli) => (
+                <tr key={cli.id}>
+                  <td className="admin-cont-cell-centered">
+                    <div className="user-cell">
+                      <FaUser />
+                      {cli.profiles?.nombre || "N/A"}
+                    </div>
+                  </td>
+                  <td className="admin-cont-cell-centered">
+                    {format(parseISO(cli.created_at), "dd/MM/yy hh:mm a")}
+                  </td>
+                  <td className="admin-cont-cell-centered">
+                    {cli.cupo || "N/A"}
+                  </td>
+                  <td className="admin-cont-cell-centered">
+                    {cli.plazo || "N/A"}
+                  </td>
+                  <td className="admin-cont-cell-centered">
+                    <button
+                      onClick={() => onOpenExpediente(cli.id)}
+                      className="admin-cont-expediente-button"
+                      title="Ver expediente digital"
+                    >
+                      <FaFolderOpen /> Ver Expediente
+                    </button>
+                  </td>
+                  <td className="admin-cont-cell-centered">
+                    {mostrarArchivados ? (
+                      <button
+                        onClick={() => handleRestaurar(cli.id)}
+                        className="btn-icon-restaurar"
+                        title="Restaurar"
+                      >
+                        <FaUndo />
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handleArchivar(cli.id)}
+                        className="btn-icon-archivar"
+                        title="Archivar"
+                      >
+                        <FaArchive />
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </HistorialTabla>
+        )}
+      </div>
+    </>
   );
 };
 
