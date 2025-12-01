@@ -6,7 +6,7 @@ import { supabaseAxios } from "../services/supabaseClient.js";
  */
 const getArchivadosIds = async (tipo) => {
   const { data, error } = await supabaseAxios.get(
-    `/registros_aprobados?select=registro_aprobado_id&tipo=eq.${tipo}&estado=eq.archivado_aprobado`
+    `/registros_pendientes?select=registro_aprobado_id&tipo=eq.${tipo}&estado=eq.archivado_aprobado`
   );
   if (error) {
     console.error(`Error obteniendo archivados de ${tipo}:`, error);
@@ -128,23 +128,21 @@ export const archivarEntidad = async (req, res) => {
       return res.status(400).json({ message: "Tipo e ID son requeridos." });
     }
 
-    // Buscar el registro en registros_aprobados
+    // Buscar el registro en registros_pendientes
     const { data: registros, error: searchError } = await supabaseAxios.get(
-      `/registros_aprobados?select=id&tipo=eq.${tipo}&registro_aprobado_id=eq.${id}`
+      `/registros_pendientes?select=id&tipo=eq.${tipo}&registro_aprobado_id=eq.${id}`
     );
 
     if (searchError) throw searchError;
     if (!registros || registros.length === 0) {
-      return res
-        .status(404)
-        .json({
-          message: "No se encontró el registro de aprobación asociado.",
-        });
+      return res.status(404).json({
+        message: "No se encontró el registro de aprobación asociado.",
+      });
     }
 
     // Actualizar todos los registros encontrados (debería ser uno, pero por seguridad)
     const updates = registros.map((r) =>
-      supabaseAxios.patch(`/registros_aprobados?id=eq.${r.id}`, {
+      supabaseAxios.patch(`/registros_pendientes?id=eq.${r.id}`, {
         estado: "archivado_aprobado",
       })
     );
@@ -172,20 +170,18 @@ export const restaurarEntidad = async (req, res) => {
     }
 
     const { data: registros, error: searchError } = await supabaseAxios.get(
-      `/registros_aprobados?select=id&tipo=eq.${tipo}&registro_aprobado_id=eq.${id}`
+      `/registros_pendientes?select=id&tipo=eq.${tipo}&registro_aprobado_id=eq.${id}`
     );
 
     if (searchError) throw searchError;
     if (!registros || registros.length === 0) {
-      return res
-        .status(404)
-        .json({
-          message: "No se encontró el registro de aprobación asociado.",
-        });
+      return res.status(404).json({
+        message: "No se encontró el registro de aprobación asociado.",
+      });
     }
 
     const updates = registros.map((r) =>
-      supabaseAxios.patch(`/registros_aprobados?id=eq.${r.id}`, {
+      supabaseAxios.patch(`/registros_pendientes?id=eq.${r.id}`, {
         estado: "aprobado", // Restaurar a aprobado
       })
     );
