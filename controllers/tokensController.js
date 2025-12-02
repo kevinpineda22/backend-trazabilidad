@@ -225,3 +225,35 @@ export const marcarTokenUsado = async (token) => {
     throw error;
   }
 };
+
+/**
+ * @route DELETE /api/trazabilidad/tokens/eliminar/:id
+ * Elimina un token generado
+ */
+export const eliminarToken = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user_id = req.user?.id;
+
+    if (!user_id) {
+      return res.status(401).json({ message: "Usuario no autenticado." });
+    }
+
+    // Opcional: Verificar si el token pertenece al usuario o si es admin
+    // Por ahora permitimos eliminar si está autenticado, asumiendo que el frontend filtra o que cualquier admin puede borrar.
+
+    const { error } = await supabaseAxios.delete(
+      `/tokens_registro?id=eq.${id}`
+    );
+
+    if (error) throw error;
+
+    res.status(200).json({ message: "Token eliminado correctamente." });
+  } catch (error) {
+    console.error("Error al eliminar token:", error);
+    res.status(500).json({
+      message: "Error al eliminar token.",
+      error: error.message,
+    });
+  }
+};

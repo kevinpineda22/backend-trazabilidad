@@ -1,6 +1,20 @@
-// trazabilidad_contabilidad/GestionTokens.jsx
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import Swal from "sweetalert2";
+import {
+  FaUserTie,
+  FaUser,
+  FaTruck,
+  FaCopy,
+  FaTrash,
+  FaPlus,
+  FaCheckCircle,
+  FaClock,
+  FaList,
+  FaLink,
+  FaExclamationTriangle,
+  FaCheck,
+} from "react-icons/fa";
 import "./GestionTokens.css";
 
 const GestionTokens = ({ userRole }) => {
@@ -9,6 +23,8 @@ const GestionTokens = ({ userRole }) => {
   const [mensaje, setMensaje] = useState("");
   const [tipoMensaje, setTipoMensaje] = useState(""); // 'success' o 'error'
   const [filtroEstado, setFiltroEstado] = useState("activo"); // 'activo', 'todos', 'usado', 'expirado'
+  const [nuevoTokenId, setNuevoTokenId] = useState(null);
+  const [copiadoId, setCopiadoId] = useState(null);
 
   // Definir permisos basados en el rol
   const puedeGestionar = (tipo) => {
@@ -21,9 +37,12 @@ const GestionTokens = ({ userRole }) => {
 
     // admin_cliente y admin_proveedor -> cliente y proveedor (Unificados)
     if (
-      ["admin_cliente", "admin_clientes", "admin_proveedor", "admin_proveedores"].includes(
-        userRole
-      )
+      [
+        "admin_cliente",
+        "admin_clientes",
+        "admin_proveedor",
+        "admin_proveedores",
+      ].includes(userRole)
     ) {
       return ["cliente", "proveedor"].includes(tipo);
     }
@@ -58,7 +77,11 @@ const GestionTokens = ({ userRole }) => {
 
       // Validar que la respuesta sea un array
       if (Array.isArray(response.data)) {
-        setTokens(response.data);
+        // Ordenar por fecha de creación descendente (más reciente primero)
+        const tokensOrdenados = response.data.sort(
+          (a, b) => new Date(b.created_at) - new Date(a.created_at)
+        );
+        setTokens(tokensOrdenados);
       } else {
         console.error("La respuesta no es un array:", response.data);
         setTokens([]);
@@ -95,7 +118,13 @@ const GestionTokens = ({ userRole }) => {
       );
 
       mostrarMensaje(`Token de ${tipo} generado exitosamente.`, "success");
-      cargarTokens(); // Recargar la lista
+
+      // Si el backend devuelve el token creado, lo usamos para resaltar
+      if (response.data && response.data.id) {
+        setNuevoTokenId(response.data.id);
+      }
+
+      await cargarTokens();
     } catch (error) {
       console.error("Error al generar token:", error);
       mostrarMensaje("Error al generar el token.", "error");
@@ -104,8 +133,55 @@ const GestionTokens = ({ userRole }) => {
     }
   };
 
-  const copiarAlPortapapeles = (url) => {
+  // Efecto para resaltar el token más reciente después de generar uno nuevo
+  useEffect(() => {
+    // Si tenemos un nuevoTokenId, lo limpiamos después de unos segundos
+    if (nuevoTokenId) {
+      const timer = setTimeout(() => setNuevoTokenId(null), 10000); // 10 segundos de resaltado
+      return () => clearTimeout(timer);
+    }
+  }, [nuevoTokenId]);
+
+  const eliminarToken = async (id) => {
+    const result = await Swal.fire({
+      title: "¿Estás seguro?",
+      text: "No podrás revertir esta acción. El enlace dejará de funcionar inmediatamente.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Sí, eliminar",
+      cancelButtonText: "Cancelar",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        setLoading(true);
+        const token = localStorage.getItem("token");
+        await axios.delete(
+          `${
+            import.meta.env.VITE_BACKEND_TRAZABILIDAD_URL
+          }/api/trazabilidad/tokens/eliminar/${id}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        Swal.fire("¡Eliminado!", "El token ha sido eliminado.", "success");
+        cargarTokens();
+      } catch (error) {
+        console.error("Error al eliminar token:", error);
+        Swal.fire("Error", "No se pudo eliminar el token.", "error");
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  const copiarAlPortapapeles = (url, id) => {
     navigator.clipboard.writeText(url);
+    setCopiadoId(id);
+    setTimeout(() => setCopiadoId(null), 2000);
     mostrarMensaje("Link copiado al portapapeles", "success");
   };
 
@@ -121,8 +197,8 @@ const GestionTokens = ({ userRole }) => {
   const formatearFecha = (fecha) => {
     return new Date(fecha).toLocaleString("es-CO", {
       year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
+      month: "short",
+      day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
     });
@@ -146,6 +222,19 @@ const GestionTokens = ({ userRole }) => {
         return "tokens-estado-expirado";
       default:
         return "";
+    }
+  };
+
+  const obtenerIconoEstado = (estado) => {
+    switch (estado) {
+      case "activo":
+        return <FaCheckCircle />;
+      case "usado":
+        return <FaCheck />;
+      case "expirado":
+        return <FaClock />;
+      default:
+        return null;
     }
   };
 
@@ -182,11 +271,15 @@ const GestionTokens = ({ userRole }) => {
 
   return (
     <div className="tokens-container">
-      <h1>Gestión de Links de Registro</h1>
-      <p className="tokens-descripcion">
-        Genera links únicos para que terceros se registren. Los links tienen
-        validez de 3 días o hasta que sean usados.
-      </p>
+      <div className="tokens-header">
+        <h1>
+          <FaLink className="tokens-header-icon" /> Gestión de Links de Registro
+        </h1>
+        <p className="tokens-descripcion">
+          Genera y administra enlaces de invitación únicos. Los enlaces activos
+          expiran en 3 días.
+        </p>
+      </div>
 
       {mensaje && (
         <div
@@ -196,163 +289,221 @@ const GestionTokens = ({ userRole }) => {
               : "tokens-mensaje-error"
           }`}
         >
+          {tipoMensaje === "success" ? (
+            <FaCheckCircle />
+          ) : (
+            <FaExclamationTriangle />
+          )}{" "}
           {mensaje}
         </div>
       )}
 
       {/* Botones para generar tokens */}
-      <div className="tokens-botones-generar">
-        {puedeGestionar("empleado") && (
-          <button
-            className="tokens-btn-generar tokens-btn-empleado"
-            onClick={() => generarNuevoToken("empleado")}
-            disabled={loading}
-          >
-            ➕ Generar Link Empleado
-          </button>
-        )}
-        {puedeGestionar("cliente") && (
-          <button
-            className="tokens-btn-generar tokens-btn-cliente"
-            onClick={() => generarNuevoToken("cliente")}
-            disabled={loading}
-          >
-            ➕ Generar Link Cliente
-          </button>
-        )}
-        {puedeGestionar("proveedor") && (
-          <button
-            className="tokens-btn-generar tokens-btn-proveedor"
-            onClick={() => generarNuevoToken("proveedor")}
-            disabled={loading}
-          >
-            ➕ Generar Link Proveedor
-          </button>
-        )}
+      <div className="tokens-acciones-panel">
+        <h3>Generar Nuevo Link</h3>
+        <div className="tokens-botones-generar">
+          {puedeGestionar("empleado") && (
+            <button
+              className="tokens-btn-generar tokens-btn-empleado"
+              onClick={() => generarNuevoToken("empleado")}
+              disabled={loading}
+            >
+              <FaUserTie /> Empleado
+            </button>
+          )}
+          {puedeGestionar("cliente") && (
+            <button
+              className="tokens-btn-generar tokens-btn-cliente"
+              onClick={() => generarNuevoToken("cliente")}
+              disabled={loading}
+            >
+              <FaUser /> Cliente
+            </button>
+          )}
+          {puedeGestionar("proveedor") && (
+            <button
+              className="tokens-btn-generar tokens-btn-proveedor"
+              onClick={() => generarNuevoToken("proveedor")}
+              disabled={loading}
+            >
+              <FaTruck /> Proveedor
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Filtros de estado */}
-      <div className="tokens-filtros-estado">
-        <button
-          className={`tokens-filtro-btn ${
-            filtroEstado === "activo" ? "tokens-activo" : ""
-          }`}
-          onClick={() => setFiltroEstado("activo")}
-        >
-          ✅ Activos ({contadorEstados.activo})
-        </button>
-        <button
-          className={`tokens-filtro-btn ${
-            filtroEstado === "usado" ? "tokens-activo" : ""
-          }`}
-          onClick={() => setFiltroEstado("usado")}
-        >
-          ✔️ Usados ({contadorEstados.usado})
-        </button>
-        <button
-          className={`tokens-filtro-btn ${
-            filtroEstado === "expirado" ? "tokens-activo" : ""
-          }`}
-          onClick={() => setFiltroEstado("expirado")}
-        >
-          ⏰ Expirados ({contadorEstados.expirado})
-        </button>
-        <button
-          className={`tokens-filtro-btn ${
-            filtroEstado === "todos" ? "tokens-activo" : ""
-          }`}
-          onClick={() => setFiltroEstado("todos")}
-        >
-          📋 Todos ({contadorEstados.todos})
-        </button>
+      <div className="tokens-filtros-container">
+        <div className="tokens-filtros-estado">
+          <button
+            className={`tokens-filtro-btn ${
+              filtroEstado === "activo" ? "tokens-activo" : ""
+            }`}
+            onClick={() => setFiltroEstado("activo")}
+          >
+            <FaCheckCircle /> Activos ({contadorEstados.activo})
+          </button>
+          <button
+            className={`tokens-filtro-btn ${
+              filtroEstado === "usado" ? "tokens-activo" : ""
+            }`}
+            onClick={() => setFiltroEstado("usado")}
+          >
+            <FaCheck /> Usados ({contadorEstados.usado})
+          </button>
+          <button
+            className={`tokens-filtro-btn ${
+              filtroEstado === "expirado" ? "tokens-activo" : ""
+            }`}
+            onClick={() => setFiltroEstado("expirado")}
+          >
+            <FaClock /> Expirados ({contadorEstados.expirado})
+          </button>
+          <button
+            className={`tokens-filtro-btn ${
+              filtroEstado === "todos" ? "tokens-activo" : ""
+            }`}
+            onClick={() => setFiltroEstado("todos")}
+          >
+            <FaList /> Todos ({contadorEstados.todos})
+          </button>
+        </div>
       </div>
 
       {/* Tabla de tokens generados */}
       <div className="tokens-tabla-wrapper">
-        <h2>
-          Links Generados -{" "}
-          {filtroEstado === "activo"
-            ? "Activos"
-            : filtroEstado === "usado"
-            ? "Usados"
-            : filtroEstado === "expirado"
-            ? "Expirados"
-            : "Todos"}
-        </h2>
-        {loading && tokens.length === 0 ? (
-          <div className="tokens-loader">Cargando...</div>
-        ) : tokensFiltrados.length === 0 ? (
-          <p className="tokens-mensaje-vacio">
-            No hay links{" "}
-            {filtroEstado === "todos"
-              ? ""
-              : filtroEstado === "activo"
-              ? "activos"
+        <div className="tokens-tabla-header">
+          <h2>
+            {filtroEstado === "activo"
+              ? "Links Activos"
               : filtroEstado === "usado"
-              ? "usados"
-              : "expirados"}{" "}
-            en este momento.
-          </p>
+              ? "Links Usados"
+              : filtroEstado === "expirado"
+              ? "Links Expirados"
+              : "Historial Completo"}
+          </h2>
+        </div>
+
+        {loading && tokens.length === 0 ? (
+          <div className="tokens-loader">
+            <div className="spinner"></div> Cargando...
+          </div>
+        ) : tokensFiltrados.length === 0 ? (
+          <div className="tokens-mensaje-vacio">
+            <FaLink size={40} style={{ opacity: 0.2, marginBottom: "1rem" }} />
+            <p>
+              No hay links {filtroEstado === "todos" ? "" : filtroEstado} para
+              mostrar.
+            </p>
+          </div>
         ) : (
           <table className="tokens-tabla">
             <thead>
               <tr>
                 <th>Tipo</th>
                 <th>Generado por</th>
-                <th>Fecha Creación</th>
-                <th>Expira</th>
+                <th>Creación / Expiración</th>
                 <th>Estado</th>
-                <th>Link</th>
+                <th>Link de Registro</th>
                 <th>Acciones</th>
               </tr>
             </thead>
             <tbody>
               {tokensFiltrados.map((token) => {
                 const estado = calcularEstado(token);
+                // Considerar nuevo si coincide con nuevoTokenId o si es el primero de la lista y fue creado hace menos de 1 minuto
+                const esNuevo =
+                  token.id === nuevoTokenId ||
+                  (tokens.length > 0 &&
+                    tokens[0].id === token.id &&
+                    new Date() - new Date(token.created_at) < 60000);
+
                 return (
-                  <tr key={token.id}>
+                  <tr
+                    key={token.id}
+                    className={esNuevo ? "token-fila-nueva" : ""}
+                  >
                     <td>
                       <span
                         className={`tokens-badge-tipo tokens-badge-${token.tipo}`}
                       >
+                        {token.tipo === "empleado" && <FaUserTie />}
+                        {token.tipo === "cliente" && <FaUser />}
+                        {token.tipo === "proveedor" && <FaTruck />}
                         {token.tipo.charAt(0).toUpperCase() +
                           token.tipo.slice(1)}
                       </span>
+                      {esNuevo && <span className="badge-nuevo">NUEVO</span>}
                     </td>
-                    <td>{token.profiles?.nombre || "N/A"}</td>
-                    <td>{formatearFecha(token.created_at)}</td>
-                    <td>{formatearFecha(token.expiracion)}</td>
+                    <td>
+                      <div className="token-info-usuario">
+                        <span className="token-usuario-nombre">
+                          {token.profiles?.nombre || "Sistema"}
+                        </span>
+                      </div>
+                    </td>
+                    <td>
+                      <div className="token-fechas">
+                        <span title="Fecha Creación" className="fecha-creacion">
+                          <FaPlus size={10} />{" "}
+                          {formatearFecha(token.created_at)}
+                        </span>
+                        <span
+                          title="Fecha Expiración"
+                          className="fecha-expiracion"
+                        >
+                          <FaClock size={10} />{" "}
+                          {formatearFecha(token.expiracion)}
+                        </span>
+                      </div>
+                    </td>
                     <td>
                       <span
                         className={`tokens-badge-estado ${obtenerClaseEstado(
                           estado
                         )}`}
                       >
+                        {obtenerIconoEstado(estado)}
                         {estado.charAt(0).toUpperCase() + estado.slice(1)}
                       </span>
                     </td>
                     <td className="tokens-celda-link">
-                      <code className="tokens-link-code">
-                        {generarUrlRegistro(token.tipo, token.token)}
-                      </code>
+                      <div className="token-link-container">
+                        <code className="tokens-link-code">
+                          {generarUrlRegistro(token.tipo, token.token)}
+                        </code>
+                      </div>
                     </td>
                     <td>
-                      <button
-                        className="tokens-btn-copiar"
-                        onClick={() =>
-                          copiarAlPortapapeles(
-                            generarUrlRegistro(token.tipo, token.token)
-                          )
-                        }
-                        disabled={estado !== "activo"}
-                        title={
-                          estado === "activo"
-                            ? "Copiar link"
-                            : "Link no disponible"
-                        }
-                      >
-                        📋 Copiar
-                      </button>
+                      <div className="tokens-acciones">
+                        <button
+                          className={`tokens-btn-copiar ${
+                            copiadoId === token.id ? "copiado" : ""
+                          }`}
+                          onClick={() =>
+                            copiarAlPortapapeles(
+                              generarUrlRegistro(token.tipo, token.token),
+                              token.id
+                            )
+                          }
+                          disabled={estado !== "activo"}
+                          title={
+                            estado === "activo"
+                              ? "Copiar link"
+                              : "Link no disponible"
+                          }
+                        >
+                          {copiadoId === token.id ? <FaCheck /> : <FaCopy />}
+                          {copiadoId === token.id ? " ¡Copiado!" : " Copiar"}
+                        </button>
+                        <button
+                          className="tokens-btn-eliminar"
+                          onClick={() => eliminarToken(token.id)}
+                          title="Eliminar token"
+                        >
+                          <FaTrash />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );

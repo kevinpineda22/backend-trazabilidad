@@ -5,6 +5,7 @@ import {
   generarToken,
   validarToken,
   listarTokens,
+  eliminarToken,
 } from "../controllers/tokensController.js";
 
 const router = express.Router();
@@ -12,6 +13,7 @@ const router = express.Router();
 // Rutas protegidas (requieren autenticación)
 router.post("/generar", authMiddleware, generarToken);
 router.get("/listar", authMiddleware, listarTokens);
+router.delete("/eliminar/:id", authMiddleware, eliminarToken);
 
 // Ruta pública (no requiere autenticación)
 router.get("/validar/:token", validarToken);
