@@ -159,6 +159,14 @@ const ExpedienteEmpleadoView = ({ empleadoId, onBack, onPreview }) => {
                   }
                 />
                 <InfoItem
+                  label="Cargo"
+                  value={empleado.nombre_cargo}
+                />
+                <InfoItem
+                  label="Sede"
+                  value={empleado.sede}
+                />
+                <InfoItem
                   label="Fecha Creación"
                   value={format(
                     parseISO(empleado.created_at),

@@ -1,5 +1,6 @@
 // controllers/aprobacionesController.js
 import { supabaseAxios } from "../services/supabaseClient.js";
+import { sendEmail } from "../services/emailService.js";
 
 /**
  * @route GET /api/trazabilidad/aprobaciones/pendientes
@@ -258,6 +259,47 @@ export const aprobarRegistro = async (req, res) => {
       fecha_aprobacion: new Date().toISOString(),
       registro_aprobado_id: nuevoRegistro[0]?.id, // Guardar el ID del registro creado
     });
+
+    // Enviar correo al admin de contabilidad
+    try {
+      const adminContabilidadEmail = process.env.ADMIN_CONTABILIDAD_EMAIL;
+      if (adminContabilidadEmail) {
+        const tipo =
+          registro.tipo.charAt(0).toUpperCase() + registro.tipo.slice(1);
+        let nombreEntidad = "";
+        if (registro.tipo === "empleado") {
+          nombreEntidad = `${infoInsercion.payload.nombre} ${infoInsercion.payload.apellidos}`;
+        } else {
+          nombreEntidad =
+            infoInsercion.payload.razon_social ||
+            `${infoInsercion.payload.primer_nombre || ""} ${
+              infoInsercion.payload.primer_apellido || ""
+            }`.trim() ||
+            infoInsercion.payload.nombre_establecimiento;
+        }
+
+        const subject = `✅ Registro Aprobado: ${tipo} - ${nombreEntidad}`;
+        const htmlContent = `
+          <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #e0e0e0; max-width: 600px;">
+            <h2 style="color: #210d65;">Registro Aprobado y Creado</h2>
+            <p>Se ha aprobado un registro de <strong>${tipo}</strong>.</p>
+            <ul>
+              <li><strong>Nombre/Razón Social:</strong> ${nombreEntidad}</li>
+              <li><strong>Fecha de Aprobación:</strong> ${new Date().toLocaleDateString()}</li>
+            </ul>
+            <p>El registro ha sido añadido exitosamente a la base de datos de contabilidad.</p>
+          </div>
+        `;
+        await sendEmail(adminContabilidadEmail, subject, htmlContent);
+      } else {
+        console.warn("ADMIN_CONTABILIDAD_EMAIL no está configurado.");
+      }
+    } catch (emailError) {
+      console.error(
+        "Error enviando correo al admin de contabilidad:",
+        emailError
+      );
+    }
 
     res.status(200).json({
       message: "Registro aprobado exitosamente.",

@@ -1,5 +1,6 @@
 // controllers/registroPublicoController.js
 import { supabaseAxios } from "../services/supabaseClient.js";
+import { sendEmail } from "../services/emailService.js";
 import {
   marcarTokenUsado,
   TOKEN_DISABLED_MESSAGES,
@@ -100,6 +101,32 @@ export const registrarEmpleadoPublico = async (req, res) => {
     );
 
     await marcarTokenUsado(token);
+
+    // Enviar correo al admin de empleados
+    try {
+      const adminEmail = process.env.ADMIN_EMPLEADOS_EMAIL;
+      if (adminEmail) {
+        const subject = `📢 Nuevo Registro de Empleado: ${nombre} ${apellidos}`;
+        const htmlContent = `
+          <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #e0e0e0; max-width: 600px;">
+            <h2 style="color: #210d65;">Nuevo Registro de Empleado Recibido</h2>
+            <p>Se ha recibido un nuevo formulario de registro de empleado.</p>
+            <ul>
+              <li><strong>Nombre:</strong> ${nombre} ${apellidos}</li>
+              <li><strong>Cédula:</strong> ${cedula}</li>
+              <li><strong>Fecha:</strong> ${new Date().toLocaleDateString()}</li>
+            </ul>
+            <p>Por favor, ingrese al panel de aprobaciones para revisar la información.</p>
+          </div>
+        `;
+        await sendEmail(adminEmail, subject, htmlContent);
+      } else {
+        console.warn("ADMIN_EMPLEADOS_EMAIL no está configurado.");
+      }
+    } catch (emailError) {
+      console.error("Error enviando correo al admin de empleados:", emailError);
+      // No fallamos la request si el correo falla, pero lo logueamos
+    }
 
     res.status(201).json({
       message: "Registro enviado. Está pendiente de aprobación.",
@@ -289,6 +316,33 @@ export const registrarClientePublico = async (req, res) => {
 
     await marcarTokenUsado(token);
 
+    // Enviar correo al admin de clientes
+    try {
+      const adminEmail = process.env.ADMIN_CLIENTES_EMAIL;
+      if (adminEmail) {
+        const nombreCliente =
+          razon_social || `${primer_nombre} ${primer_apellido}`;
+        const subject = `📢 Nuevo Registro de Cliente: ${nombreCliente}`;
+        const htmlContent = `
+          <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #e0e0e0; max-width: 600px;">
+            <h2 style="color: #210d65;">Nuevo Registro de Cliente Recibido</h2>
+            <p>Se ha recibido un nuevo formulario de registro de cliente.</p>
+            <ul>
+              <li><strong>Cliente:</strong> ${nombreCliente}</li>
+              <li><strong>NIT/Documento:</strong> ${nit}</li>
+              <li><strong>Fecha:</strong> ${new Date().toLocaleDateString()}</li>
+            </ul>
+            <p>Por favor, ingrese al panel de aprobaciones para revisar la información.</p>
+          </div>
+        `;
+        await sendEmail(adminEmail, subject, htmlContent);
+      } else {
+        console.warn("ADMIN_CLIENTES_EMAIL no está configurado.");
+      }
+    } catch (emailError) {
+      console.error("Error enviando correo al admin de clientes:", emailError);
+    }
+
     res.status(201).json({
       message: "Registro enviado. Está pendiente de aprobación.",
       data: registroPendiente[0],
@@ -402,6 +456,40 @@ export const registrarProveedorPublico = async (req, res) => {
     );
 
     await marcarTokenUsado(token);
+
+    // Enviar correo al admin de proveedores
+    try {
+      const adminEmail = process.env.ADMIN_PROVEEDORES_EMAIL;
+      if (adminEmail) {
+        const nombreProveedor =
+          datosConDocumentos.razon_social ||
+          datosConDocumentos.nombre_establecimiento ||
+          "Proveedor";
+        const subject = `📢 Nuevo Registro de Proveedor: ${nombreProveedor}`;
+        const htmlContent = `
+          <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #e0e0e0; max-width: 600px;">
+            <h2 style="color: #210d65;">Nuevo Registro de Proveedor Recibido</h2>
+            <p>Se ha recibido un nuevo formulario de registro de proveedor.</p>
+            <ul>
+              <li><strong>Proveedor:</strong> ${nombreProveedor}</li>
+              <li><strong>NIT/Documento:</strong> ${
+                datosConDocumentos.nit || "N/A"
+              }</li>
+              <li><strong>Fecha:</strong> ${new Date().toLocaleDateString()}</li>
+            </ul>
+            <p>Por favor, ingrese al panel de aprobaciones para revisar la información.</p>
+          </div>
+        `;
+        await sendEmail(adminEmail, subject, htmlContent);
+      } else {
+        console.warn("ADMIN_PROVEEDORES_EMAIL no está configurado.");
+      }
+    } catch (emailError) {
+      console.error(
+        "Error enviando correo al admin de proveedores:",
+        emailError
+      );
+    }
 
     res.status(201).json({
       message: "Registro enviado. Está pendiente de aprobación.",
