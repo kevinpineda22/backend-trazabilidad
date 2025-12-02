@@ -196,6 +196,7 @@ export const registrarClientePublico = async (req, res) => {
       declara_recursos_publicos,
       declara_obligaciones_tributarias,
       // Cupo y plazo
+      tipo_cliente,
       cupo,
       plazo,
       // Documentos - CLIENTE usa certificado_sagrilaft (no formato_sangrilaft)
@@ -295,6 +296,7 @@ export const registrarClientePublico = async (req, res) => {
         declara_recursos_publicos,
         declara_obligaciones_tributarias,
         // Cupo y plazo
+        tipo_cliente,
         cupo,
         plazo,
         // Documentos
@@ -352,6 +354,12 @@ export const registrarClientePublico = async (req, res) => {
       "Error en registrarClientePublico:",
       error.response?.data || error.message
     );
+    if (error.response?.data?.code === "23505") {
+      return res.status(409).json({
+        message:
+          "Ya existe un cliente registrado con este NIT o número de documento.",
+      });
+    }
     res.status(500).json({
       message: "Error al procesar el registro.",
       error: error.message,
@@ -500,6 +508,12 @@ export const registrarProveedorPublico = async (req, res) => {
       "Error en registrarProveedorPublico:",
       error.response?.data || error.message
     );
+    if (error.response?.data?.code === "23505") {
+      return res.status(409).json({
+        message:
+          "Ya existe un proveedor registrado con este NIT o número de documento.",
+      });
+    }
     res.status(500).json({
       message: "Error al procesar el registro.",
       error: error.message,

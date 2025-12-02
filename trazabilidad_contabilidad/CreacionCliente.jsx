@@ -54,12 +54,12 @@ const ADDRESS_REGEX = /^[A-Za-z0-9ÁÉÍÓÚÜÑáéíóúüñ#°º\s.,\-\/]+$/;
 
 const calculateDV = (nit) => {
   if (!nit || isNaN(nit)) return "";
-  const weights = [71, 67, 59, 53, 47, 43, 41, 37, 29, 23, 19, 17, 13, 7, 3];
+  const primes = [3, 7, 13, 17, 19, 23, 29, 37, 41, 43, 47, 53, 59, 67, 71];
   let sum = 0;
   const nitReverse = nit.toString().split("").reverse();
 
-  for (let i = 0; i < nitReverse.length && i < weights.length; i++) {
-    sum += parseInt(nitReverse[i]) * weights[i];
+  for (let i = 0; i < nitReverse.length && i < primes.length; i++) {
+    sum += parseInt(nitReverse[i]) * primes[i];
   }
 
   const mod = sum % 11;
@@ -298,6 +298,7 @@ const EMPTY_FORM = {
   declara_pep: "",
   declara_recursos_publicos: "",
   declara_obligaciones_tributarias: "",
+  tipo_cliente: "contado",
   cupo: "",
   plazo: "",
 };
@@ -936,8 +937,10 @@ const CreacionCliente = () => {
       declara_obligaciones_tributarias: toNull(
         formData.declara_obligaciones_tributarias
       ),
-      cupo: toNull(formData.cupo),
-      plazo: toNull(formData.plazo),
+      tipo_cliente: toNull(formData.tipo_cliente),
+      cupo: formData.tipo_cliente === "credito" ? toNull(formData.cupo) : null,
+      plazo:
+        formData.tipo_cliente === "credito" ? toNull(formData.plazo) : null,
     };
   }, [
     buildNombreNatural,
@@ -984,19 +987,21 @@ const CreacionCliente = () => {
 
       // Validar documentos Y campos comerciales si se solicita explícitamente (paso 2)
       if (validarDocumentos) {
-        // Validar cupo y plazo en paso 2
-        const cupoValor = (formData.cupo || "").trim();
-        if (!cupoValor) {
-          errors.cupo = "Ingresa el cupo solicitado.";
-        } else if (cupoValor.length < 2) {
-          errors.cupo = "El cupo debe tener al menos 2 caracteres.";
-        }
+        // Validar cupo y plazo en paso 2 SOLO si es crédito
+        if (formData.tipo_cliente === "credito") {
+          const cupoValor = (formData.cupo || "").trim();
+          if (!cupoValor) {
+            errors.cupo = "Ingresa el cupo solicitado.";
+          } else if (cupoValor.length < 2) {
+            errors.cupo = "El cupo debe tener al menos 2 caracteres.";
+          }
 
-        const plazoValor = (formData.plazo || "").trim();
-        if (!plazoValor) {
-          errors.plazo = "Ingresa el plazo solicitado.";
-        } else if (plazoValor.length < 2) {
-          errors.plazo = "El plazo debe tener al menos 2 caracteres.";
+          const plazoValor = (formData.plazo || "").trim();
+          if (!plazoValor) {
+            errors.plazo = "Ingresa el plazo solicitado.";
+          } else if (plazoValor.length < 2) {
+            errors.plazo = "El plazo debe tener al menos 2 caracteres.";
+          }
         }
 
         // Validar documentos
@@ -2220,47 +2225,87 @@ const CreacionCliente = () => {
             <span>Información Comercial del Cliente</span>
           </div>
 
-          <div className="tc-form-grid grid-2-cols">
-            <div className="tc-form-group">
-              <label htmlFor="cupo_cliente">
-                Cupo solicitado<span className="required">*</span>
-              </label>
-              <input
-                id="cupo_cliente"
-                name="cupo"
-                type="text"
-                value={formData.cupo || ""}
-                onChange={handleFieldChange}
-                placeholder="Ej: $5,000,000"
-                className={`tc-form-input ${
-                  formErrors.cupo ? "is-invalid" : ""
+          <div className="tc-form-group" style={{ marginBottom: "1.5rem" }}>
+            <p className="tc-radio-label">
+              Tipo de Cliente<span className="required">*</span>
+            </p>
+            <div className="tc-radio-group">
+              <label
+                className={`tc-radio-option ${
+                  formData.tipo_cliente === "contado" ? "is-selected" : ""
                 }`}
-              />
-              {formErrors.cupo && (
-                <span className="tc-validation-error">{formErrors.cupo}</span>
-              )}
-            </div>
-
-            <div className="tc-form-group">
-              <label htmlFor="plazo_cliente">
-                Plazo solicitado<span className="required">*</span>
+              >
+                <input
+                  type="radio"
+                  name="tipo_cliente"
+                  value="contado"
+                  checked={formData.tipo_cliente === "contado"}
+                  onChange={handleFieldChange}
+                />
+                <span>Cliente de Contado</span>
               </label>
-              <input
-                id="plazo_cliente"
-                name="plazo"
-                type="text"
-                value={formData.plazo || ""}
-                onChange={handleFieldChange}
-                placeholder="Ej: 30 días, 60 días"
-                className={`tc-form-input ${
-                  formErrors.plazo ? "is-invalid" : ""
+              <label
+                className={`tc-radio-option ${
+                  formData.tipo_cliente === "credito" ? "is-selected" : ""
                 }`}
-              />
-              {formErrors.plazo && (
-                <span className="tc-validation-error">{formErrors.plazo}</span>
-              )}
+              >
+                <input
+                  type="radio"
+                  name="tipo_cliente"
+                  value="credito"
+                  checked={formData.tipo_cliente === "credito"}
+                  onChange={handleFieldChange}
+                />
+                <span>Cliente Crédito</span>
+              </label>
             </div>
           </div>
+
+          {formData.tipo_cliente === "credito" && (
+            <div className="tc-form-grid grid-2-cols">
+              <div className="tc-form-group">
+                <label htmlFor="cupo_cliente">
+                  Cupo solicitado<span className="required">*</span>
+                </label>
+                <input
+                  id="cupo_cliente"
+                  name="cupo"
+                  type="text"
+                  value={formData.cupo || ""}
+                  onChange={handleFieldChange}
+                  placeholder="Ej: $5,000,000"
+                  className={`tc-form-input ${
+                    formErrors.cupo ? "is-invalid" : ""
+                  }`}
+                />
+                {formErrors.cupo && (
+                  <span className="tc-validation-error">{formErrors.cupo}</span>
+                )}
+              </div>
+
+              <div className="tc-form-group">
+                <label htmlFor="plazo_cliente">
+                  Plazo solicitado<span className="required">*</span>
+                </label>
+                <input
+                  id="plazo_cliente"
+                  name="plazo"
+                  type="text"
+                  value={formData.plazo || ""}
+                  onChange={handleFieldChange}
+                  placeholder="Ej: 30 días, 60 días"
+                  className={`tc-form-input ${
+                    formErrors.plazo ? "is-invalid" : ""
+                  }`}
+                />
+                {formErrors.plazo && (
+                  <span className="tc-validation-error">
+                    {formErrors.plazo}
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
 
           <div className="tc-form-separator">
             <span>Documentos Requeridos y Opcionales</span>

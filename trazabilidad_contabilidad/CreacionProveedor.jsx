@@ -54,12 +54,12 @@ const ADDRESS_REGEX = /^[A-Za-z0-9ÁÉÍÓÚÜÑáéíóúüñ#°º\s.,\-\/]+$/;
 
 const calculateDV = (nit) => {
   if (!nit || isNaN(nit)) return "";
-  const weights = [71, 67, 59, 53, 47, 43, 41, 37, 29, 23, 19, 17, 13, 7, 3];
+  const primes = [3, 7, 13, 17, 19, 23, 29, 37, 41, 43, 47, 53, 59, 67, 71];
   let sum = 0;
   const nitReverse = nit.toString().split("").reverse();
 
-  for (let i = 0; i < nitReverse.length && i < weights.length; i++) {
-    sum += parseInt(nitReverse[i]) * weights[i];
+  for (let i = 0; i < nitReverse.length && i < primes.length; i++) {
+    sum += parseInt(nitReverse[i]) * primes[i];
   }
 
   const mod = sum % 11;

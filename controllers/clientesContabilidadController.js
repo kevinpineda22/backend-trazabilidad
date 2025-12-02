@@ -55,6 +55,7 @@ export const createClienteContabilidad = async (req, res) => {
       declara_recursos_publicos,
       declara_obligaciones_tributarias,
       // Cupo y plazo
+      tipo_cliente,
       cupo,
       plazo,
       // Documentos - CLIENTES usa certificado_sagrilaft
@@ -119,6 +120,7 @@ export const createClienteContabilidad = async (req, res) => {
         declara_obligaciones_tributarias
       ),
       // Cupo y plazo
+      tipo_cliente: normalizar(tipo_cliente),
       cupo: normalizar(cupo),
       plazo: normalizar(plazo),
       // Documentos
@@ -144,6 +146,13 @@ export const createClienteContabilidad = async (req, res) => {
       error.response ? error.response.data : error.message
     );
     if (error.response) {
+      if (error.response.data?.code === "23505") {
+        return res.status(409).json({
+          message:
+            "Ya existe un cliente registrado con este NIT o número de documento.",
+          details: error.response.data.details,
+        });
+      }
       return res.status(error.response.status || 400).json({
         message:
           error.response.data?.message ||
@@ -237,6 +246,7 @@ export const updateClienteContabilidad = async (req, res) => {
       declara_recursos_publicos,
       declara_obligaciones_tributarias,
       // Cupo y plazo
+      tipo_cliente,
       cupo,
       plazo,
       // Documentos
@@ -307,6 +317,8 @@ export const updateClienteContabilidad = async (req, res) => {
       payload.declara_obligaciones_tributarias = normalizar(
         declara_obligaciones_tributarias
       );
+    if (tipo_cliente !== undefined)
+      payload.tipo_cliente = normalizar(tipo_cliente);
     if (cupo !== undefined) payload.cupo = normalizar(cupo);
     if (plazo !== undefined) payload.plazo = normalizar(plazo);
     if (url_rut !== undefined) payload.url_rut = normalizar(url_rut);
@@ -349,6 +361,13 @@ export const updateClienteContabilidad = async (req, res) => {
       error.response ? error.response.data : error.message
     );
     if (error.response) {
+      if (error.response.data?.code === "23505") {
+        return res.status(409).json({
+          message:
+            "Ya existe otro cliente registrado con este NIT o número de documento.",
+          details: error.response.data.details,
+        });
+      }
       return res.status(error.response.status || 400).json({
         message:
           error.response.data?.message ||

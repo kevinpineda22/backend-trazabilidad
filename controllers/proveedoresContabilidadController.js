@@ -57,6 +57,13 @@ export const createProveedorContabilidad = async (req, res) => {
       error.response ? error.response.data : error.message
     );
     if (error.response) {
+      if (error.response.data?.code === "23505") {
+        return res.status(409).json({
+          message:
+            "Ya existe un proveedor registrado con este NIT o número de documento.",
+          details: error.response.data.details,
+        });
+      }
       return res.status(error.response.status || 400).json({
         message:
           error.response.data?.message ||
@@ -149,11 +156,9 @@ export const updateProveedorContabilidad = async (req, res) => {
     );
 
     if (!data || data.length === 0) {
-      return res
-        .status(404)
-        .json({
-          message: "Registro no encontrado o no tiene permiso para editarlo.",
-        });
+      return res.status(404).json({
+        message: "Registro no encontrado o no tiene permiso para editarlo.",
+      });
     }
 
     res.status(200).json(data[0]);
@@ -163,6 +168,13 @@ export const updateProveedorContabilidad = async (req, res) => {
       error.response ? error.response.data : error.message
     );
     if (error.response) {
+      if (error.response.data?.code === "23505") {
+        return res.status(409).json({
+          message:
+            "Ya existe otro proveedor registrado con este NIT o número de documento.",
+          details: error.response.data.details,
+        });
+      }
       return res.status(error.response.status || 400).json({
         message:
           error.response.data?.message ||
