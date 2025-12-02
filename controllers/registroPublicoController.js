@@ -238,10 +238,9 @@ export const registrarClientePublico = async (req, res) => {
 
     // Validación según tipo de régimen
     if (tipo_regimen === "persona_juridica") {
-      if (!razon_social || !url_camara_comercio) {
+      if (!razon_social) {
         return res.status(400).json({
-          message:
-            "Para persona jurídica se requiere razón social y cámara de comercio.",
+          message: "Para persona jurídica se requiere razón social.",
         });
       }
     } else if (tipo_regimen === "persona_natural") {
