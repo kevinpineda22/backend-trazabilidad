@@ -12,11 +12,10 @@ import {
   FaFolderOpen,
   FaCheck,
   FaTimes,
-  FaFileAlt,
   FaFilter,
   FaHistory,
   FaClock,
-  FaSearch,
+  FaEdit,
 } from "react-icons/fa";
 
 const TIPOS_FILTRO = [
@@ -65,6 +64,47 @@ const CLIENTE_FIELDS = [
   { key: "plazo", label: "Plazo" },
 ];
 
+const EMPLEADO_FIELDS = [
+  { key: "nombre", label: "Nombre" },
+  { key: "apellidos", label: "Apellidos" },
+  { key: "cedula", label: "Cédula" },
+  { key: "contacto", label: "Contacto" },
+  { key: "correo_electronico", label: "Correo electrónico" },
+  { key: "direccion", label: "Dirección" },
+];
+
+const PROVEEDOR_FIELDS = [
+  {
+    key: "fecha_diligenciamiento",
+    label: "Fecha diligenciamiento",
+    type: "date",
+  },
+  { key: "tipo_regimen", label: "Tipo de régimen" },
+  { key: "tipo_documento", label: "Tipo de documento" },
+  { key: "nit", label: "NIT" },
+  { key: "dv", label: "DV" },
+  { key: "razon_social", label: "Razón social" },
+  { key: "nombre_establecimiento", label: "Nombre establecimiento" },
+  { key: "codigo_ciiu", label: "Código CIIU" },
+  { key: "direccion_domicilio", label: "Dirección domicilio" },
+  { key: "departamento", label: "Departamento" },
+  { key: "ciudad", label: "Ciudad" },
+  { key: "email_factura_electronica", label: "Email factura electrónica" },
+  { key: "nombre_contacto", label: "Nombre contacto" },
+  { key: "email_contacto", label: "Email contacto" },
+  { key: "telefono_contacto", label: "Teléfono contacto" },
+  { key: "rep_legal_nombre", label: "Rep. Legal - Nombre" },
+  { key: "rep_legal_apellidos", label: "Rep. Legal - Apellidos" },
+  { key: "rep_legal_tipo_doc", label: "Rep. Legal - Tipo doc." },
+  { key: "rep_legal_num_doc", label: "Rep. Legal - Núm. doc." },
+  { key: "declara_pep", label: "Declara PEP" },
+  { key: "declara_recursos_publicos", label: "Declara recursos públicos" },
+  {
+    key: "declara_obligaciones_tributarias",
+    label: "Declara obligaciones tributarias",
+  },
+];
+
 const PanelAprobaciones = ({ userRole }) => {
   const [registrosPendientes, setRegistrosPendientes] = useState([]);
   const [historial, setHistorial] = useState([]);
@@ -82,6 +122,7 @@ const PanelAprobaciones = ({ userRole }) => {
   const [nombreCargo, setNombreCargo] = useState(""); // Nuevo estado: Nombre de Cargo
   const [sede, setSede] = useState(""); // Nuevo estado: Sede
   const [datosEditables, setDatosEditables] = useState({});
+  const [modoEdicion, setModoEdicion] = useState(false);
   const mensajeTimeout = useRef(null);
 
   // Estados para expedientes en historial
@@ -110,14 +151,10 @@ const PanelAprobaciones = ({ userRole }) => {
 
   // Ajustar filtro inicial según rol
   useEffect(() => {
-    if (
-      !userRole ||
-      userRole === "admin" ||
-      userRole === "super_admin" ||
-      userRole === "authenticated"
-    ) {
-      // Si es admin o no tiene rol específico, mantener 'todos' o lo que estaba
-    } else {
+    const isAdmin =
+      !userRole || ["admin", "super_admin", "authenticated"].includes(userRole);
+
+    if (!isAdmin) {
       if (
         [
           "admin_cliente",
@@ -128,7 +165,6 @@ const PanelAprobaciones = ({ userRole }) => {
       ) {
         setFiltroTipo("todos");
       } else {
-        // Si tiene un rol específico, forzar el filtro a su tipo
         const tipo = userRole.replace("admin_", "");
         setFiltroTipo(tipo);
       }
@@ -210,102 +246,31 @@ const PanelAprobaciones = ({ userRole }) => {
   };
 
   const pendientesFiltrados = useMemo(() => {
-    let filtrados = registrosPendientes;
+    const filtradosPorRol = registrosPendientes.filter((r) =>
+      tiposPermitidos.includes(r.tipo)
+    );
 
-    // 1. Filtrar por permisos de rol (seguridad)
-    if (
-      userRole &&
-      userRole !== "admin" &&
-      userRole !== "super_admin" &&
-      userRole !== "authenticated"
-    ) {
-      if (
-        [
-          "admin_cliente",
-          "admin_clientes",
-          "admin_proveedor",
-          "admin_proveedores",
-        ].includes(userRole)
-      ) {
-        filtrados = filtrados.filter((r) =>
-          ["cliente", "proveedor"].includes(r.tipo)
-        );
-      } else {
-        const tipoPermitido = userRole.replace("admin_", "");
-        filtrados = filtrados.filter((r) => r.tipo === tipoPermitido);
-      }
-    }
-
-    // 2. Filtrar por selección de UI
     if (filtroTipo === "todos") {
-      return filtrados;
+      return filtradosPorRol;
     }
-    return filtrados.filter((registro) => registro.tipo === filtroTipo);
-  }, [registrosPendientes, filtroTipo, userRole]);
+    return filtradosPorRol.filter((registro) => registro.tipo === filtroTipo);
+  }, [registrosPendientes, filtroTipo, tiposPermitidos]);
 
   const historialFiltrado = useMemo(() => {
-    let filtrados = historial;
+    const filtradosPorRol = historial.filter((r) =>
+      tiposPermitidos.includes(r.tipo)
+    );
 
-    // 1. Filtrar por permisos de rol (seguridad)
-    if (
-      userRole &&
-      userRole !== "admin" &&
-      userRole !== "super_admin" &&
-      userRole !== "authenticated"
-    ) {
-      if (
-        [
-          "admin_cliente",
-          "admin_clientes",
-          "admin_proveedor",
-          "admin_proveedores",
-        ].includes(userRole)
-      ) {
-        filtrados = filtrados.filter((r) =>
-          ["cliente", "proveedor"].includes(r.tipo)
-        );
-      } else {
-        const tipoPermitido = userRole.replace("admin_", "");
-        filtrados = filtrados.filter((r) => r.tipo === tipoPermitido);
-      }
-    }
-
-    // 2. Filtrar por selección de UI
     if (filtroTipo === "todos") {
-      return filtrados;
+      return filtradosPorRol;
     }
-    return filtrados.filter((registro) => registro.tipo === filtroTipo);
-  }, [historial, filtroTipo, userRole]);
+    return filtradosPorRol.filter((registro) => registro.tipo === filtroTipo);
+  }, [historial, filtroTipo, tiposPermitidos]);
 
   const contadorPorTipo = useMemo(() => {
-    let base = [];
-    if (vistaActual === "pendientes") base = registrosPendientes;
-    else if (vistaActual === "historial") base = historial;
+    let base = vistaActual === "pendientes" ? registrosPendientes : historial;
 
-    // Filtrar base por rol primero para que los conteos sean correctos
-    let basePermitida = base;
-    if (
-      userRole &&
-      userRole !== "admin" &&
-      userRole !== "super_admin" &&
-      userRole !== "authenticated"
-    ) {
-      if (
-        [
-          "admin_cliente",
-          "admin_clientes",
-          "admin_proveedor",
-          "admin_proveedores",
-        ].includes(userRole)
-      ) {
-        basePermitida = base.filter((r) =>
-          ["cliente", "proveedor"].includes(r.tipo)
-        );
-      } else {
-        const tipoPermitido = userRole.replace("admin_", "");
-        basePermitida = base.filter((r) => r.tipo === tipoPermitido);
-      }
-    }
+    const basePermitida = base.filter((r) => tiposPermitidos.includes(r.tipo));
 
     const conteo = {
       todos: basePermitida.length,
@@ -313,31 +278,27 @@ const PanelAprobaciones = ({ userRole }) => {
       cliente: 0,
       proveedor: 0,
     };
+
     basePermitida.forEach((registro) => {
       if (conteo[registro.tipo] !== undefined) {
         conteo[registro.tipo] += 1;
       }
     });
     return conteo;
-  }, [registrosPendientes, historial, vistaActual, userRole]);
+  }, [registrosPendientes, historial, vistaActual, tiposPermitidos]);
 
+  // Efecto para actualizar la selección si el registro seleccionado ya no está en la lista
   useEffect(() => {
-    if (vistaActual !== "pendientes") return;
-    if (pendientesFiltrados.length === 0) {
-      setRegistroSeleccionado(null);
-      return;
-    }
-    if (!registroSeleccionado) {
-      setRegistroSeleccionado(pendientesFiltrados[0]);
-      return;
-    }
+    if (!registroSeleccionado) return;
+
     const sigueDisponible = pendientesFiltrados.some(
-      (registro) => registro.id === registroSeleccionado.id
+      (r) => r.id === registroSeleccionado.id
     );
+
     if (!sigueDisponible) {
-      setRegistroSeleccionado(pendientesFiltrados[0]);
+      setRegistroSeleccionado(null);
     }
-  }, [pendientesFiltrados, registroSeleccionado, vistaActual]);
+  }, [pendientesFiltrados, registroSeleccionado]);
 
   const formatearFecha = (fecha) => {
     if (!fecha) return "N/A";
@@ -673,14 +634,13 @@ const PanelAprobaciones = ({ userRole }) => {
     setFechaContratacion(""); // Resetear fecha
     setNombreCargo(""); // Resetear cargo
     setSede(""); // Resetear sede
+    setModoEdicion(false); // Resetear modo edición
     if (registro?.datos) {
       setDatosEditables({ ...registro.datos });
     } else {
       setDatosEditables({});
     }
-    if (registro?.tipo && filtroTipo !== registro.tipo) {
-      setFiltroTipo(registro.tipo);
-    }
+    // Eliminado filtro automático al seleccionar
   };
 
   const aprobarRegistro = async () => {
@@ -695,9 +655,10 @@ const PanelAprobaciones = ({ userRole }) => {
       if (registroSeleccionado.tipo === "proveedor") {
         payload.cupoAprobado = cupoAprobado;
       }
-      if (registroSeleccionado.tipo === "cliente") {
-        payload.datosAprobados = datosEditables;
-      }
+
+      // Enviar datos editados para todos los tipos
+      payload.datosAprobados = datosEditables;
+
       if (registroSeleccionado.tipo === "empleado") {
         payload.fechaContratacion = fechaContratacion;
         payload.nombreCargo = nombreCargo;
@@ -845,18 +806,25 @@ const PanelAprobaciones = ({ userRole }) => {
                 </h2>
               </div>
 
-              {registroSeleccionado.tipo === "cliente" ? (
+              {modoEdicion ? (
                 <div className="detalle-grid-editable">
-                  <h3
-                    style={{
-                      gridColumn: "1 / -1",
-                      marginTop: "1rem",
-                      marginBottom: "0.5rem",
-                    }}
-                  >
-                    Editar Información del Cliente
-                  </h3>
-                  {CLIENTE_FIELDS.map((field) => (
+                  <div className="detalle-editable-header">
+                    <h3>Editar Información</h3>
+                    <button
+                      className="btn-cancelar-edicion"
+                      onClick={() => setModoEdicion(false)}
+                    >
+                      Cancelar Edición
+                    </button>
+                  </div>
+                  {(registroSeleccionado.tipo === "cliente"
+                    ? CLIENTE_FIELDS
+                    : registroSeleccionado.tipo === "empleado"
+                    ? EMPLEADO_FIELDS
+                    : registroSeleccionado.tipo === "proveedor"
+                    ? PROVEEDOR_FIELDS
+                    : []
+                  ).map((field) => (
                     <div key={field.key} className="detalle-campo-editable">
                       <label>{field.label}</label>
                       <input
@@ -876,6 +844,25 @@ const PanelAprobaciones = ({ userRole }) => {
               ) : (
                 detalleSeleccionado.campos.length > 0 && (
                   <div className="detalle-grid">
+                    {["cliente", "empleado", "proveedor"].includes(
+                      registroSeleccionado.tipo
+                    ) && (
+                      <div
+                        style={{
+                          gridColumn: "1 / -1",
+                          marginBottom: "0.5rem",
+                          display: "flex",
+                          justifyContent: "flex-end",
+                        }}
+                      >
+                        <button
+                          className="btn-editar-cliente"
+                          onClick={() => setModoEdicion(true)}
+                        >
+                          <FaEdit /> Editar Información
+                        </button>
+                      </div>
+                    )}
                     {detalleSeleccionado.campos.map((campo) => (
                       <div key={campo.label} className="detalle-campo">
                         <label>{campo.label}</label>

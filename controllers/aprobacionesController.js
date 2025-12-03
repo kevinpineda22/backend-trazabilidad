@@ -85,7 +85,10 @@ export const aprobarRegistro = async (req, res) => {
 
       switch (registro.tipo) {
         case "empleado": {
-          const datos = registro.datos || {};
+          const datosOriginales = registro.datos || {};
+          const datos = datosAprobados
+            ? { ...datosOriginales, ...datosAprobados }
+            : datosOriginales;
           return {
             tablaDestino: "empleados_contabilidad",
             payload: {
@@ -184,7 +187,10 @@ export const aprobarRegistro = async (req, res) => {
           };
         }
         case "proveedor": {
-          const datos = registro.datos || {};
+          const datosOriginales = registro.datos || {};
+          const datos = datosAprobados
+            ? { ...datosOriginales, ...datosAprobados }
+            : datosOriginales;
           return {
             tablaDestino: "proveedores_contabilidad",
             payload: {
