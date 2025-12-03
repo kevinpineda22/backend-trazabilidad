@@ -824,6 +824,16 @@
   width: 100%;
 }
 
+.input-error {
+  border-color: #e74c3c;
+  background-color: #fdedec;
+}
+
+.label-error {
+  color: #e74c3c;
+  font-weight: bold;
+}
+
 .input-editable:focus {
   outline: none;
   border-color: var(--aprob-primary);

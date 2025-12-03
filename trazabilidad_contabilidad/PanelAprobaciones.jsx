@@ -123,6 +123,7 @@ const PanelAprobaciones = ({ userRole }) => {
   const [sede, setSede] = useState(""); // Nuevo estado: Sede
   const [datosEditables, setDatosEditables] = useState({});
   const [modoEdicion, setModoEdicion] = useState(false);
+  const [errorCampo, setErrorCampo] = useState(null); // Nuevo estado para el campo con error
   const mensajeTimeout = useRef(null);
 
   // Estados para expedientes en historial
@@ -635,6 +636,7 @@ const PanelAprobaciones = ({ userRole }) => {
     setNombreCargo(""); // Resetear cargo
     setSede(""); // Resetear sede
     setModoEdicion(false); // Resetear modo edición
+    setErrorCampo(null); // Resetear error de campo
     if (registro?.datos) {
       setDatosEditables({ ...registro.datos });
     } else {
@@ -683,6 +685,19 @@ const PanelAprobaciones = ({ userRole }) => {
       const msg =
         error.response?.data?.message || "Error al aprobar el registro.";
       mostrarMensaje(msg, "error");
+
+      // Detectar campo duplicado en el error
+      if (error.response?.data?.details) {
+        const match = error.response.data.details.match(/Key \((.*?)\)=/);
+        if (match && match[1]) {
+          setErrorCampo(match[1]);
+          setModoEdicion(true); // Abrir modo edición automáticamente
+          mostrarMensaje(
+            `El campo "${match[1]}" ya existe. Por favor cámbielo.`,
+            "error"
+          );
+        }
+      }
     } finally {
       setLoading(false);
     }
@@ -828,17 +843,27 @@ const PanelAprobaciones = ({ userRole }) => {
                     : []
                   ).map((field) => (
                     <div key={field.key} className="detalle-campo-editable">
-                      <label>{field.label}</label>
+                      <label
+                        className={
+                          errorCampo === field.key ? "label-error" : ""
+                        }
+                      >
+                        {field.label}{" "}
+                        {errorCampo === field.key && "(Duplicado)"}
+                      </label>
                       <input
                         type={field.type || "text"}
                         value={datosEditables[field.key] || ""}
-                        onChange={(e) =>
+                        onChange={(e) => {
                           setDatosEditables({
                             ...datosEditables,
                             [field.key]: e.target.value,
-                          })
-                        }
-                        className="input-editable"
+                          });
+                          if (errorCampo === field.key) setErrorCampo(null);
+                        }}
+                        className={`input-editable ${
+                          errorCampo === field.key ? "input-error" : ""
+                        }`}
                       />
                     </div>
                   ))}

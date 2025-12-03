@@ -99,6 +99,7 @@ export const aprobarRegistro = async (req, res) => {
             : datosOriginales;
           return {
             tablaDestino: "empleados_contabilidad",
+            conflictKey: "cedula",
             payload: {
               ...basePayload,
               nombre: normalizar(datos.nombre),
@@ -131,6 +132,7 @@ export const aprobarRegistro = async (req, res) => {
 
           return {
             tablaDestino: "clientes_contabilidad",
+            conflictKey: "nit",
             payload: {
               ...basePayload,
               // Campos generales
@@ -201,6 +203,7 @@ export const aprobarRegistro = async (req, res) => {
             : datosOriginales;
           return {
             tablaDestino: "proveedores_contabilidad",
+            conflictKey: "nit",
             payload: {
               ...basePayload,
               fecha_diligenciamiento: normalizar(datos.fecha_diligenciamiento),
@@ -260,10 +263,19 @@ export const aprobarRegistro = async (req, res) => {
       return res.status(400).json({ message: "Tipo de registro inválido." });
     }
 
+    console.log(
+      `[Aprobación] Insertando/Actualizando en ${infoInsercion.tablaDestino}. Payload:`,
+      JSON.stringify(infoInsercion.payload)
+    );
+
     const { data: nuevoRegistro } = await supabaseAxios.post(
-      `/${infoInsercion.tablaDestino}`,
+      `/${infoInsercion.tablaDestino}?on_conflict=${infoInsercion.conflictKey}`,
       infoInsercion.payload,
-      { headers: { Prefer: "return=representation" } }
+      {
+        headers: {
+          Prefer: "resolution=merge-duplicates,return=representation",
+        },
+      }
     );
 
     // Actualizar estado del registro pendiente con el ID del registro aprobado
@@ -325,10 +337,12 @@ export const aprobarRegistro = async (req, res) => {
       error.response?.data || error.message
     );
 
+    // El error 23505 (duplicate key) ya no debería ocurrir con UPSERT,
+    // pero lo dejamos por si acaso falla la resolución de conflictos.
     if (error.response?.data?.code === "23505") {
       return res.status(409).json({
         message:
-          "Error: Ya existe un registro con este documento/NIT en el sistema.",
+          "Error: Ya existe un registro con este documento/NIT en el sistema (UPSERT falló).",
         details: error.response.data.details,
       });
     }
