@@ -665,6 +665,8 @@ const PanelAprobaciones = ({ userRole }) => {
         payload.sede = sede;
       }
 
+      console.log("Enviando aprobación:", payload);
+
       await axios.post(
         `${
           import.meta.env.VITE_BACKEND_TRAZABILIDAD_URL

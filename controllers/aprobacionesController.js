@@ -45,6 +45,14 @@ export const aprobarRegistro = async (req, res) => {
     } = req.body;
     const user_id = req.user?.id;
 
+    console.log(`[Aprobación] Procesando ID: ${id}`);
+    if (datosAprobados) {
+      console.log(
+        "[Aprobación] Datos editados recibidos:",
+        JSON.stringify(datosAprobados)
+      );
+    }
+
     if (!user_id) {
       return res.status(401).json({ message: "Usuario no autenticado." });
     }
