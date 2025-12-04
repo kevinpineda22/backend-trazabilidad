@@ -830,6 +830,7 @@ const PanelAprobaciones = ({ userRole }) => {
                     <button
                       className="btn-cancelar-edicion"
                       onClick={() => setModoEdicion(false)}
+                      disabled={loading}
                     >
                       Cancelar Edición
                     </button>
@@ -864,6 +865,7 @@ const PanelAprobaciones = ({ userRole }) => {
                         className={`input-editable ${
                           errorCampo === field.key ? "input-error" : ""
                         }`}
+                        disabled={loading}
                       />
                     </div>
                   ))}
@@ -885,6 +887,7 @@ const PanelAprobaciones = ({ userRole }) => {
                         <button
                           className="btn-editar-cliente"
                           onClick={() => setModoEdicion(true)}
+                          disabled={loading}
                         >
                           <FaEdit /> Editar Información
                         </button>
@@ -929,6 +932,7 @@ const PanelAprobaciones = ({ userRole }) => {
                     onChange={(e) => setCupoAprobado(e.target.value)}
                     placeholder="Ingrese el cupo aprobado (números o letras)"
                     className="input-cupo-aprobado"
+                    disabled={loading}
                   />
                 </div>
               )}
@@ -941,6 +945,7 @@ const PanelAprobaciones = ({ userRole }) => {
                     value={fechaContratacion}
                     onChange={(e) => setFechaContratacion(e.target.value)}
                     className="input-cupo-aprobado"
+                    disabled={loading}
                   />
                   <label style={{ marginTop: "10px", display: "block" }}>
                     Nombre de Cargo
@@ -951,6 +956,7 @@ const PanelAprobaciones = ({ userRole }) => {
                     onChange={(e) => setNombreCargo(e.target.value)}
                     placeholder="Ingrese el cargo"
                     className="input-cupo-aprobado"
+                    disabled={loading}
                   />
                   <label style={{ marginTop: "10px", display: "block" }}>
                     Sede
@@ -961,6 +967,7 @@ const PanelAprobaciones = ({ userRole }) => {
                     onChange={(e) => setSede(e.target.value)}
                     placeholder="Ingrese la sede"
                     className="input-cupo-aprobado"
+                    disabled={loading}
                   />
                 </div>
               )}
