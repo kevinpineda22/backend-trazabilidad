@@ -23,7 +23,9 @@ export const registrarEmpleadoPublico = async (req, res) => {
     const {
       nombre,
       apellidos,
+      tipo_documento,
       cedula,
+      dv,
       contacto,
       correo_electronico,
       direccion,
@@ -81,7 +83,9 @@ export const registrarEmpleadoPublico = async (req, res) => {
       datos: {
         nombre,
         apellidos,
+        tipo_documento,
         cedula,
+        dv,
         contacto: contacto || null,
         correo_electronico: correo_electronico || null,
         direccion: direccion || null,
