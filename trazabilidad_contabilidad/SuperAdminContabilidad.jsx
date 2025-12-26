@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FaArrowLeft, FaUsers, FaHardHat, FaUserTie } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
+import { getAssetUrl } from "../../config/storage";
 
 // Estilos
 import "./SuperAdminContabilidad.css";
@@ -49,8 +50,23 @@ const SuperAdminContabilidad = () => {
     }
   });
 
+  // ✅ Obtener permisos de ruta
+  const [routePermission] = useState(() => {
+    try {
+      const info = localStorage.getItem("empleado_info");
+      if (!info) return null;
+      const parsed = JSON.parse(info);
+      const routes = parsed.personal_routes || [];
+      // Buscar permiso para esta ruta específica
+      const currentRoute = routes.find(r => r.path === "/trazabilidad/admin");
+      return currentRoute ? currentRoute.permission : null;
+    } catch (e) {
+      return null;
+    }
+  });
+
   const getAllowedViews = (role) => {
-    // En este módulo (Admin Contabilidad / Archivadores), se deben mostrar todas las carpetas
+    // En este módulo (Gestión Documental / Archivadores), se deben mostrar todas las carpetas
     // independientemente del rol del usuario (admin_proveedor, admin_cliente, etc.)
     return [VISTAS.EMPLEADOS, VISTAS.PROVEEDORES, VISTAS.CLIENTES];
   };
@@ -117,12 +133,16 @@ const SuperAdminContabilidad = () => {
           <HistorialEmpleadosAdminView
             onPreview={openPreview}
             onOpenExpediente={openExpedienteEmpleado}
+            userRole={userRole}
+            routePermission={routePermission}
           />
         );
       case VISTAS.PROVEEDORES:
         return (
           <HistorialProveedoresAdminView
             onOpenExpediente={openExpedienteProveedor}
+            userRole={userRole}
+            routePermission={routePermission}
           />
         );
       case VISTAS.CLIENTES:
@@ -130,6 +150,8 @@ const SuperAdminContabilidad = () => {
           <HistorialClientesAdminView
             onPreview={openPreview}
             onOpenExpediente={openExpedienteCliente}
+            userRole={userRole}
+            routePermission={routePermission}
           />
         );
       case VISTAS.EXPEDIENTE_EMPLEADO:
@@ -161,6 +183,8 @@ const SuperAdminContabilidad = () => {
           <HistorialEmpleadosAdminView
             onPreview={openPreview}
             onOpenExpediente={openExpedienteEmpleado}
+            userRole={userRole}
+            routePermission={routePermission}
           />
         );
     }
@@ -194,8 +218,8 @@ const SuperAdminContabilidad = () => {
           >
             <FaArrowLeft />
           </Link>
-          <img src="/logoMK.webp" alt="Logo" className="admin-cont-logo" />
-          <h2 className="admin-cont-sidebar-title">Admin Contabilidad</h2>
+          <img src={getAssetUrl("logoMK.webp")} alt="Logo" className="admin-cont-logo" />
+          <h2 className="admin-cont-sidebar-title">Gestión Documental</h2>
         </div>
 
         <nav className="admin-cont-sidebar-nav">

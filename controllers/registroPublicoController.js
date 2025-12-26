@@ -181,6 +181,11 @@ export const registrarClientePublico = async (req, res) => {
       nombre_departamento,
       codigo_ciudad,
       nombre_ciudad,
+      // Campos adicionales enviados por el frontend
+      departamento,
+      departamento_codigo,
+      ciudad,
+      ciudad_codigo,
       // Contacto
       email_factura_electronica,
       nombre_contacto,
@@ -276,10 +281,15 @@ export const registrarClientePublico = async (req, res) => {
         descripcion_ciiu,
         // Ubicación
         direccion_domicilio,
-        codigo_departamento,
-        nombre_departamento,
-        codigo_ciudad,
-        nombre_ciudad,
+        codigo_departamento: codigo_departamento || departamento_codigo,
+        nombre_departamento: nombre_departamento || departamento,
+        codigo_ciudad: codigo_ciudad || ciudad_codigo,
+        nombre_ciudad: nombre_ciudad || ciudad,
+        // Asegurar compatibilidad con PanelAprobaciones
+        departamento: departamento || nombre_departamento,
+        departamento_codigo: departamento_codigo || codigo_departamento,
+        ciudad: ciudad || nombre_ciudad,
+        ciudad_codigo: ciudad_codigo || codigo_ciudad,
         // Contacto
         email_factura_electronica,
         nombre_contacto,

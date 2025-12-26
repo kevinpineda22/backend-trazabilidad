@@ -100,7 +100,20 @@ const FileInput = ({ label, name, file, setFile, isRequired = false }) => {
 
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
+      const selectedFile = e.target.files[0];
+      // Validación de peso (Máximo 5MB)
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (selectedFile.size > maxSize) {
+        Swal.fire({
+          icon: "error",
+          title: "Archivo demasiado pesado",
+          text: "El tamaño máximo permitido es 5MB.",
+          customClass: SWAL_CUSTOM_CLASSES,
+        });
+        e.target.value = null;
+        return;
+      }
+      setFile(selectedFile);
     }
   };
 
@@ -127,6 +140,7 @@ const FileInput = ({ label, name, file, setFile, isRequired = false }) => {
           type="file"
           id={name}
           name={name}
+          accept=".pdf,.jpg,.jpeg,.png,.webp"
           onChange={handleFileChange}
           ref={fileInputRef}
           style={{ display: "none" }}
@@ -616,96 +630,6 @@ const CreacionCliente = () => {
     });
   };
 
-  // --- (handleCargarParaEditar deshabilitado en flujo de dos pasos) ---
-  // La edición no está disponible con el nuevo flujo de dos pasos
-  /*
-  const handleCargarParaEditar = (item) => {
-    setIdParaEditar(item.id);
-    setRut(item.url_rut || null);
-    setCamaraComercio(item.url_camara_comercio || null);
-    setCertificacionBancaria(item.url_certificacion_bancaria || null);
-    setCedula(item.url_cedula || null);
-    setCertificadoSagrilaft(item.url_certificado_sagrilaft || null);
-    setComposicionAccionaria(item.url_composicion_accionaria || null);
-
-    const regimen = item.tipo_regimen || "";
-    const departamentoInfo = item.departamento_codigo
-      ? DEPARTMENTS.find((dep) => dep.code === item.departamento_codigo)
-      : findDepartmentByName(item.departamento || "");
-    const departamento_codigo =
-      item.departamento_codigo || departamentoInfo?.code || "";
-    const ciudadInfo = departamentoInfo
-      ? departamentoInfo.cities.find(
-          (city) =>
-            city.code === item.ciudad_codigo ||
-            city.name.toLowerCase() === (item.ciudad || "").toLowerCase()
-        )
-      : null;
-    const ciudad_codigo = item.ciudad_codigo || ciudadInfo?.code || "";
-    const ciudadNombre = item.ciudad || ciudadInfo?.name || "";
-
-    const nombresNaturales =
-      regimen === "persona_natural"
-        ? splitNombreNatural(item.razon_social || item.nombre_contacto || "")
-        : {
-            primer_nombre: "",
-            segundo_nombre: "",
-            primer_apellido: "",
-            segundo_apellido: "",
-          };
-
-    setFormData({
-      ...EMPTY_FORM,
-      fecha_diligenciamiento:
-        normalizeDateValue(item.fecha_diligenciamiento) || todayIso,
-      tipo_regimen: regimen,
-      tipo_documento:
-        item.tipo_documento ||
-        (regimen === "persona_juridica"
-          ? "NIT"
-          : regimen === "persona_natural"
-          ? "Cedula de ciudadanía"
-          : ""),
-      nit: item.nit || "",
-      dv: item.dv || "",
-      razon_social: item.razon_social || "",
-      nombre_establecimiento: item.nombre_establecimiento || "",
-      primer_nombre: nombresNaturales.primer_nombre,
-      segundo_nombre: nombresNaturales.segundo_nombre,
-      primer_apellido: nombresNaturales.primer_apellido,
-      segundo_apellido: nombresNaturales.segundo_apellido,
-      codigo_ciiu: item.codigo_ciiu || "",
-      descripcion_ciiu:
-        findCiiuLabel(item.codigo_ciiu) || item.descripcion_ciiu || "",
-      direccion_domicilio: item.direccion_domicilio || "",
-      departamento: departamentoInfo?.name || item.departamento || "",
-      departamento_codigo,
-      ciudad: ciudadNombre,
-      ciudad_codigo,
-      email_factura_electronica: item.email_factura_electronica || "",
-      nombre_contacto: item.nombre_contacto || "",
-      email_contacto: item.email_contacto || "",
-      telefono_contacto: item.telefono_contacto || "",
-      rep_legal_nombre: item.rep_legal_nombre || "",
-      rep_legal_apellidos: item.rep_legal_apellidos || "",
-      rep_legal_tipo_doc: item.rep_legal_tipo_doc || "",
-      rep_legal_num_doc: item.rep_legal_num_doc || "",
-      declara_pep: item.declara_pep || "",
-      declara_recursos_publicos: item.declara_recursos_publicos || "",
-      declara_obligaciones_tributarias:
-        item.declara_obligaciones_tributarias || "",
-    });
-    setAceptaTerminos(true);
-    setFormErrors({});
-    if (formCardRef.current) {
-      formCardRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-    toast.info(
-      "Modo de edición activado. Los datos han sido cargados en el formulario."
-    );
-  };
-  */
-
   const handleFieldChange = (event) => {
     const { name, value } = event.target;
     if (name === "fecha_diligenciamiento") {
@@ -727,7 +651,7 @@ const CreacionCliente = () => {
       : value;
     const cleanedValue =
       typeof sanitisedValue === "string"
-        ? sanitisedValue.replace(/\s+/g, " ").trim()
+        ? sanitisedValue.replace(/\s+/g, " ")
         : sanitisedValue;
     const finalValue =
       typeof cleanedValue === "string" && emailFields.has(name)
@@ -2348,11 +2272,13 @@ const CreacionCliente = () => {
               isRequired={true}
             />
             <FileInput
-              label="Cámara de Comercio (Opcional)"
+              label={`Cámara de Comercio ${
+                isPersonaJuridica ? "" : "(Opcional)"
+              }`}
               name="camara_comercio"
               file={camaraComercio}
               setFile={setCamaraComercio}
-              isRequired={false}
+              isRequired={isPersonaJuridica}
             />
           </div>
 
@@ -2362,7 +2288,8 @@ const CreacionCliente = () => {
             formErrors.certificacionBancaria ||
             formErrors.cedula ||
             formErrors.certificadoSagrilaft ||
-            formErrors.composicionAccionaria) && (
+            formErrors.composicionAccionaria ||
+            formErrors.camaraComercio) && (
             <div className="tc-error-summary">
               {formErrors.cupo && (
                 <span className="tc-validation-error">
@@ -2397,6 +2324,11 @@ const CreacionCliente = () => {
                   ⚠️ {formErrors.composicionAccionaria}
                 </span>
               )}
+              {formErrors.camaraComercio && (
+                <span className="tc-validation-error">
+                  ⚠️ {formErrors.camaraComercio}
+                </span>
+              )}
             </div>
           )}
 
@@ -2427,7 +2359,8 @@ const CreacionCliente = () => {
                 !certificacionBancaria ||
                 !cedula ||
                 !certificadoSagrilaft ||
-                !composicionAccionaria
+                !composicionAccionaria ||
+                (isPersonaJuridica && !camaraComercio)
               }
             >
               {loading || isSubmitting ? (

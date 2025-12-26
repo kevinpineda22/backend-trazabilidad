@@ -135,15 +135,11 @@ const PanelAprobaciones = ({ userRole }) => {
     if (!userRole || userRole === "admin" || userRole === "super_admin") {
       return ["empleado", "cliente", "proveedor"];
     }
-    if (
-      [
-        "admin_cliente",
-        "admin_clientes",
-        "admin_proveedor",
-        "admin_proveedores",
-      ].includes(userRole)
-    ) {
-      return ["cliente", "proveedor"];
+    if (["admin_cliente", "admin_clientes"].includes(userRole)) {
+      return ["cliente"];
+    }
+    if (["admin_proveedor", "admin_proveedores"].includes(userRole)) {
+      return ["proveedor"];
     }
     // Si el rol es admin_empleado, retorna ['empleado']
     const tipo = userRole.replace("admin_", "");
@@ -156,15 +152,10 @@ const PanelAprobaciones = ({ userRole }) => {
       !userRole || ["admin", "super_admin", "authenticated"].includes(userRole);
 
     if (!isAdmin) {
-      if (
-        [
-          "admin_cliente",
-          "admin_clientes",
-          "admin_proveedor",
-          "admin_proveedores",
-        ].includes(userRole)
-      ) {
-        setFiltroTipo("todos");
+      if (["admin_cliente", "admin_clientes"].includes(userRole)) {
+        setFiltroTipo("cliente");
+      } else if (["admin_proveedor", "admin_proveedores"].includes(userRole)) {
+        setFiltroTipo("proveedor");
       } else {
         const tipo = userRole.replace("admin_", "");
         setFiltroTipo(tipo);
@@ -1205,42 +1196,32 @@ const PanelAprobaciones = ({ userRole }) => {
           </div>
           <div className="filtros-list">
             {TIPOS_FILTRO.filter((f) => {
+              // Admin general ve todo
               if (
                 !userRole ||
-                userRole === "admin" ||
-                userRole === "super_admin" ||
-                userRole === "authenticated"
-              )
-                return true;
-
-              if (
-                [
-                  "admin_cliente",
-                  "admin_proveedor",
-                  "admin_proveedores",
-                ].includes(userRole)
+                ["admin", "super_admin", "authenticated"].includes(userRole)
               ) {
-                return ["cliente", "proveedor", "todos"].includes(f.value);
+                return true;
               }
 
+              // Roles específicos ven solo su tipo
+              if (["admin_cliente", "admin_clientes"].includes(userRole)) {
+                return f.value === "cliente";
+              }
+
+              if (["admin_proveedor", "admin_proveedores"].includes(userRole)) {
+                return f.value === "proveedor";
+              }
+
+              if (userRole === "admin_empleado") {
+                return f.value === "empleado";
+              }
+
+              // Fallback para otros roles
               const tipoPermitido = userRole.replace("admin_", "");
-              return f.value === tipoPermitido || f.value === "todos";
+              return f.value === tipoPermitido;
             }).map(({ value, label }) => {
               const count = contadorPorTipo[value] ?? 0;
-              if (
-                value === "todos" &&
-                userRole &&
-                userRole !== "admin" &&
-                userRole !== "super_admin" &&
-                userRole !== "authenticated" &&
-                ![
-                  "admin_cliente",
-                  "admin_proveedor",
-                  "admin_proveedores",
-                ].includes(userRole)
-              )
-                return null;
-
               return (
                 <button
                   key={value}

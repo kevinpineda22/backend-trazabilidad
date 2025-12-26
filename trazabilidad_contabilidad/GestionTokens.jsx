@@ -35,16 +35,14 @@ const GestionTokens = ({ userRole }) => {
     // admin_empleado -> empleado
     if (userRole === "admin_empleado" && tipo === "empleado") return true;
 
-    // admin_cliente y admin_proveedor -> cliente y proveedor (Unificados)
-    if (
-      [
-        "admin_cliente",
-        "admin_clientes",
-        "admin_proveedor",
-        "admin_proveedores",
-      ].includes(userRole)
-    ) {
-      return ["cliente", "proveedor"].includes(tipo);
+    // admin_cliente -> cliente
+    if (["admin_cliente", "admin_clientes"].includes(userRole)) {
+      return tipo === "cliente";
+    }
+
+    // admin_proveedor -> proveedor
+    if (["admin_proveedor", "admin_proveedores"].includes(userRole)) {
+      return tipo === "proveedor";
     }
 
     return false;

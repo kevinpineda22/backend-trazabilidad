@@ -38,7 +38,7 @@ ChartJS.register(
   ArcElement
 );
 
-const DashboardView = ({ onNavigate }) => {
+const DashboardView = ({ onNavigate, userRole }) => {
   const [stats, setStats] = useState(null);
   const [pendientes, setPendientes] = useState([]);
   const [historial, setHistorial] = useState([]);
@@ -57,6 +57,24 @@ const DashboardView = ({ onNavigate }) => {
             api.get("/trazabilidad/aprobaciones/historial"),
           ]);
 
+        // Función de filtrado según rol
+        const filterByRole = (items) => {
+          if (!Array.isArray(items)) return [];
+          if (!userRole || userRole === "admin" || userRole === "super_admin")
+            return items;
+
+          if (userRole === "admin_empleado")
+            return items.filter((i) => i.tipo === "empleado");
+
+          if (["admin_cliente", "admin_clientes"].includes(userRole))
+            return items.filter((i) => i.tipo === "cliente");
+
+          if (["admin_proveedor", "admin_proveedores"].includes(userRole))
+            return items.filter((i) => i.tipo === "proveedor");
+
+          return [];
+        };
+
         // Procesar Stats Generales
         if (statsRes.status === "fulfilled") {
           setStats(statsRes.value.data);
@@ -67,7 +85,7 @@ const DashboardView = ({ onNavigate }) => {
           const data = Array.isArray(pendientesRes.value.data)
             ? pendientesRes.value.data
             : [];
-          setPendientes(data);
+          setPendientes(filterByRole(data));
         }
 
         // Procesar Historial
@@ -75,7 +93,7 @@ const DashboardView = ({ onNavigate }) => {
           const data = Array.isArray(historialRes.value.data)
             ? historialRes.value.data
             : [];
-          setHistorial(data);
+          setHistorial(filterByRole(data));
         }
       } catch (error) {
         console.error("Error general en dashboard:", error);
@@ -85,7 +103,21 @@ const DashboardView = ({ onNavigate }) => {
       }
     };
     fetchData();
-  }, []);
+  }, [userRole]);
+
+  // Permisos de visualización
+  const showEmpleados =
+    !userRole || ["admin", "super_admin", "admin_empleado"].includes(userRole);
+  const showClientes =
+    !userRole ||
+    ["admin", "super_admin", "admin_cliente", "admin_clientes"].includes(
+      userRole
+    );
+  const showProveedores =
+    !userRole ||
+    ["admin", "super_admin", "admin_proveedor", "admin_proveedores"].includes(
+      userRole
+    );
 
   // Cálculos para Gráficos
   const pendientesPorTipo = useMemo(() => {
@@ -186,21 +218,27 @@ const DashboardView = ({ onNavigate }) => {
 
       {/* Tarjetas Superiores */}
       <div className="admin-cont-dashboard-grid">
-        <StatCard
-          icon={<FaUsers />}
-          label="Empleados"
-          value={stats?.totalEmpleados || 0}
-        />
-        <StatCard
-          icon={<FaHardHat />}
-          label="Proveedores"
-          value={stats?.totalProveedores || 0}
-        />
-        <StatCard
-          icon={<FaUserTie />}
-          label="Clientes"
-          value={stats?.totalClientes || 0}
-        />
+        {showEmpleados && (
+          <StatCard
+            icon={<FaUsers />}
+            label="Empleados"
+            value={stats?.totalEmpleados || 0}
+          />
+        )}
+        {showProveedores && (
+          <StatCard
+            icon={<FaHardHat />}
+            label="Proveedores"
+            value={stats?.totalProveedores || 0}
+          />
+        )}
+        {showClientes && (
+          <StatCard
+            icon={<FaUserTie />}
+            label="Clientes"
+            value={stats?.totalClientes || 0}
+          />
+        )}
         <StatCard
           icon={<FaClock />}
           label="Pendientes"

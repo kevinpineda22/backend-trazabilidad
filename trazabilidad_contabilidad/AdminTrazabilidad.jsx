@@ -13,6 +13,7 @@ import { Link } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { supabase } from "../../supabaseClient";
+import { getAssetUrl } from "../../config/storage";
 
 // Estilos
 import "./AdminTrazabilidad.css";
@@ -29,6 +30,10 @@ import FilePreviewModal from "./FilePreviewModal";
 // Vistas compartidas
 import HistorialEmpleadosAdminView from "./views/HistorialEmpleadosAdminView";
 import ExpedienteEmpleadoView from "./views/ExpedienteEmpleadoView";
+import HistorialClientesAdminView from "./views/HistorialClientesAdminView";
+import ExpedienteClienteView from "./views/ExpedienteClienteView";
+import HistorialProveedoresAdminView from "./views/HistorialProveedoresAdminView";
+import ExpedienteProveedorView from "./views/ExpedienteProveedorView";
 
 const VISTAS = {
   DASHBOARD: "dashboard",
@@ -37,25 +42,35 @@ const VISTAS = {
   DOCUMENTOS: "documentos",
   EMPLEADOS: "empleados",
   EXPEDIENTE_EMPLEADO: "expediente_empleado",
+  CLIENTES: "clientes",
+  EXPEDIENTE_CLIENTE: "expediente_cliente",
+  PROVEEDORES: "proveedores",
+  EXPEDIENTE_PROVEEDOR: "expediente_proveedor",
 };
 
 const TITULOS_VISTA = {
   [VISTAS.DASHBOARD]: "Panel de Administración - Trazabilidad",
-  [VISTAS.TOKENS]: "Gestión de Tokens",
+  [VISTAS.TOKENS]: "Gestión de Links",
   [VISTAS.APROBACIONES]: "Panel de Aprobaciones",
   [VISTAS.DOCUMENTOS]: "Gestión de Documentos",
   [VISTAS.EMPLEADOS]: "Archivador General de Empleados",
   [VISTAS.EXPEDIENTE_EMPLEADO]: "Expediente Digital del Empleado",
+  [VISTAS.CLIENTES]: "Archivador General de Clientes",
+  [VISTAS.EXPEDIENTE_CLIENTE]: "Expediente Digital del Cliente",
+  [VISTAS.PROVEEDORES]: "Archivador General de Proveedores",
+  [VISTAS.EXPEDIENTE_PROVEEDOR]: "Expediente Digital del Proveedor",
 };
 
 const AdminTrazabilidad = () => {
-  const [vista, setVista] = useState(VISTAS.DASHBOARD);
+  const [vista, setVista] = useState(VISTAS.TOKENS);
   const [userRole, setUserRole] = useState(null);
 
   // Estado para el modal de previsualización y expedientes
   const [modalOpen, setModalOpen] = useState(false);
   const [previewUrl, setPreviewUrl] = useState("");
   const [selectedEmpleadoId, setSelectedEmpleadoId] = useState(null);
+  const [selectedClienteId, setSelectedClienteId] = useState(null);
+  const [selectedProveedorId, setSelectedProveedorId] = useState(null);
 
   useEffect(() => {
     const fetchRole = async () => {
@@ -120,6 +135,36 @@ const AdminTrazabilidad = () => {
             onPreview={openPreview}
           />
         );
+      case VISTAS.CLIENTES:
+        return (
+          <HistorialClientesAdminView
+            onPreview={openPreview}
+            onOpenExpediente={openExpedienteCliente}
+          />
+        );
+      case VISTAS.EXPEDIENTE_CLIENTE:
+        return (
+          <ExpedienteClienteView
+            clienteId={selectedClienteId}
+            onBack={showClientesList}
+            onPreview={openPreview}
+          />
+        );
+      case VISTAS.PROVEEDORES:
+        return (
+          <HistorialProveedoresAdminView
+            onPreview={openPreview}
+            onOpenExpediente={openExpedienteProveedor}
+          />
+        );
+      case VISTAS.EXPEDIENTE_PROVEEDOR:
+        return (
+          <ExpedienteProveedorView
+            proveedorId={selectedProveedorId}
+            onBack={showProveedoresList}
+            onPreview={openPreview}
+          />
+        );
       default:
         return <DashboardView onNavigate={setVista} userRole={userRole} />;
     }
@@ -143,6 +188,35 @@ const AdminTrazabilidad = () => {
   const showEmpleadosList = () => {
     setSelectedEmpleadoId(null);
     setVista(VISTAS.EMPLEADOS);
+  };
+
+  // Funciones de navegación para clientes
+  const openExpedienteCliente = (clienteId) => {
+    setSelectedClienteId(clienteId);
+    setVista(VISTAS.EXPEDIENTE_CLIENTE);
+  };
+
+  const showClientesList = () => {
+    setSelectedClienteId(null);
+    setVista(VISTAS.CLIENTES);
+  };
+
+  // Funciones de navegación para proveedores
+  const openExpedienteProveedor = (proveedorId) => {
+    setSelectedProveedorId(proveedorId);
+    setVista(VISTAS.EXPEDIENTE_PROVEEDOR);
+  };
+
+  const showProveedoresList = () => {
+    setSelectedProveedorId(null);
+    setVista(VISTAS.PROVEEDORES);
+  };
+
+  // Helper para verificar permisos
+  const checkPermission = (allowedRoles) => {
+    if (!userRole) return false;
+    if (userRole === "admin" || userRole === "super_admin") return true;
+    return allowedRoles.includes(userRole);
   };
 
   return (
@@ -171,7 +245,7 @@ const AdminTrazabilidad = () => {
             <FaArrowLeft size={18} />
           </Link>
           <img
-            src="/logoMK.webp"
+            src={getAssetUrl("logoMK.webp")}
             alt="Logo Merkahorro"
             className="admin-traz-logo"
           />
@@ -180,14 +254,8 @@ const AdminTrazabilidad = () => {
 
         <nav className="admin-traz-sidebar-nav">
           <BotonSidebar
-            icono={FaChartBar}
-            texto="Dashboard"
-            activo={vista === VISTAS.DASHBOARD}
-            onClick={() => setVista(VISTAS.DASHBOARD)}
-          />
-          <BotonSidebar
             icono={FaKey}
-            texto="Gestión de Tokens"
+            texto="Gestión de Links"
             activo={vista === VISTAS.TOKENS}
             onClick={() => setVista(VISTAS.TOKENS)}
           />
@@ -197,17 +265,45 @@ const AdminTrazabilidad = () => {
             activo={vista === VISTAS.APROBACIONES}
             onClick={() => setVista(VISTAS.APROBACIONES)}
           />
-          <BotonSidebar
-            icono={FaUsers}
-            texto="Archivador Empleados"
-            activo={vista === VISTAS.EMPLEADOS}
-            onClick={() => setVista(VISTAS.EMPLEADOS)}
-          />
+
+          {checkPermission(["admin_empleado"]) && (
+            <BotonSidebar
+              icono={FaUsers}
+              texto="Archivador Empleados"
+              activo={vista === VISTAS.EMPLEADOS}
+              onClick={() => setVista(VISTAS.EMPLEADOS)}
+            />
+          )}
+
+          {checkPermission(["admin_cliente", "admin_clientes"]) && (
+            <BotonSidebar
+              icono={FaUsers}
+              texto="Archivador Clientes"
+              activo={vista === VISTAS.CLIENTES}
+              onClick={() => setVista(VISTAS.CLIENTES)}
+            />
+          )}
+
+          {checkPermission(["admin_proveedor", "admin_proveedores"]) && (
+            <BotonSidebar
+              icono={FaUsers}
+              texto="Archivador Proveedores"
+              activo={vista === VISTAS.PROVEEDORES}
+              onClick={() => setVista(VISTAS.PROVEEDORES)}
+            />
+          )}
+
           <BotonSidebar
             icono={FaFolderOpen}
             texto="Documentos"
             activo={vista === VISTAS.DOCUMENTOS}
             onClick={() => setVista(VISTAS.DOCUMENTOS)}
+          />
+          <BotonSidebar
+            icono={FaChartBar}
+            texto="Dashboard"
+            activo={vista === VISTAS.DASHBOARD}
+            onClick={() => setVista(VISTAS.DASHBOARD)}
           />
         </nav>
 

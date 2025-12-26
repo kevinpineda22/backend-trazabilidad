@@ -18,10 +18,24 @@ import MensajeVacio from "../components/MensajeVacio";
 import HistorialTabla from "../components/HistorialTabla";
 import AdminDocLink from "../components/AdminDocLink";
 
-const HistorialClientesAdminView = ({ onPreview, onOpenExpediente }) => {
+const HistorialClientesAdminView = ({
+  onPreview,
+  onOpenExpediente,
+  userRole,
+  routePermission,
+}) => {
   const [historial, setHistorial] = useState([]);
   const [loading, setLoading] = useState(true);
   const [mostrarArchivados, setMostrarArchivados] = useState(false);
+
+  // Definir quiénes tienen permiso de EDICIÓN (Archivar/Restaurar)
+  const hasAdminRole = ["super_admin", "admin", "admin_cliente"].includes(
+    userRole
+  );
+  const hasRouteAccess = routePermission === "full_access";
+
+  const canEdit = hasAdminRole || hasRouteAccess;
+  const isReadOnly = !canEdit;
 
   const fetchData = async () => {
     try {
@@ -119,7 +133,7 @@ const HistorialClientesAdminView = ({ onPreview, onOpenExpediente }) => {
                 <th>Cupo</th>
                 <th>Plazo</th>
                 <th>Expediente</th>
-                <th>Acciones</th>
+                {!isReadOnly && <th>Acciones</th>}
               </tr>
             </thead>
             <tbody>
@@ -149,25 +163,27 @@ const HistorialClientesAdminView = ({ onPreview, onOpenExpediente }) => {
                       <FaFolderOpen /> Ver Expediente
                     </button>
                   </td>
-                  <td className="admin-cont-cell-centered">
-                    {mostrarArchivados ? (
-                      <button
-                        onClick={() => handleRestaurar(cli.id)}
-                        className="btn-icon-restaurar"
-                        title="Restaurar"
-                      >
-                        <FaUndo />
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => handleArchivar(cli.id)}
-                        className="btn-icon-archivar"
-                        title="Archivar"
-                      >
-                        <FaArchive />
-                      </button>
-                    )}
-                  </td>
+                  {!isReadOnly && (
+                    <td className="admin-cont-cell-centered">
+                      {mostrarArchivados ? (
+                        <button
+                          onClick={() => handleRestaurar(cli.id)}
+                          className="btn-icon-restaurar"
+                          title="Restaurar"
+                        >
+                          <FaUndo />
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => handleArchivar(cli.id)}
+                          className="btn-icon-archivar"
+                          title="Archivar"
+                        >
+                          <FaArchive />
+                        </button>
+                      )}
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>

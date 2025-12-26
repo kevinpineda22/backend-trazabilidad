@@ -105,7 +105,20 @@ const FileInput = ({ label, name, file, setFile, isRequired = false }) => {
 
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
+      const selectedFile = e.target.files[0];
+      // Validación de peso (Máximo 5MB)
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (selectedFile.size > maxSize) {
+        Swal.fire({
+          icon: "error",
+          title: "Archivo demasiado pesado",
+          text: "El tamaño máximo permitido es 5MB.",
+          customClass: SWAL_CUSTOM_CLASSES,
+        });
+        e.target.value = null;
+        return;
+      }
+      setFile(selectedFile);
     }
   };
 
@@ -132,6 +145,7 @@ const FileInput = ({ label, name, file, setFile, isRequired = false }) => {
           type="file"
           id={name}
           name={name}
+          accept=".pdf,.jpg,.jpeg,.png,.webp"
           onChange={handleFileChange}
           ref={fileInputRef}
           style={{ display: "none" }}

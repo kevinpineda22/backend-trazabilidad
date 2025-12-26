@@ -20,8 +20,51 @@ const GestionDocumentos = ({ userRole }) => {
   const [uploading, setUploading] = useState(false);
   const [nuevoDoc, setNuevoDoc] = useState({
     file: null,
-    tipo_destino: "ambos",
+    tipo_destino: "",
   });
+
+  // Determinar tipos permitidos según rol
+  const tiposPermitidos = React.useMemo(() => {
+    if (!userRole || ["admin", "super_admin"].includes(userRole)) {
+      return ["ambos", "cliente", "proveedor", "empleado"];
+    }
+    if (["admin_cliente", "admin_clientes"].includes(userRole)) {
+      return ["cliente"];
+    }
+    if (["admin_proveedor", "admin_proveedores"].includes(userRole)) {
+      return ["proveedor"];
+    }
+    if (userRole === "admin_empleado") {
+      return ["empleado"];
+    }
+    return [];
+  }, [userRole]);
+
+  const documentosFiltrados = React.useMemo(() => {
+    return documentos.filter((doc) => {
+      if (!userRole || ["admin", "super_admin"].includes(userRole)) return true;
+
+      if (["admin_cliente", "admin_clientes"].includes(userRole)) {
+        return doc.tipo_destino === "cliente" || doc.tipo_destino === "ambos";
+      }
+      if (["admin_proveedor", "admin_proveedores"].includes(userRole)) {
+        return doc.tipo_destino === "proveedor" || doc.tipo_destino === "ambos";
+      }
+      if (userRole === "admin_empleado") {
+        return doc.tipo_destino === "empleado";
+      }
+      return false;
+    });
+  }, [documentos, userRole]);
+
+  // Establecer valor por defecto cuando cambian los tipos permitidos
+  useEffect(() => {
+    if (tiposPermitidos.length === 1) {
+      setNuevoDoc((prev) => ({ ...prev, tipo_destino: tiposPermitidos[0] }));
+    } else if (tiposPermitidos.includes("ambos")) {
+      setNuevoDoc((prev) => ({ ...prev, tipo_destino: "ambos" }));
+    }
+  }, [tiposPermitidos]);
 
   useEffect(() => {
     cargarDocumentos();
@@ -187,7 +230,7 @@ const GestionDocumentos = ({ userRole }) => {
               </div>
             </div>
             <div className="form-group">
-              <label>Destino (Quién lo verá)</label>
+              <label>Formulario de destino</label>
               <select
                 value={nuevoDoc.tipo_destino}
                 onChange={(e) =>
@@ -195,9 +238,18 @@ const GestionDocumentos = ({ userRole }) => {
                 }
                 className="select-input"
               >
-                <option value="ambos">Ambos (Clientes y Proveedores)</option>
-                <option value="cliente">Solo Clientes</option>
-                <option value="proveedor">Solo Proveedores</option>
+                {tiposPermitidos.includes("ambos") && (
+                  <option value="ambos">Ambos (Clientes y Proveedores)</option>
+                )}
+                {tiposPermitidos.includes("cliente") && (
+                  <option value="cliente">Clientes</option>
+                )}
+                {tiposPermitidos.includes("proveedor") && (
+                  <option value="proveedor">Proveedores</option>
+                )}
+                {tiposPermitidos.includes("empleado") && (
+                  <option value="empleado">Empleados</option>
+                )}
               </select>
             </div>
             <button type="submit" disabled={uploading} className="btn-upload">
@@ -222,14 +274,14 @@ const GestionDocumentos = ({ userRole }) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {documentos.length === 0 ? (
+                  {documentosFiltrados.length === 0 ? (
                     <tr>
                       <td colSpan="4" className="text-center">
-                        No hay documentos cargados.
+                        No hay documentos cargados para tu rol.
                       </td>
                     </tr>
                   ) : (
-                    documentos.map((doc) => (
+                    documentosFiltrados.map((doc) => (
                       <tr key={doc.id}>
                         <td className="doc-name-cell">
                           {getIcon(doc.nombre_archivo)}

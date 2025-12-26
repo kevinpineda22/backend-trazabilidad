@@ -1,12 +1,60 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import SignatureCanvas from "react-signature-canvas";
-import { FaTimes, FaEraser, FaSave } from "react-icons/fa";
+import { FaTimes, FaEraser, FaSave, FaArrowDown } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import "./HabeasDataModal.css";
 
 const HabeasDataModal = ({ isOpen, onClose, onSave }) => {
   const sigCanvas = useRef({});
+  const containerRef = useRef(null);
+  const scrollRef = useRef(null);
   const [error, setError] = useState("");
+  const [canvasSize, setCanvasSize] = useState({ width: 500, height: 180 });
+  const [showScrollIndicator, setShowScrollIndicator] = useState(true);
+
+  useEffect(() => {
+    if (isOpen) {
+      // Reset scroll position
+      if (scrollRef.current) {
+        scrollRef.current.scrollTop = 0;
+        setShowScrollIndicator(true);
+      }
+
+      const updateSize = () => {
+        if (containerRef.current) {
+          setCanvasSize({
+            width: containerRef.current.offsetWidth,
+            height: 180,
+          });
+        }
+      };
+
+      // Initial calculation with delay
+      setTimeout(updateSize, 100);
+
+      window.addEventListener("resize", updateSize);
+      return () => window.removeEventListener("resize", updateSize);
+    }
+  }, [isOpen]);
+
+  const handleScroll = (e) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.target;
+    // Show indicator if user is not near the bottom (where signature is)
+    if (scrollHeight - scrollTop - clientHeight < 100) {
+      setShowScrollIndicator(false);
+    } else {
+      setShowScrollIndicator(true);
+    }
+  };
+
+  const scrollToBottom = () => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTo({
+        top: scrollRef.current.scrollHeight,
+        behavior: "smooth",
+      });
+    }
+  };
 
   const clear = () => {
     sigCanvas.current.clear();
@@ -46,7 +94,11 @@ const HabeasDataModal = ({ isOpen, onClose, onSave }) => {
                 AVISO DE PRIVACIDAD Y AUTORIZACION EXPRESA
               </h2>
 
-              <div className="habeas-text-scroll">
+              <div
+                className="habeas-text-scroll"
+                ref={scrollRef}
+                onScroll={handleScroll}
+              >
                 <p>
                   <strong>Supermercados Merkahorro SAS</strong> identificada con
                   el Nit. 901150440-9, en cumplimiento de lo definido en la Ley
@@ -159,37 +211,52 @@ const HabeasDataModal = ({ isOpen, onClose, onSave }) => {
                   celebrar contrato y/o vinculación a Supermercados Merkahorro
                   SAS.
                 </p>
+
+                <div className="signature-section">
+                  <p className="signature-label">Firma Digital del Titular:</p>
+                  <div className="signature-pad-container" ref={containerRef}>
+                    <SignatureCanvas
+                      ref={sigCanvas}
+                      penColor="black"
+                      canvasProps={{
+                        width: canvasSize.width,
+                        height: canvasSize.height,
+                        className: "signature-canvas",
+                      }}
+                      backgroundColor="rgba(255, 255, 255, 1)"
+                    />
+                  </div>
+                  {error && <p className="signature-error">{error}</p>}
+
+                  <div className="signature-actions">
+                    <button
+                      type="button"
+                      className="tc-btn-secondary"
+                      onClick={clear}
+                    >
+                      <FaEraser /> Limpiar Firma
+                    </button>
+                    <button
+                      type="button"
+                      className="tc-btn-primary"
+                      onClick={save}
+                    >
+                      <FaSave /> Aceptar y Firmar
+                    </button>
+                  </div>
+                </div>
               </div>
 
-              <div className="signature-section">
-                <p className="signature-label">Firma Digital del Titular:</p>
-                <div className="signature-pad-container">
-                  <SignatureCanvas
-                    ref={sigCanvas}
-                    penColor="black"
-                    canvasProps={{ className: "signature-canvas" }}
-                    backgroundColor="rgba(255, 255, 255, 1)"
-                  />
-                </div>
-                {error && <p className="signature-error">{error}</p>}
-
-                <div className="signature-actions">
+              {showScrollIndicator && (
+                <div className="scroll-indicator-container">
                   <button
-                    type="button"
-                    className="tc-btn-secondary"
-                    onClick={clear}
+                    className="scroll-indicator-btn"
+                    onClick={scrollToBottom}
                   >
-                    <FaEraser /> Limpiar Firma
-                  </button>
-                  <button
-                    type="button"
-                    className="tc-btn-primary"
-                    onClick={save}
-                  >
-                    <FaSave /> Aceptar y Firmar
+                    <FaArrowDown /> Bajar para firmar
                   </button>
                 </div>
-              </div>
+              )}
             </div>
           </motion.div>
         </div>
