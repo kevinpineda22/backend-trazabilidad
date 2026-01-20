@@ -15,6 +15,7 @@ const getArchivadosIds = async (tipo) => {
   return new Set(data.map((r) => r.registro_aprobado_id));
 };
 
+
 /**
  * @route GET /api/trazabilidad/admin/historial-empleados
  * Obtiene TODO el historial de empleados, uniendo el nombre del creador.
