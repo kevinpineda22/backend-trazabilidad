@@ -332,7 +332,7 @@ export const aprobarRegistro = async (req, res) => {
             <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-top: 20px; margin-bottom: 20px;">
               
               <!-- Encabezado -->
-              <div style="background-color: #2e3b55; padding: 25px 30px; text-align: center;">
+              <div style="background-color: #210d65; padding: 25px 30px; text-align: center;">
                 <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 600; letter-spacing: 0.5px;">Registro Aprobado</h1>
               </div>
 
@@ -371,7 +371,7 @@ export const aprobarRegistro = async (req, res) => {
                 </table>
 
                 <div style="text-align: center; margin-top: 35px;">
-                  <span style="display: inline-block; padding: 12px 24px; background-color: #2e3b55; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px;">Gestión Completada</span>
+                  <span style="display: inline-block; padding: 12px 24px; background-color: #89dc00; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px;">Gestión Completada</span>
                 </div>
               </div>
 
