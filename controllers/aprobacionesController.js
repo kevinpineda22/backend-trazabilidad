@@ -16,7 +16,7 @@ export const obtenerPendientes = async (req, res) => {
 
     // Obtener todos los registros pendientes (estado: 'pendiente')
     const { data } = await supabaseAxios.get(
-      `/registros_pendientes?select=*&estado=eq.pendiente&order=created_at.desc`
+      `/registros_pendientes?select=*&estado=eq.pendiente&order=created_at.desc`,
     );
 
     res.status(200).json(data || []);
@@ -49,7 +49,7 @@ export const aprobarRegistro = async (req, res) => {
     if (datosAprobados) {
       console.log(
         "[Aprobación] Datos editados recibidos:",
-        JSON.stringify(datosAprobados)
+        JSON.stringify(datosAprobados),
       );
     }
 
@@ -59,7 +59,7 @@ export const aprobarRegistro = async (req, res) => {
 
     // Obtener el registro pendiente
     const { data: registroPendiente } = await supabaseAxios.get(
-      `/registros_pendientes?id=eq.${id}`
+      `/registros_pendientes?id=eq.${id}`,
     );
 
     if (!registroPendiente || registroPendiente.length === 0) {
@@ -114,7 +114,7 @@ export const aprobarRegistro = async (req, res) => {
               url_hoja_de_vida: normalizar(datos.url_hoja_de_vida),
               url_cedula: normalizar(datos.url_cedula),
               url_certificado_bancario: normalizar(
-                datos.url_certificado_bancario
+                datos.url_certificado_bancario,
               ),
               url_habeas_data: normalizar(datos.url_habeas_data),
               url_autorizacion_firma: normalizar(datos.url_autorizacion_firma),
@@ -161,7 +161,7 @@ export const aprobarRegistro = async (req, res) => {
               ciudad_codigo: normalizar(datos.ciudad_codigo),
               // Contacto
               email_factura_electronica: normalizar(
-                datos.email_factura_electronica
+                datos.email_factura_electronica,
               ),
               nombre_contacto: normalizar(datos.nombre_contacto),
               email_contacto: normalizar(datos.email_contacto),
@@ -174,10 +174,10 @@ export const aprobarRegistro = async (req, res) => {
               // Declaraciones
               declara_pep: normalizar(datos.declara_pep),
               declara_recursos_publicos: normalizar(
-                datos.declara_recursos_publicos
+                datos.declara_recursos_publicos,
               ),
               declara_obligaciones_tributarias: normalizar(
-                datos.declara_obligaciones_tributarias
+                datos.declara_obligaciones_tributarias,
               ),
               // Cupo y plazo (campos específicos de cliente)
               cupo: normalizar(datos.cupo),
@@ -186,14 +186,14 @@ export const aprobarRegistro = async (req, res) => {
               url_rut: normalizar(datos.url_rut),
               url_camara_comercio: normalizar(datos.url_camara_comercio),
               url_certificado_sagrilaft: normalizar(
-                datos.url_certificado_sagrilaft
+                datos.url_certificado_sagrilaft,
               ),
               url_cedula: normalizar(datos.url_cedula),
               url_certificacion_bancaria: normalizar(
-                datos.url_certificacion_bancaria
+                datos.url_certificacion_bancaria,
               ),
               url_composicion_accionaria: normalizar(
-                datos.url_composicion_accionaria
+                datos.url_composicion_accionaria,
               ),
             },
           };
@@ -220,7 +220,7 @@ export const aprobarRegistro = async (req, res) => {
               departamento: normalizar(datos.departamento),
               ciudad: normalizar(datos.ciudad),
               email_factura_electronica: normalizar(
-                datos.email_factura_electronica
+                datos.email_factura_electronica,
               ),
               nombre_contacto: normalizar(datos.nombre_contacto),
               email_contacto: normalizar(datos.email_contacto),
@@ -231,25 +231,25 @@ export const aprobarRegistro = async (req, res) => {
               rep_legal_num_doc: normalizar(datos.rep_legal_num_doc),
               declara_pep: normalizar(datos.declara_pep),
               declara_recursos_publicos: normalizar(
-                datos.declara_recursos_publicos
+                datos.declara_recursos_publicos,
               ),
               declara_obligaciones_tributarias: normalizar(
-                datos.declara_obligaciones_tributarias
+                datos.declara_obligaciones_tributarias,
               ),
               cupo_aprobado: normalizar(cupoAprobado),
               url_rut: normalizar(datos.url_rut),
               url_camara_comercio: normalizar(datos.url_camara_comercio),
               url_certificacion_bancaria: normalizar(
-                datos.url_certificacion_bancaria
+                datos.url_certificacion_bancaria,
               ),
               url_doc_identidad_rep_legal: normalizar(
-                datos.url_doc_identidad_rep_legal
+                datos.url_doc_identidad_rep_legal,
               ),
               url_composicion_accionaria: normalizar(
-                datos.url_composicion_accionaria
+                datos.url_composicion_accionaria,
               ),
               url_certificado_sagrilaft: normalizar(
-                datos.url_certificado_sagrilaft
+                datos.url_certificado_sagrilaft,
               ),
             },
           };
@@ -267,7 +267,7 @@ export const aprobarRegistro = async (req, res) => {
 
     console.log(
       `[Aprobación] Insertando/Actualizando en ${infoInsercion.tablaDestino}. Payload:`,
-      JSON.stringify(infoInsercion.payload)
+      JSON.stringify(infoInsercion.payload),
     );
 
     const { data: nuevoRegistro } = await supabaseAxios.post(
@@ -277,7 +277,7 @@ export const aprobarRegistro = async (req, res) => {
         headers: {
           Prefer: "resolution=merge-duplicates,return=representation",
         },
-      }
+      },
     );
 
     // Actualizar estado del registro pendiente con el ID del registro aprobado
@@ -288,15 +288,28 @@ export const aprobarRegistro = async (req, res) => {
       registro_aprobado_id: nuevoRegistro[0]?.id, // Guardar el ID del registro creado
     });
 
-    // Enviar correo al admin de contabilidad
+    // Enviar correo al admin de contabilidad y a la copia
     try {
       const adminContabilidadEmail = process.env.ADMIN_CONTABILIDAD_EMAIL;
+      // Correo para el oficial de cumplimiento (SAGRILAFT)
+      const adminSagrilaftEmail =
+        process.env.ADMIN_SAGRILAFT_EMAIL || "johanmerkahorro777@gmail.com";
+
       if (adminContabilidadEmail) {
+        // Enviar a ambos correos (separados por coma)
+        const recipients = [adminContabilidadEmail, adminSagrilaftEmail]
+          .filter(Boolean)
+          .join(",");
+
         const tipo =
           registro.tipo.charAt(0).toUpperCase() + registro.tipo.slice(1);
+
         let nombreEntidad = "";
+        let identificacion = "";
+
         if (registro.tipo === "empleado") {
           nombreEntidad = `${infoInsercion.payload.nombre} ${infoInsercion.payload.apellidos}`;
+          identificacion = `C.C. ${infoInsercion.payload.cedula}`;
         } else {
           nombreEntidad =
             infoInsercion.payload.razon_social ||
@@ -304,28 +317,84 @@ export const aprobarRegistro = async (req, res) => {
               infoInsercion.payload.primer_apellido || ""
             }`.trim() ||
             infoInsercion.payload.nombre_establecimiento;
+          identificacion = `NIT ${infoInsercion.payload.nit}${
+            infoInsercion.payload.dv ? "-" + infoInsercion.payload.dv : ""
+          }`;
         }
 
         const subject = `✅ Registro Aprobado: ${tipo} - ${nombreEntidad}`;
+
+        // Diseño profesional del correo en HTML
         const htmlContent = `
-          <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #e0e0e0; max-width: 600px;">
-            <h2 style="color: #210d65;">Registro Aprobado y Creado</h2>
-            <p>Se ha aprobado un registro de <strong>${tipo}</strong>.</p>
-            <ul>
-              <li><strong>Nombre/Razón Social:</strong> ${nombreEntidad}</li>
-              <li><strong>Fecha de Aprobación:</strong> ${new Date().toLocaleDateString()}</li>
-            </ul>
-            <p>El registro ha sido añadido exitosamente a la base de datos de contabilidad.</p>
-          </div>
+          <!DOCTYPE html>
+          <html>
+          <body style="margin: 0; padding: 0; background-color: #f4f4f4; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+            <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-top: 20px; margin-bottom: 20px;">
+              
+              <!-- Encabezado -->
+              <div style="background-color: #2e3b55; padding: 25px 30px; text-align: center;">
+                <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 600; letter-spacing: 0.5px;">Registro Aprobado</h1>
+              </div>
+
+              <!-- Contenido Principal -->
+              <div style="padding: 40px 30px; color: #333333;">
+                <p style="font-size: 16px; line-height: 1.6; margin-top: 0; margin-bottom: 25px; color: #555555;">
+                  Estimado Administrador,
+                </p>
+                <p style="font-size: 16px; line-height: 1.6; margin-bottom: 30px; color: #555555;">
+                  El sistema de trazabilidad ha procesado existosamente una solicitud. El siguiente registro ha sido aprobado y añadido a la base de datos contable.
+                </p>
+
+                <!-- Tabla de Detalles -->
+                <table style="width: 100%; border-collapse: separate; border-spacing: 0; margin-bottom: 30px; background-color: #f8fafc; border-radius: 6px; border: 1px solid #e2e8f0;">
+                  <tbody>
+                    <tr>
+                      <td style="padding: 15px 20px; border-bottom: 1px solid #e2e8f0; color: #64748b; font-weight: 600; font-size: 14px; width: 35%;">Tipo de Registro</td>
+                      <td style="padding: 15px 20px; border-bottom: 1px solid #e2e8f0; color: #334155; font-weight: 500; font-size: 14px;">${tipo}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 15px 20px; border-bottom: 1px solid #e2e8f0; color: #64748b; font-weight: 600; font-size: 14px;">Involucrado</td>
+                      <td style="padding: 15px 20px; border-bottom: 1px solid #e2e8f0; color: #334155; font-weight: 500; font-size: 14px;">${nombreEntidad}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 15px 20px; border-bottom: 1px solid #e2e8f0; color: #64748b; font-weight: 600; font-size: 14px;">Identificación</td>
+                      <td style="padding: 15px 20px; border-bottom: 1px solid #e2e8f0; color: #334155; font-weight: 500; font-size: 14px;">${identificacion}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 15px 20px; color: #64748b; font-weight: 600; font-size: 14px;">Fecha Aprobación</td>
+                      <td style="padding: 15px 20px; color: #334155; font-weight: 500; font-size: 14px;">${new Date().toLocaleDateString(
+                        "es-CO",
+                        { year: "numeric", month: "long", day: "numeric" },
+                      )}</td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <div style="text-align: center; margin-top: 35px;">
+                  <span style="display: inline-block; padding: 12px 24px; background-color: #2e3b55; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px;">Gestión Completada</span>
+                </div>
+              </div>
+
+              <!-- Pie de Página -->
+              <div style="background-color: #f1f5f9; padding: 20px; text-align: center; border-top: 1px solid #e2e8f0;">
+                <p style="color: #94a3b8; font-size: 13px; margin: 0; line-height: 1.5;">
+                  Este es un mensaje automático del Sistema de Trazabilidad.<br>
+                  &copy; ${new Date().getFullYear()} Trazabilidad Contable.
+                </p>
+              </div>
+            </div>
+          </body>
+          </html>
         `;
-        await sendEmail(adminContabilidadEmail, subject, htmlContent);
+
+        await sendEmail(recipients, subject, htmlContent);
       } else {
         console.warn("ADMIN_CONTABILIDAD_EMAIL no está configurado.");
       }
     } catch (emailError) {
       console.error(
         "Error enviando correo al admin de contabilidad:",
-        emailError
+        emailError,
       );
     }
 
@@ -336,7 +405,7 @@ export const aprobarRegistro = async (req, res) => {
   } catch (error) {
     console.error(
       "Error al aprobar registro:",
-      error.response?.data || error.message
+      error.response?.data || error.message,
     );
 
     // El error 23505 (duplicate key) ya no debería ocurrir con UPSERT,
@@ -372,7 +441,7 @@ export const rechazarRegistro = async (req, res) => {
 
     // Obtener el registro pendiente
     const { data: registroPendiente } = await supabaseAxios.get(
-      `/registros_pendientes?id=eq.${id}`
+      `/registros_pendientes?id=eq.${id}`,
     );
 
     if (!registroPendiente || registroPendiente.length === 0) {
@@ -396,7 +465,7 @@ export const rechazarRegistro = async (req, res) => {
         motivo_rechazo: motivo || "Sin motivo especificado",
         fecha_rechazo: new Date().toISOString(),
       },
-      { headers: { Prefer: "return=representation" } }
+      { headers: { Prefer: "return=representation" } },
     );
 
     res.status(200).json({
@@ -425,7 +494,7 @@ export const obtenerHistorial = async (req, res) => {
     }
 
     const { data } = await supabaseAxios.get(
-      `/registros_pendientes?select=*&estado=in.(aprobado,rechazado)&order=created_at.desc`
+      `/registros_pendientes?select=*&estado=in.(aprobado,rechazado)&order=created_at.desc`,
     );
 
     res.status(200).json(data || []);
@@ -451,7 +520,7 @@ export const obtenerArchivados = async (req, res) => {
     }
 
     const { data } = await supabaseAxios.get(
-      `/registros_pendientes?select=*&estado=in.(archivado_aprobado,archivado_rechazado)&order=created_at.desc`
+      `/registros_pendientes?select=*&estado=in.(archivado_aprobado,archivado_rechazado)&order=created_at.desc`,
     );
 
     res.status(200).json(data || []);
@@ -479,7 +548,7 @@ export const archivarRegistro = async (req, res) => {
 
     // Obtener el registro actual
     const { data: registroActual } = await supabaseAxios.get(
-      `/registros_pendientes?id=eq.${id}`
+      `/registros_pendientes?id=eq.${id}`,
     );
 
     if (!registroActual || registroActual.length === 0) {
@@ -502,7 +571,7 @@ export const archivarRegistro = async (req, res) => {
     const { data } = await supabaseAxios.patch(
       `/registros_pendientes?id=eq.${id}`,
       { estado: nuevoEstado },
-      { headers: { Prefer: "return=representation" } }
+      { headers: { Prefer: "return=representation" } },
     );
 
     res.status(200).json({
@@ -533,7 +602,7 @@ export const restaurarRegistro = async (req, res) => {
 
     // Obtener el registro actual
     const { data: registroActual } = await supabaseAxios.get(
-      `/registros_pendientes?id=eq.${id}`
+      `/registros_pendientes?id=eq.${id}`,
     );
 
     if (!registroActual || registroActual.length === 0) {
@@ -556,7 +625,7 @@ export const restaurarRegistro = async (req, res) => {
     const { data } = await supabaseAxios.patch(
       `/registros_pendientes?id=eq.${id}`,
       { estado: nuevoEstado },
-      { headers: { Prefer: "return=representation" } }
+      { headers: { Prefer: "return=representation" } },
     );
 
     res.status(200).json({

@@ -1,0 +1,517 @@
+/* trazabilidad_contabilidad/GestionTokens.css */
+.tokens-container {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.tokens-header {
+  margin-bottom: 2rem;
+  border-bottom: 1px solid #e9ecef;
+  padding-bottom: 1rem;
+}
+
+.tokens-header h1 {
+  font-size: 2rem;
+  color: #1a1a1a;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.tokens-header-icon {
+  color: #007bff;
+}
+
+.tokens-descripcion {
+  color: #666;
+  font-size: 1rem;
+  max-width: 800px;
+}
+
+/* Mensajes */
+.tokens-mensaje {
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  animation: slideDown 0.3s ease-out;
+}
+
+.tokens-mensaje-exito {
+  background-color: #d1e7dd;
+  color: #0f5132;
+  border: 1px solid #badbcc;
+}
+
+.tokens-mensaje-error {
+  background-color: #f8d7da;
+  color: #842029;
+  border: 1px solid #f5c2c7;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Panel de Acciones */
+.tokens-acciones-panel {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  margin-bottom: 2rem;
+  border: 1px solid #e9ecef;
+}
+
+.tokens-acciones-panel h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+  color: #495057;
+}
+
+.tokens-botones-generar {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.tokens-btn-generar {
+  padding: 0.875rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.tokens-btn-generar:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.tokens-btn-generar:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.tokens-btn-empleado {
+  background-color: #0d6efd;
+  color: white;
+}
+.tokens-btn-empleado:hover:not(:disabled) {
+  background-color: #0b5ed7;
+}
+
+.tokens-btn-cliente {
+  background-color: #198754;
+  color: white;
+}
+.tokens-btn-cliente:hover:not(:disabled) {
+  background-color: #157347;
+}
+
+.tokens-btn-proveedor {
+  background-color: #fd7e14;
+  color: white;
+}
+.tokens-btn-proveedor:hover:not(:disabled) {
+  background-color: #e96b02;
+}
+
+/* Filtros de estado */
+.tokens-filtros-container {
+  margin-bottom: 1.5rem;
+}
+
+.tokens-filtros-estado {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  background-color: #f8f9fa;
+  padding: 0.5rem;
+  border-radius: 10px;
+  display: inline-flex;
+}
+
+.tokens-filtro-btn {
+  padding: 0.5rem 1rem;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background-color: transparent;
+  color: #6c757d;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tokens-filtro-btn:hover {
+  background-color: #e9ecef;
+  color: #495057;
+}
+
+.tokens-filtro-btn.tokens-activo {
+  background-color: white;
+  color: #0d6efd;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  border-color: #e9ecef;
+}
+
+/* Tabla de tokens */
+.tokens-tabla-wrapper {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 0;
+  overflow: hidden; /* Para bordes redondeados */
+}
+
+.tokens-tabla-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid #e9ecef;
+  background-color: #fff;
+}
+
+.tokens-tabla-header h2 {
+  font-size: 1.25rem;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+.tokens-tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.tokens-tabla thead {
+  background-color: #f8f9fa;
+}
+
+.tokens-tabla th {
+  padding: 1rem 1.5rem;
+  text-align: left;
+  font-weight: 600;
+  color: #6c757d;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.tokens-tabla tbody tr {
+  border-bottom: 1px solid #e9ecef;
+  transition: background-color 0.2s ease;
+}
+
+.tokens-tabla tbody tr:last-child {
+  border-bottom: none;
+}
+
+.tokens-tabla tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+/* Fila nueva resaltada */
+.token-fila-nueva {
+  background-color: #f0f9ff !important; /* Azul muy claro */
+  animation: highlightFade 10s forwards;
+}
+
+@keyframes highlightFade {
+  0% {
+    background-color: #d1e7dd;
+  } /* Verde éxito */
+  20% {
+    background-color: #e7f1ff;
+  } /* Azul claro */
+  100% {
+    background-color: transparent;
+  }
+}
+
+.tokens-tabla td {
+  padding: 1rem 1.5rem;
+  vertical-align: middle;
+  color: #212529;
+}
+
+/* Badges */
+.tokens-badge-tipo {
+  padding: 0.35rem 0.75rem;
+  border-radius: 50px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  letter-spacing: 0.5px;
+}
+
+.tokens-badge-empleado {
+  background-color: #e7f1ff;
+  color: #0d6efd;
+}
+.tokens-badge-cliente {
+  background-color: #d1e7dd;
+  color: #198754;
+}
+.tokens-badge-proveedor {
+  background-color: #ffecb5;
+  color: #664d03;
+}
+
+.badge-nuevo {
+  background-color: #dc3545;
+  color: white;
+  font-size: 0.6rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 8px;
+  font-weight: bold;
+  vertical-align: middle;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.tokens-badge-estado {
+  padding: 0.35rem 0.75rem;
+  border-radius: 50px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.tokens-estado-activo {
+  background-color: #d1e7dd;
+  color: #0f5132;
+}
+.tokens-estado-usado {
+  background-color: #e2e3e5;
+  color: #41464b;
+}
+.tokens-estado-expirado {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+/* Info Usuario */
+.token-info-usuario {
+  display: flex;
+  flex-direction: column;
+}
+.token-usuario-nombre {
+  font-weight: 500;
+}
+
+/* Fechas */
+.token-fechas {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.8rem;
+  color: #6c757d;
+}
+.token-fechas span {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* Celda del link */
+.tokens-celda-link {
+  max-width: 250px;
+}
+
+.token-link-container {
+  position: relative;
+}
+
+.tokens-link-code {
+  display: block;
+  background-color: #f1f3f5;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-family: "Consolas", "Monaco", monospace;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #495057;
+  border: 1px solid #dee2e6;
+}
+
+/* Acciones */
+.tokens-acciones {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.tokens-btn-copiar,
+.tokens-btn-eliminar {
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  height: 36px;
+}
+
+.tokens-btn-copiar {
+  padding: 0 1rem;
+  background-color: #fff;
+  border: 1px solid #ced4da;
+  color: #495057;
+  font-weight: 500;
+}
+
+.tokens-btn-copiar:hover:not(:disabled) {
+  background-color: #e9ecef;
+  border-color: #adb5bd;
+}
+
+.tokens-btn-copiar.copiado {
+  background-color: #198754;
+  color: white;
+  border-color: #198754;
+}
+
+.tokens-btn-copiar:disabled {
+  background-color: #e9ecef;
+  color: #adb5bd;
+  cursor: not-allowed;
+}
+
+.tokens-btn-eliminar {
+  width: 36px;
+  background-color: #fff;
+  border: 1px solid #f5c2c7;
+  color: #dc3545;
+}
+
+.tokens-btn-eliminar:hover {
+  background-color: #dc3545;
+  color: white;
+  border-color: #dc3545;
+}
+
+/* Loader y Vacío */
+.tokens-loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem;
+  color: #6c757d;
+  gap: 1rem;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #0d6efd;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.tokens-mensaje-vacio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem;
+  color: #6c757d;
+  font-size: 1.1rem;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+  .tokens-tabla th,
+  .tokens-tabla td {
+    padding: 0.75rem 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .tokens-container {
+    padding: 1rem;
+  }
+
+  .tokens-botones-generar {
+    flex-direction: column;
+  }
+
+  .tokens-btn-generar {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .tokens-filtros-estado {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .tokens-filtro-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .tokens-tabla-wrapper {
+    overflow-x: auto;
+  }
+
+  .tokens-tabla {
+    min-width: 800px; /* Forzar scroll horizontal */
+  }
+}

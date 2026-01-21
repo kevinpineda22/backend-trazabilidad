@@ -37,7 +37,7 @@ export const registrarEmpleadoPublico = async (req, res) => {
     } = req.body;
 
     const { data: tokenData } = await supabaseAxios.get(
-      `/tokens_registro?token=eq.${token}&tipo=eq.empleado`
+      `/tokens_registro?token=eq.${token}&tipo=eq.empleado`,
     );
 
     if (!tokenData || tokenData.length === 0) {
@@ -101,7 +101,7 @@ export const registrarEmpleadoPublico = async (req, res) => {
     const { data: registroPendiente } = await supabaseAxios.post(
       "/registros_pendientes",
       payload,
-      { headers: { Prefer: "return=representation" } }
+      { headers: { Prefer: "return=representation" } },
     );
 
     await marcarTokenUsado(token);
@@ -112,16 +112,61 @@ export const registrarEmpleadoPublico = async (req, res) => {
       if (adminEmail) {
         const subject = `📢 Nuevo Registro de Empleado: ${nombre} ${apellidos}`;
         const htmlContent = `
-          <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #e0e0e0; max-width: 600px;">
-            <h2 style="color: #210d65;">Nuevo Registro de Empleado Recibido</h2>
-            <p>Se ha recibido un nuevo formulario de registro de empleado.</p>
-            <ul>
-              <li><strong>Nombre:</strong> ${nombre} ${apellidos}</li>
-              <li><strong>Cédula:</strong> ${cedula}</li>
-              <li><strong>Fecha:</strong> ${new Date().toLocaleDateString()}</li>
-            </ul>
-            <p>Por favor, ingrese al panel de aprobaciones para revisar la información.</p>
-          </div>
+          <!DOCTYPE html>
+          <html>
+          <body style="margin: 0; padding: 0; background-color: #f4f4f4; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+            <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-top: 20px; margin-bottom: 20px;">
+              
+              <!-- Encabezado -->
+              <div style="background-color: #2e3b55; padding: 25px 30px; text-align: center;">
+                <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 600; letter-spacing: 0.5px;">Nuevo Registro de Empleado</h1>
+              </div>
+
+              <!-- Contenido Principal -->
+              <div style="padding: 40px 30px; color: #333333;">
+                <p style="font-size: 16px; line-height: 1.6; margin-top: 0; margin-bottom: 25px; color: #555555;">
+                  Estimado Administrador,
+                </p>
+                <p style="font-size: 16px; line-height: 1.6; margin-bottom: 30px; color: #555555;">
+                  Se ha recibido un nuevo formulario de registro de empleado que requiere su revisión y aprobación.
+                </p>
+
+                <!-- Tabla de Detalles -->
+                <table style="width: 100%; border-collapse: separate; border-spacing: 0; margin-bottom: 30px; background-color: #f8fafc; border-radius: 6px; border: 1px solid #e2e8f0;">
+                  <tbody>
+                    <tr>
+                      <td style="padding: 15px 20px; border-bottom: 1px solid #e2e8f0; color: #64748b; font-weight: 600; font-size: 14px; width: 35%;">Nombre Completo</td>
+                      <td style="padding: 15px 20px; border-bottom: 1px solid #e2e8f0; color: #334155; font-weight: 500; font-size: 14px;">${nombre} ${apellidos}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 15px 20px; border-bottom: 1px solid #e2e8f0; color: #64748b; font-weight: 600; font-size: 14px;">Documento</td>
+                      <td style="padding: 15px 20px; border-bottom: 1px solid #e2e8f0; color: #334155; font-weight: 500; font-size: 14px;">${cedula}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 15px 20px; color: #64748b; font-weight: 600; font-size: 14px;">Fecha Solicitud</td>
+                      <td style="padding: 15px 20px; color: #334155; font-weight: 500; font-size: 14px;">${new Date().toLocaleDateString(
+                        "es-CO",
+                        { year: "numeric", month: "long", day: "numeric" },
+                      )}</td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <div style="text-align: center; margin-top: 35px;">
+                  <span style="display: inline-block; padding: 12px 24px; background-color: #2e3b55; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px;">Ingrese al Panel para Aprobar</span>
+                </div>
+              </div>
+
+              <!-- Pie de Página -->
+              <div style="background-color: #f1f5f9; padding: 20px; text-align: center; border-top: 1px solid #e2e8f0;">
+                <p style="color: #94a3b8; font-size: 13px; margin: 0; line-height: 1.5;">
+                  Este es un mensaje automático del Sistema de Trazabilidad.<br>
+                  &copy; ${new Date().getFullYear()} Trazabilidad Contable.
+                </p>
+              </div>
+            </div>
+          </body>
+          </html>
         `;
         await sendEmail(adminEmail, subject, htmlContent);
       } else {
@@ -139,7 +184,7 @@ export const registrarEmpleadoPublico = async (req, res) => {
   } catch (error) {
     console.error(
       "Error en registrarEmpleadoPublico:",
-      error.response?.data || error.message
+      error.response?.data || error.message,
     );
 
     if (error.response?.data?.code === "23505") {
@@ -218,7 +263,7 @@ export const registrarClientePublico = async (req, res) => {
     } = req.body;
 
     const { data: tokenData } = await supabaseAxios.get(
-      `/tokens_registro?token=eq.${token}&tipo=eq.cliente`
+      `/tokens_registro?token=eq.${token}&tipo=eq.cliente`,
     );
 
     if (!tokenData || tokenData.length === 0) {
@@ -326,7 +371,7 @@ export const registrarClientePublico = async (req, res) => {
     const { data: registroPendiente } = await supabaseAxios.post(
       "/registros_pendientes",
       payload,
-      { headers: { Prefer: "return=representation" } }
+      { headers: { Prefer: "return=representation" } },
     );
 
     await marcarTokenUsado(token);
@@ -339,16 +384,61 @@ export const registrarClientePublico = async (req, res) => {
           razon_social || `${primer_nombre} ${primer_apellido}`;
         const subject = `📢 Nuevo Registro de Cliente: ${nombreCliente}`;
         const htmlContent = `
-          <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #e0e0e0; max-width: 600px;">
-            <h2 style="color: #210d65;">Nuevo Registro de Cliente Recibido</h2>
-            <p>Se ha recibido un nuevo formulario de registro de cliente.</p>
-            <ul>
-              <li><strong>Cliente:</strong> ${nombreCliente}</li>
-              <li><strong>NIT/Documento:</strong> ${nit}</li>
-              <li><strong>Fecha:</strong> ${new Date().toLocaleDateString()}</li>
-            </ul>
-            <p>Por favor, ingrese al panel de aprobaciones para revisar la información.</p>
-          </div>
+          <!DOCTYPE html>
+          <html>
+          <body style="margin: 0; padding: 0; background-color: #f4f4f4; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+            <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-top: 20px; margin-bottom: 20px;">
+              
+              <!-- Encabezado -->
+              <div style="background-color: #2e3b55; padding: 25px 30px; text-align: center;">
+                <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 600; letter-spacing: 0.5px;">Nuevo Registro de Cliente</h1>
+              </div>
+
+              <!-- Contenido Principal -->
+              <div style="padding: 40px 30px; color: #333333;">
+                <p style="font-size: 16px; line-height: 1.6; margin-top: 0; margin-bottom: 25px; color: #555555;">
+                  Estimado Administrador,
+                </p>
+                <p style="font-size: 16px; line-height: 1.6; margin-bottom: 30px; color: #555555;">
+                  Se ha recibido un nuevo formulario de registro de cliente que requiere su revisión y aprobación.
+                </p>
+
+                <!-- Tabla de Detalles -->
+                <table style="width: 100%; border-collapse: separate; border-spacing: 0; margin-bottom: 30px; background-color: #f8fafc; border-radius: 6px; border: 1px solid #e2e8f0;">
+                  <tbody>
+                    <tr>
+                      <td style="padding: 15px 20px; border-bottom: 1px solid #e2e8f0; color: #64748b; font-weight: 600; font-size: 14px; width: 35%;">Cliente</td>
+                      <td style="padding: 15px 20px; border-bottom: 1px solid #e2e8f0; color: #334155; font-weight: 500; font-size: 14px;">${nombreCliente}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 15px 20px; border-bottom: 1px solid #e2e8f0; color: #64748b; font-weight: 600; font-size: 14px;">Identificación</td>
+                      <td style="padding: 15px 20px; border-bottom: 1px solid #e2e8f0; color: #334155; font-weight: 500; font-size: 14px;">${nit}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 15px 20px; color: #64748b; font-weight: 600; font-size: 14px;">Fecha Solicitud</td>
+                      <td style="padding: 15px 20px; color: #334155; font-weight: 500; font-size: 14px;">${new Date().toLocaleDateString(
+                        "es-CO",
+                        { year: "numeric", month: "long", day: "numeric" },
+                      )}</td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <div style="text-align: center; margin-top: 35px;">
+                  <span style="display: inline-block; padding: 12px 24px; background-color: #2e3b55; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px;">Ingrese al Panel para Aprobar</span>
+                </div>
+              </div>
+
+              <!-- Pie de Página -->
+              <div style="background-color: #f1f5f9; padding: 20px; text-align: center; border-top: 1px solid #e2e8f0;">
+                <p style="color: #94a3b8; font-size: 13px; margin: 0; line-height: 1.5;">
+                  Este es un mensaje automático del Sistema de Trazabilidad.<br>
+                  &copy; ${new Date().getFullYear()} Trazabilidad Contable.
+                </p>
+              </div>
+            </div>
+          </body>
+          </html>
         `;
         await sendEmail(adminEmail, subject, htmlContent);
       } else {
@@ -365,7 +455,7 @@ export const registrarClientePublico = async (req, res) => {
   } catch (error) {
     console.error(
       "Error en registrarClientePublico:",
-      error.response?.data || error.message
+      error.response?.data || error.message,
     );
     if (error.response?.data?.code === "23505") {
       return res.status(409).json({
@@ -398,7 +488,7 @@ export const registrarProveedorPublico = async (req, res) => {
     } = req.body;
 
     const { data: tokenData } = await supabaseAxios.get(
-      `/tokens_registro?token=eq.${token}&tipo=eq.proveedor`
+      `/tokens_registro?token=eq.${token}&tipo=eq.proveedor`,
     );
 
     if (!tokenData || tokenData.length === 0) {
@@ -448,7 +538,7 @@ export const registrarProveedorPublico = async (req, res) => {
       Object.entries(restoDatos).map(([clave, valor]) => [
         clave,
         normalizarValor(valor),
-      ])
+      ]),
     );
 
     const datosConDocumentos = {
@@ -473,7 +563,7 @@ export const registrarProveedorPublico = async (req, res) => {
     const { data: registroPendiente } = await supabaseAxios.post(
       "/registros_pendientes",
       payload,
-      { headers: { Prefer: "return=representation" } }
+      { headers: { Prefer: "return=representation" } },
     );
 
     await marcarTokenUsado(token);
@@ -488,18 +578,63 @@ export const registrarProveedorPublico = async (req, res) => {
           "Proveedor";
         const subject = `📢 Nuevo Registro de Proveedor: ${nombreProveedor}`;
         const htmlContent = `
-          <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #e0e0e0; max-width: 600px;">
-            <h2 style="color: #210d65;">Nuevo Registro de Proveedor Recibido</h2>
-            <p>Se ha recibido un nuevo formulario de registro de proveedor.</p>
-            <ul>
-              <li><strong>Proveedor:</strong> ${nombreProveedor}</li>
-              <li><strong>NIT/Documento:</strong> ${
-                datosConDocumentos.nit || "N/A"
-              }</li>
-              <li><strong>Fecha:</strong> ${new Date().toLocaleDateString()}</li>
-            </ul>
-            <p>Por favor, ingrese al panel de aprobaciones para revisar la información.</p>
-          </div>
+          <!DOCTYPE html>
+          <html>
+          <body style="margin: 0; padding: 0; background-color: #f4f4f4; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+            <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-top: 20px; margin-bottom: 20px;">
+              
+              <!-- Encabezado -->
+              <div style="background-color: #2e3b55; padding: 25px 30px; text-align: center;">
+                <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 600; letter-spacing: 0.5px;">Nuevo Registro de Proveedor</h1>
+              </div>
+
+              <!-- Contenido Principal -->
+              <div style="padding: 40px 30px; color: #333333;">
+                <p style="font-size: 16px; line-height: 1.6; margin-top: 0; margin-bottom: 25px; color: #555555;">
+                  Estimado Administrador,
+                </p>
+                <p style="font-size: 16px; line-height: 1.6; margin-bottom: 30px; color: #555555;">
+                  Se ha recibido un nuevo formulario de registro de proveedor que requiere su revisión y aprobación.
+                </p>
+
+                <!-- Tabla de Detalles -->
+                <table style="width: 100%; border-collapse: separate; border-spacing: 0; margin-bottom: 30px; background-color: #f8fafc; border-radius: 6px; border: 1px solid #e2e8f0;">
+                  <tbody>
+                    <tr>
+                      <td style="padding: 15px 20px; border-bottom: 1px solid #e2e8f0; color: #64748b; font-weight: 600; font-size: 14px; width: 35%;">Proveedor</td>
+                      <td style="padding: 15px 20px; border-bottom: 1px solid #e2e8f0; color: #334155; font-weight: 500; font-size: 14px;">${nombreProveedor}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 15px 20px; border-bottom: 1px solid #e2e8f0; color: #64748b; font-weight: 600; font-size: 14px;">Identificación</td>
+                      <td style="padding: 15px 20px; border-bottom: 1px solid #e2e8f0; color: #334155; font-weight: 500; font-size: 14px;">${
+                        datosConDocumentos.nit || "N/A"
+                      }</td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 15px 20px; color: #64748b; font-weight: 600; font-size: 14px;">Fecha Solicitud</td>
+                      <td style="padding: 15px 20px; color: #334155; font-weight: 500; font-size: 14px;">${new Date().toLocaleDateString(
+                        "es-CO",
+                        { year: "numeric", month: "long", day: "numeric" },
+                      )}</td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <div style="text-align: center; margin-top: 35px;">
+                  <span style="display: inline-block; padding: 12px 24px; background-color: #2e3b55; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px;">Ingrese al Panel para Aprobar</span>
+                </div>
+              </div>
+
+              <!-- Pie de Página -->
+              <div style="background-color: #f1f5f9; padding: 20px; text-align: center; border-top: 1px solid #e2e8f0;">
+                <p style="color: #94a3b8; font-size: 13px; margin: 0; line-height: 1.5;">
+                  Este es un mensaje automático del Sistema de Trazabilidad.<br>
+                  &copy; ${new Date().getFullYear()} Trazabilidad Contable.
+                </p>
+              </div>
+            </div>
+          </body>
+          </html>
         `;
         await sendEmail(adminEmail, subject, htmlContent);
       } else {
@@ -508,7 +643,7 @@ export const registrarProveedorPublico = async (req, res) => {
     } catch (emailError) {
       console.error(
         "Error enviando correo al admin de proveedores:",
-        emailError
+        emailError,
       );
     }
 
@@ -519,7 +654,7 @@ export const registrarProveedorPublico = async (req, res) => {
   } catch (error) {
     console.error(
       "Error en registrarProveedorPublico:",
-      error.response?.data || error.message
+      error.response?.data || error.message,
     );
     if (error.response?.data?.code === "23505") {
       return res.status(409).json({

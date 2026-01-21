@@ -1,0 +1,195 @@
+/* src/pages/trazabilidad_contabilidad/views/DashboardView.css */
+
+.dashboard-charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.dashboard-chart-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.dashboard-chart-card h3 {
+  margin: 0 0 1.5rem 0;
+  font-size: 1.1rem;
+  color: #374151;
+  font-weight: 600;
+  width: 100%;
+  text-align: left;
+  border-bottom: 1px solid #f3f4f6;
+  padding-bottom: 0.75rem;
+}
+
+.chart-container {
+  position: relative;
+  height: 300px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.dashboard-recent-activity {
+  margin-top: 2rem;
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+}
+
+.dashboard-recent-activity h3 {
+  margin: 0 0 1rem 0;
+  font-size: 1.1rem;
+  color: #374151;
+  font-weight: 600;
+}
+
+.activity-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.activity-table th {
+  text-align: left;
+  padding: 0.75rem;
+  background: #f9fafb;
+  color: #6b7280;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  font-weight: 600;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.activity-table td {
+  padding: 0.75rem;
+  border-bottom: 1px solid #f3f4f6;
+  color: #1f2937;
+  font-size: 0.9rem;
+}
+
+.activity-table tr:last-child td {
+  border-bottom: none;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.status-badge.aprobado {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.status-badge.rechazado {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.status-badge.pendiente {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.dashboard-quick-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.quick-action-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.quick-action-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.quick-action-card.blue {
+  border-left: 4px solid #3b82f6;
+}
+
+.quick-action-card.green {
+  border-left: 4px solid #10b981;
+}
+
+.quick-action-card .icon-wrapper {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  margin-right: 1rem;
+}
+
+.quick-action-card.blue .icon-wrapper {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.quick-action-card.green .icon-wrapper {
+  background: #d1fae5;
+  color: #047857;
+}
+
+.quick-action-card .content h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.quick-action-card .content p {
+  margin: 0.25rem 0 0 0;
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.quick-action-card .arrow {
+  color: #9ca3af;
+  opacity: 0;
+  transition: all 0.2s;
+}
+
+.quick-action-card:hover .arrow {
+  opacity: 1;
+  transform: translateX(4px);
+}
+
+@media (max-width: 768px) {
+  .dashboard-charts-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .activity-table {
+    display: block;
+    overflow-x: auto;
+  }
+}
