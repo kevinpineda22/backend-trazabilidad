@@ -494,7 +494,7 @@ export const obtenerHistorial = async (req, res) => {
     }
 
     const { data } = await supabaseAxios.get(
-      `/registros_pendientes?select=*&estado=in.(aprobado,rechazado)&order=created_at.desc`,
+      `/registros_pendientes?select=*&estado=in.(aprobado,rechazado,creado_contabilidad)&order=created_at.desc`,
     );
 
     res.status(200).json(data || []);

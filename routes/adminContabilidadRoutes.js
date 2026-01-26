@@ -10,6 +10,7 @@ import {
   getExpedienteEmpleadoAdmin,
   archivarEntidad,
   restaurarEntidad,
+  marcarEntidadCreada, // Nuevo controlador
 } from "../controllers/adminContabilidadController.js";
 
 const router = express.Router();
@@ -21,7 +22,7 @@ router.get("/historial-empleados", authMiddleware, getHistorialEmpleadosAdmin);
 router.get(
   "/historial-proveedores",
   authMiddleware,
-  getHistorialProveedoresAdmin
+  getHistorialProveedoresAdmin,
 );
 
 router.get("/historial-clientes", authMiddleware, getHistorialClientesAdmin);
@@ -31,23 +32,24 @@ router.get("/dashboard-stats", authMiddleware, getDashboardStats);
 router.get(
   "/expediente-proveedor/:id",
   authMiddleware,
-  getExpedienteProveedorAdmin
+  getExpedienteProveedorAdmin,
 );
 
 router.get(
   "/expediente-cliente/:id",
   authMiddleware,
-  getExpedienteClienteAdmin
+  getExpedienteClienteAdmin,
 );
 
 router.get(
   "/expediente-empleado/:id",
   authMiddleware,
-  getExpedienteEmpleadoAdmin
+  getExpedienteEmpleadoAdmin,
 );
 
 // Rutas para archivar/restaurar entidades
 router.post("/archivar-entidad", authMiddleware, archivarEntidad);
 router.post("/restaurar-entidad", authMiddleware, restaurarEntidad);
+router.post("/marcar-creado", authMiddleware, marcarEntidadCreada); // Nueva ruta
 
 export default router;

@@ -14,11 +14,9 @@ import ExpedienteEmpleadoView from "./views/ExpedienteEmpleadoView";
 import ExpedienteProveedorView from "./views/ExpedienteProveedorView";
 import ExpedienteClienteView from "./views/ExpedienteClienteView";
 import {
-  FaFolderOpen,
   FaCheck,
   FaTimes,
   FaFilter,
-  FaHistory,
   FaClock,
   FaEdit,
   FaUpload,
@@ -26,14 +24,14 @@ import {
   FaTimesCircle,
   FaFilePdf,
   FaFileImage,
-  FaArrowLeft,
   FaUser,
+  FaFolderOpen,
 } from "react-icons/fa";
 import Swal from "sweetalert2";
 
 const BUCKET_NAME = "documentos_contabilidad";
 
-// --- Componente FileInput para edición (DISEÑO TARJETA VERTICAL) ---
+// --- Componente FileInput (DISEÑO TARJETA VERTICAL) ---
 const FileInput = ({
   label,
   name,
@@ -46,7 +44,6 @@ const FileInput = ({
   const fileInputRef = useRef(null);
   const isFile = file instanceof File;
 
-  // Determinar nombre a mostrar
   let displayName = "N/A";
   if (isFile) {
     displayName = file.name;
@@ -61,7 +58,6 @@ const FileInput = ({
   const getIcon = () => {
     const nameToTest = isFile ? file.name : existingUrl || "";
     const cleanName = nameToTest.split("?")[0].toLowerCase();
-    // Iconos de tamaño controlado
     if (cleanName.endsWith(".pdf"))
       return <FaFilePdf style={{ color: "#E53E3E", fontSize: "2rem" }} />;
     if (/\.(jpg|jpeg|png|gif|webp)$/i.test(cleanName))
@@ -176,7 +172,7 @@ const CLIENTE_FIELDS = [
   },
   { key: "tipo_regimen", label: "Tipo de régimen" },
   { key: "tipo_documento", label: "Tipo de documento" },
-  { key: "nit", label: "NIT" }, // Se cambiará dinámicamente
+  { key: "nit", label: "NIT" },
   { key: "dv", label: "DV" },
   { key: "razon_social", label: "Razón social" },
   { key: "nombre_establecimiento", label: "Nombre establecimiento" },
@@ -224,7 +220,7 @@ const PROVEEDOR_FIELDS = [
   },
   { key: "tipo_regimen", label: "Tipo de régimen" },
   { key: "tipo_documento", label: "Tipo de documento" },
-  { key: "nit", label: "NIT" }, // Se cambiará dinámicamente
+  { key: "nit", label: "NIT" },
   { key: "dv", label: "DV" },
   { key: "razon_social", label: "Razón social" },
   { key: "nombre_establecimiento", label: "Nombre establecimiento" },
@@ -276,8 +272,6 @@ const PROVEEDOR_DOCS = [
 
 const PanelAprobaciones = ({ userRole }) => {
   const [registrosPendientes, setRegistrosPendientes] = useState([]);
-  const [historial, setHistorial] = useState([]);
-  const [vistaActual, setVistaActual] = useState("pendientes");
   const [registroSeleccionado, setRegistroSeleccionado] = useState(null);
   const [filtroTipo, setFiltroTipo] = useState("todos");
   const [loading, setLoading] = useState(false);
@@ -294,6 +288,8 @@ const PanelAprobaciones = ({ userRole }) => {
   const [modoEdicion, setModoEdicion] = useState(false);
   const [errorCampo, setErrorCampo] = useState(null);
   const [archivosNuevos, setArchivosNuevos] = useState({});
+  const [vistaExpediente, setVistaExpediente] = useState(null);
+  const [expedienteId, setExpedienteId] = useState(null);
   const mensajeTimeout = useRef(null);
 
   // Opciones para selectores
@@ -339,10 +335,6 @@ const PanelAprobaciones = ({ userRole }) => {
     }));
   }, [selectedDepartment]);
 
-  // Estados para expedientes en historial
-  const [vistaExpediente, setVistaExpediente] = useState(null);
-  const [expedienteId, setExpedienteId] = useState(null);
-
   // Determinar qué tipos puede ver el usuario
   const tiposPermitidos = useMemo(() => {
     if (!userRole || userRole === "admin" || userRole === "super_admin") {
@@ -376,12 +368,8 @@ const PanelAprobaciones = ({ userRole }) => {
   }, [userRole]);
 
   useEffect(() => {
-    if (vistaActual === "pendientes") {
-      cargarPendientes();
-    } else if (vistaActual === "historial") {
-      cargarHistorial();
-    }
-  }, [vistaActual]);
+    cargarPendientes();
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -403,23 +391,6 @@ const PanelAprobaciones = ({ userRole }) => {
       console.error("Error al cargar pendientes:", error);
       mostrarMensaje("Error al cargar registros pendientes.", "error");
       setRegistrosPendientes([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const cargarHistorial = async () => {
-    try {
-      setLoading(true);
-      const response = await apiTrazabilidad.get(
-        `/trazabilidad/aprobaciones/historial`,
-      );
-      const data = Array.isArray(response.data) ? response.data : [];
-      setHistorial(data);
-    } catch (error) {
-      console.error("Error al cargar historial:", error);
-      mostrarMensaje("Error al cargar historial.", "error");
-      setHistorial([]);
     } finally {
       setLoading(false);
     }
@@ -448,20 +419,8 @@ const PanelAprobaciones = ({ userRole }) => {
     return filtradosPorRol.filter((registro) => registro.tipo === filtroTipo);
   }, [registrosPendientes, filtroTipo, tiposPermitidos]);
 
-  const historialFiltrado = useMemo(() => {
-    const filtradosPorRol = historial.filter((r) =>
-      tiposPermitidos.includes(r.tipo),
-    );
-
-    if (filtroTipo === "todos") {
-      return filtradosPorRol;
-    }
-    return filtradosPorRol.filter((registro) => registro.tipo === filtroTipo);
-  }, [historial, filtroTipo, tiposPermitidos]);
-
   const contadorPorTipo = useMemo(() => {
-    let base = vistaActual === "pendientes" ? registrosPendientes : historial;
-
+    let base = registrosPendientes;
     const basePermitida = base.filter((r) => tiposPermitidos.includes(r.tipo));
 
     const conteo = {
@@ -477,7 +436,7 @@ const PanelAprobaciones = ({ userRole }) => {
       }
     });
     return conteo;
-  }, [registrosPendientes, historial, vistaActual, tiposPermitidos]);
+  }, [registrosPendientes, tiposPermitidos]);
 
   useEffect(() => {
     if (!registroSeleccionado) return;
@@ -502,15 +461,14 @@ const PanelAprobaciones = ({ userRole }) => {
     });
   };
 
-  // --- CORRECCIÓN: Títulos con mayúsculas corregidas ---
   const toTitle = (valor) => {
     if (!valor) return "N/A";
     return valor
       .toString()
       .replace(/_/g, " ")
-      .toLowerCase() // 1. Todo a minúsculas primero
+      .toLowerCase()
       .split(" ")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1)) // 2. Capitalizar
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(" ");
   };
 
@@ -528,8 +486,6 @@ const PanelAprobaciones = ({ userRole }) => {
     }
 
     const { tipo, datos = {} } = registro;
-
-    // --- CORRECCIÓN: Etiqueta dinámica para NIT ---
     const labelTipoDoc = datos.tipo_documento
       ? toTitle(datos.tipo_documento)
       : "NIT";
@@ -588,7 +544,6 @@ const PanelAprobaciones = ({ userRole }) => {
               label: "Tipo de documento",
               value: toTitle(datos.tipo_documento),
             },
-            // Usamos la etiqueta dinámica
             { label: labelTipoDoc, value: datos.nit || "N/A" },
             { label: "DV", value: datos.dv || "N/A" },
             { label: "Razón social", value: datos.razon_social || "N/A" },
@@ -691,7 +646,6 @@ const PanelAprobaciones = ({ userRole }) => {
               label: "Tipo de documento",
               value: toTitle(datos.tipo_documento),
             },
-            // Usamos la etiqueta dinámica
             { label: labelTipoDoc, value: datos.nit || "N/A" },
             { label: "DV", value: datos.dv || "N/A" },
             { label: "Razón social", value: datos.razon_social || "N/A" },
@@ -784,7 +738,6 @@ const PanelAprobaciones = ({ userRole }) => {
       totalDocumentos === 1 ? "" : "s"
     }`;
 
-    // Etiqueta dinámica para la lista lateral
     const labelDoc = datos.tipo_documento
       ? toTitle(datos.tipo_documento)
       : "NIT";
@@ -927,14 +880,13 @@ const PanelAprobaciones = ({ userRole }) => {
         payload.sede = sede;
       }
 
-      console.log("Enviando aprobación:", payload);
-
       await apiTrazabilidad.post(
         `/trazabilidad/aprobaciones/aprobar/${registroSeleccionado.id}`,
         payload,
       );
       mostrarMensaje("Registro aprobado exitosamente.", "success");
-      await Promise.all([cargarPendientes(), cargarHistorial()]);
+      setRegistroSeleccionado(null);
+      await cargarPendientes();
     } catch (error) {
       console.error("Error al aprobar:", error);
       const msg =
@@ -982,7 +934,8 @@ const PanelAprobaciones = ({ userRole }) => {
       );
       mostrarMensaje("Registro rechazado.", "success");
       cerrarModalRechazo();
-      await Promise.all([cargarPendientes(), cargarHistorial()]);
+      setRegistroSeleccionado(null);
+      await cargarPendientes();
     } catch (error) {
       console.error("Error al rechazar:", error);
       mostrarMensaje("Error al rechazar el registro.", "error");
@@ -995,511 +948,15 @@ const PanelAprobaciones = ({ userRole }) => {
     setArchivoPreview({ url, nombre });
   };
 
-  const abrirExpediente = (tipo, id) => {
-    setVistaExpediente(tipo);
-    setExpedienteId(id);
-  };
-
   const cerrarExpediente = () => {
     setVistaExpediente(null);
     setExpedienteId(null);
   };
 
-  const renderPendientes = () => {
-    if (pendientesFiltrados.length === 0) {
-      return (
-        <div className="estado">
-          {loading
-            ? "Cargando..."
-            : "No hay registros pendientes."}
-        </div>
-      );
-    }
-
-    return (
-      <div className="pendientes-layout">
-        {/* LISTA LATERAL IZQUIERDA */}
-        <aside className="lista-registros">
-          <div className="lista-header">
-            <h3>Solicitudes ({pendientesFiltrados.length})</h3>
-          </div>
-          <ul className="registro-lista">
-            {pendientesFiltrados.map((registro) => {
-              const resumen = obtenerResumenLista(registro);
-              const activo = registroSeleccionado?.id === registro.id;
-              return (
-                <li
-                  key={registro.id}
-                  className={`registro-item ${
-                    activo ? "registro-item-activo" : ""
-                  }`}
-                  onClick={() => handleSeleccionRegistro(registro)}
-                >
-                  <div className="registro-item-top">
-                    <span className={`badge-tipo-sm ${registro.tipo}`}>
-                      {registro.tipo}
-                    </span>
-                    <span className="registro-item-fecha">
-                      {formatearFecha(registro.created_at).split(',')[0]}
-                    </span>
-                  </div>
-                  <div className="registro-item-content">
-                    <h4 className="registro-item-titulo">{resumen.titulo}</h4>
-                    <p className="registro-item-meta">{resumen.meta}</p>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        </aside>
-
-        {/* PANEL DETALLE DERECHO */}
-        <section className="detalle-panel">
-          {registroSeleccionado ? (
-            <>
-              {/* HEADER FIJO */}
-              <div className="detalle-header">
-                <div className="detalle-info-head">
-                    <div className="detalle-meta">
-                        <span className={`badge-tipo ${registroSeleccionado.tipo}`}>
-                            {registroSeleccionado.tipo}
-                        </span>
-                        <span>
-                            {formatearFecha(registroSeleccionado.created_at)}
-                        </span>
-                    </div>
-                    <h2 className="detalle-titulo">
-                        {detalleSeleccionado.resumen}
-                    </h2>
-                </div>
-                
-                {/* BOTÓN EDITAR EN HEADER */}
-                {["cliente", "empleado", "proveedor"].includes(registroSeleccionado.tipo) && !modoEdicion && (
-                    <button
-                        className="btn-editar-cliente"
-                        onClick={() => setModoEdicion(true)}
-                        disabled={loading}
-                    >
-                        <FaEdit /> Editar Datos
-                    </button>
-                )}
-              </div>
-
-              {/* CONTENIDO SCROLLEABLE */}
-              <div className="detalle-content-scroll">
-                {modoEdicion ? (
-                  // MODO EDICION
-                  <div className="detalle-grid-editable">
-                    <div className="detalle-editable-header">
-                      <h3>Editando Información</h3>
-                      <button
-                        className="btn-cancelar-edicion"
-                        onClick={() => setModoEdicion(false)}
-                        disabled={loading}
-                      >
-                        Cancelar
-                      </button>
-                    </div>
-                    {/* Renderizado de campos editables... */}
-                    {(registroSeleccionado.tipo === "cliente"
-                      ? CLIENTE_FIELDS
-                      : registroSeleccionado.tipo === "empleado"
-                        ? EMPLEADO_FIELDS
-                        : registroSeleccionado.tipo === "proveedor"
-                          ? PROVEEDOR_FIELDS
-                          : []
-                    ).map((field) => {
-                      const isError = errorCampo === field.key;
-                      
-                      // Lógica dinámica para la etiqueta en Edición
-                      let displayLabel = field.label;
-                      if (field.key === "nit" && datosEditables.tipo_documento) {
-                        displayLabel = toTitle(datosEditables.tipo_documento);
-                      }
-
-                      // ... (Lógica de inputs)
-                      if (field.key === "tipo_regimen") {
-                        return (
-                          <div key={field.key} className="detalle-campo-editable">
-                            <label className={isError ? "label-error" : ""}>{field.label}</label>
-                            <select
-                              value={datosEditables[field.key] || ""}
-                              onChange={(e) => setDatosEditables({...datosEditables, [field.key]: e.target.value})}
-                              className={`input-editable ${isError ? "input-error" : ""}`}
-                              disabled={loading}
-                            >
-                              <option value="">Seleccione...</option>
-                              {TIPO_REGIMEN_OPTIONS.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
-                            </select>
-                          </div>
-                        );
-                      }
-                      
-                      if (field.key === "tipo_documento" || field.key === "rep_legal_tipo_doc") {
-                         return (
-                          <div key={field.key} className="detalle-campo-editable">
-                            <label className={isError ? "label-error" : ""}>{field.label}</label>
-                            <select
-                              value={datosEditables[field.key] || ""}
-                              onChange={(e) => setDatosEditables({...datosEditables, [field.key]: e.target.value})}
-                              className={`input-editable ${isError ? "input-error" : ""}`}
-                              disabled={loading}
-                            >
-                              <option value="">Seleccione...</option>
-                              {DOCUMENT_OPTIONS.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
-                            </select>
-                          </div>
-                        );
-                      }
-                      if (field.key.startsWith("declara_")) {
-                         return (
-                          <div key={field.key} className="detalle-campo-editable">
-                            <label className={isError ? "label-error" : ""}>{field.label}</label>
-                            <select
-                              value={datosEditables[field.key] || ""}
-                              onChange={(e) => setDatosEditables({...datosEditables, [field.key]: e.target.value})}
-                              className={`input-editable ${isError ? "input-error" : ""}`}
-                              disabled={loading}
-                            >
-                              <option value="">Seleccione...</option>
-                              {RESPUESTA_PREGUNTA.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
-                            </select>
-                          </div>
-                        );
-                      }
-                      if (field.key === "codigo_ciiu") {
-                         return (
-                          <div key={field.key} className="detalle-campo-editable">
-                            <label className={isError ? "label-error" : ""}>{field.label}</label>
-                            <SearchableSelect
-                              id="codigo_ciiu"
-                              options={ciiuOptions}
-                              value={datosEditables.codigo_ciiu}
-                              onChange={(option) => setDatosEditables((prev) => ({...prev, codigo_ciiu: option ? option.value : "", descripcion_ciiu: option ? option.label : ""}))}
-                              placeholder="Buscar..."
-                              disabled={loading}
-                              isInvalid={isError}
-                            />
-                          </div>
-                        );
-                      }
-                      if (field.key === "departamento") {
-                         return (
-                          <div key={field.key} className="detalle-campo-editable">
-                            <label className={isError ? "label-error" : ""}>{field.label}</label>
-                            <SearchableSelect
-                              id="departamento"
-                              options={departmentOptions}
-                              value={datosEditables.departamento_codigo}
-                              onChange={(option) => setDatosEditables((prev) => ({...prev, departamento_codigo: option ? option.value : "", departamento: option ? option.name : "", ciudad_codigo: "", ciudad: ""}))}
-                              placeholder="Buscar..."
-                              disabled={loading}
-                              isInvalid={isError}
-                            />
-                          </div>
-                        );
-                      }
-                      if (field.key === "ciudad") {
-                         return (
-                          <div key={field.key} className="detalle-campo-editable">
-                            <label className={isError ? "label-error" : ""}>{field.label}</label>
-                            <SearchableSelect
-                              id="ciudad"
-                              options={cityOptions}
-                              value={datosEditables.ciudad_codigo}
-                              onChange={(option) => setDatosEditables((prev) => ({...prev, ciudad_codigo: option ? option.value : "", ciudad: option ? option.name : ""}))}
-                              placeholder="Buscar..."
-                              disabled={loading || !datosEditables.departamento_codigo}
-                              isInvalid={isError}
-                            />
-                          </div>
-                        );
-                      }
-                      if (field.key === "descripcion_ciiu") return null;
-
-                      return (
-                        <div key={field.key} className="detalle-campo-editable">
-                          {/* Uso de la etiqueta dinámica aquí */}
-                          <label className={errorCampo === field.key ? "label-error" : ""}>
-                            {displayLabel} {errorCampo === field.key && "(Duplicado)"}
-                          </label>
-                          <input
-                            type={field.type || "text"}
-                            value={datosEditables[field.key] || ""}
-                            onChange={(e) => {
-                              setDatosEditables({...datosEditables, [field.key]: e.target.value});
-                              if (errorCampo === field.key) setErrorCampo(null);
-                            }}
-                            className={`input-editable ${errorCampo === field.key ? "input-error" : ""}`}
-                            disabled={loading}
-                          />
-                        </div>
-                      );
-                    })}
-
-                    {/* Docs Editables (USANDO CLASE EDIT-MODE EN EL CONTENEDOR) */}
-                    <div className="detalle-section-title" style={{marginTop: '2rem'}}>
-                        <FaFolderOpen /> <span>Documentos (Edición)</span>
-                    </div>
-                    <div className="detalle-docs edit-mode">
-                        {(registroSeleccionado.tipo === "cliente" ? CLIENTE_DOCS : registroSeleccionado.tipo === "empleado" ? EMPLEADO_DOCS : registroSeleccionado.tipo === "proveedor" ? PROVEEDOR_DOCS : []).map((doc) => (
-                        <FileInput
-                            key={doc.key}
-                            label={doc.label}
-                            name={doc.key}
-                            file={archivosNuevos[doc.key]}
-                            existingUrl={datosEditables[doc.key]}
-                            onFileChange={handleFileChange}
-                            onRemove={handleRemoveFile}
-                        />
-                        ))}
-                    </div>
-                  </div>
-                ) : (
-                  // MODO LECTURA (Grid Optimizado)
-                  <>
-                    {detalleSeleccionado.campos.length > 0 && (
-                      <div className="detalle-grid">
-                        {detalleSeleccionado.campos.map((campo) => (
-                          <div key={campo.label} className="detalle-campo">
-                            <label>{campo.label}</label>
-                            <span title={campo.value}>{campo.value || "N/A"}</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    <div className="detalle-section-title">
-                      <FaFolderOpen />
-                      <span>Documentos adjuntos</span>
-                    </div>
-                    
-                    <div className="detalle-docs">
-                      {detalleSeleccionado.documentos.length > 0 ? (
-                        detalleSeleccionado.documentos.map((doc) => (
-                          <button
-                            key={doc.label}
-                            type="button"
-                            className="doc-button"
-                            onClick={() => abrirPreviewArchivo(doc.url, doc.label)}
-                          >
-                            <span aria-hidden>
-                              {doc.label.toLowerCase().includes("pdf") ? (
-                                <FaFilePdf style={{ color: "#ef4444" }} />
-                              ) : (
-                                <FaFileImage style={{ color: "#10b981" }} />
-                              )}
-                            </span>
-                            <span>{doc.label}</span>
-                          </button>
-                        ))
-                      ) : (
-                        <span className="detalle-sin-documentos">
-                          No se adjuntaron documentos.
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Inputs Adicionales para Aprobar */}
-                    {registroSeleccionado.tipo === "proveedor" && (
-                      <div className="detalle-cupo-aprobado">
-                        <label>Cupo Aprobado:</label>
-                        <input
-                          type="text"
-                          value={cupoAprobado}
-                          onChange={(e) => setCupoAprobado(e.target.value)}
-                          placeholder="Ingrese el cupo aprobado..."
-                          className="input-cupo-aprobado"
-                          disabled={loading}
-                        />
-                      </div>
-                    )}
-
-                    {registroSeleccionado.tipo === "empleado" && (
-                      <div className="detalle-cupo-aprobado" style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem'}}>
-                        <div>
-                            <label>Fecha de Contratación</label>
-                            <input
-                            type="date"
-                            value={fechaContratacion}
-                            onChange={(e) => setFechaContratacion(e.target.value)}
-                            className="input-cupo-aprobado"
-                            disabled={loading}
-                            />
-                        </div>
-                        <div>
-                            <label>Nombre de Cargo</label>
-                            <input
-                            type="text"
-                            value={nombreCargo}
-                            onChange={(e) => setNombreCargo(e.target.value)}
-                            placeholder="Ingrese el cargo"
-                            className="input-cupo-aprobado"
-                            disabled={loading}
-                            />
-                        </div>
-                        <div>
-                            <label>Sede</label>
-                            <input
-                            type="text"
-                            value={sede}
-                            onChange={(e) => setSede(e.target.value)}
-                            placeholder="Ingrese la sede"
-                            className="input-cupo-aprobado"
-                            disabled={loading}
-                            />
-                        </div>
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-
-              {/* FOOTER ACCIONES (STICKY) */}
-              <div className="detalle-acciones">
-                <button
-                  type="button"
-                  className="action-button rechazar"
-                  onClick={abrirModalRechazo}
-                  disabled={loading}
-                >
-                  <FaTimes /> Rechazar
-                </button>
-                <button
-                  type="button"
-                  className="action-button aprobar"
-                  onClick={aprobarRegistro}
-                  disabled={loading}
-                >
-                  <FaCheck /> Aprobar
-                </button>
-              </div>
-            </>
-          ) : (
-            <div className="tc-panel-vacio-seleccion">
-              <div className="tc-icono-vacio">
-                <FaUser />
-              </div>
-              <h3>Selecciona una Solicitud</h3>
-              <p>
-                Haz clic en un registro de la lista izquierda para ver el detalle completo.
-              </p>
-            </div>
-          )}
-        </section>
-      </div>
-    );
-  };
-
-  // ... (Resto de funciones renderHistorial, validaciones de expediente igual que antes)
-  
-  const renderHistorial = () => {
-    if (historialFiltrado.length === 0) {
-      return (
-        <div className="estado-vacio">
-          <div className="icono-vacio">📜</div>
-          <h3>Historial vacío</h3>
-          <p>
-            No hay registros en el historial para el filtro seleccionado.
-          </p>
-        </div>
-      );
-    }
-
-    return (
-      <div className="historial-container">
-        <div className="historial-table-wrapper">
-          <table className="historial-tabla">
-            <thead>
-              <tr>
-                <th>Tipo</th>
-                <th>Solicitante / Entidad</th>
-                <th>Fecha Registro</th>
-                <th>Estado</th>
-                <th>Fecha Decisión</th>
-                <th>Detalles</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {historialFiltrado.map((registro) => {
-                const resumen = obtenerResumenLista(registro);
-                const estado = registro.estado || "pendiente";
-                const fechaDecision = registro.fecha_aprobacion
-                  ? formatearFecha(registro.fecha_aprobacion)
-                  : registro.fecha_rechazo
-                    ? formatearFecha(registro.fecha_rechazo)
-                    : "N/A";
-
-                return (
-                  <tr key={registro.id}>
-                    <td>
-                      <span className={`badge-tipo-sm ${registro.tipo}`}>
-                        {registro.tipo}
-                      </span>
-                    </td>
-                    <td>
-                      <div className="historial-nombre">
-                        {resumen.titulo}
-                      </div>
-                      <div className="historial-subtext">
-                        {resumen.meta}
-                      </div>
-                    </td>
-                    <td>{formatearFecha(registro.created_at)}</td>
-                    <td>
-                      <span className={`badge-estado estado-${estado}`}>
-                        {estado}
-                      </span>
-                    </td>
-                    <td>
-                      <div className="fecha-decision">{fechaDecision}</div>
-                      {registro.motivo_rechazo && (
-                        <div
-                          className="motivo-rechazo-tooltip"
-                          title={registro.motivo_rechazo}
-                        >
-                          (Ver motivo)
-                        </div>
-                      )}
-                    </td>
-                    <td>
-                      {registro.motivo_rechazo ? (
-                        <span className="texto-motivo">
-                          {registro.motivo_rechazo}
-                        </span>
-                      ) : (
-                        <span className="texto-ok">Sin observaciones</span>
-                      )}
-                    </td>
-                    <td>
-                      <div className="acciones-historial">
-                        {estado === "aprobado" &&
-                        registro.registro_aprobado_id ? (
-                          <button
-                            type="button"
-                            className="btn-icon-expediente"
-                            onClick={() =>
-                              abrirExpediente(
-                                registro.tipo,
-                                registro.registro_aprobado_id,
-                              )
-                            }
-                            title="Ver expediente completo"
-                          >
-                            <FaFolderOpen />
-                          </button>
-                        ) : null}
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    );
+  // Estados para expedientes (opcional si deseas mantener la funcionalidad)
+  const abrirExpediente = (tipo, id) => {
+    setVistaExpediente(tipo);
+    setExpedienteId(id);
   };
 
   // Si estamos viendo un expediente, mostrar el componente correspondiente
@@ -1548,16 +1005,16 @@ const PanelAprobaciones = ({ userRole }) => {
   }
 
   return (
-    <div className="panel-aprobaciones-container">
-      <div className="panel-header-main">
+    <div className="tc-panel-container">
+      <div className="tc-header-main">
         <div className="header-content">
           <h1>Panel de Aprobaciones</h1>
           <p className="panel-subtitle">
-            Gestión centralizada de solicitudes y trazabilidad documental.
+            Gestión centralizada de solicitudes pendientes.
           </p>
         </div>
-        <div className="header-stats">
-          <div className="stat-item">
+        <div className="tc-header-stats">
+          <div className="tc-stat-item">
             <span className="stat-value">{registrosPendientes.length}</span>
             <span className="stat-label">Pendientes</span>
           </div>
@@ -1566,7 +1023,7 @@ const PanelAprobaciones = ({ userRole }) => {
 
       {mensaje && (
         <div
-          className={`alert-message ${
+          className={`tc-alert-message ${
             tipoMensaje === "success" ? "alert-success" : "alert-error"
           }`}
         >
@@ -1575,29 +1032,9 @@ const PanelAprobaciones = ({ userRole }) => {
         </div>
       )}
 
-      <div className="panel-controls-wrapper">
-        <div className="tabs-container">
-          <button
-            type="button"
-            className={`tab-button ${
-              vistaActual === "pendientes" ? "tab-active" : ""
-            }`}
-            onClick={() => setVistaActual("pendientes")}
-          >
-            <FaClock /> Pendientes
-          </button>
-          <button
-            type="button"
-            className={`tab-button ${
-              vistaActual === "historial" ? "tab-active" : ""
-            }`}
-            onClick={() => setVistaActual("historial")}
-          >
-            <FaHistory /> Historial
-          </button>
-        </div>
-
-        <div className="filtros-container">
+      <div className="tc-controls-wrapper">
+        <div className="tc-filtros-container">
+          <FaFilter className="tc-filter-icon" />
           {TIPOS_FILTRO.filter((f) => {
               if (!userRole || ["admin", "super_admin", "authenticated"].includes(userRole)) return true;
               if (["admin_cliente", "admin_clientes"].includes(userRole)) return f.value === "cliente";
@@ -1610,58 +1047,425 @@ const PanelAprobaciones = ({ userRole }) => {
                 <button
                   key={value}
                   type="button"
-                  className={`filtro-chip ${
-                    filtroTipo === value ? "filtro-chip-active" : ""
+                  className={`tc-filtro-chip ${
+                    filtroTipo === value ? "active" : ""
                   }`}
                   onClick={() => setFiltroTipo(value)}
                 >
                   {label}
-                  <span className="filtro-count">{count}</span>
+                  <span className="tc-filtro-count">{count}</span>
                 </button>
               );
             })}
         </div>
       </div>
 
-      <div className="panel-content-area">
-        {vistaActual === "pendientes" ? renderPendientes() : renderHistorial()}
+      <div className="tc-panel-content">
+        <div className="tc-layout-split">
+          {/* LISTA LATERAL */}
+          <aside className="tc-lista-registros">
+            <div className="tc-lista-header">
+              <h3>Solicitudes Pendientes</h3>
+            </div>
+            {pendientesFiltrados.length === 0 ? (
+               <div className="tc-estado-vacio-lista">
+                 <p>No hay registros.</p>
+               </div>
+            ) : (
+              <ul className="tc-registro-lista">
+                {pendientesFiltrados.map((registro) => {
+                  const resumen = obtenerResumenLista(registro);
+                  const activo = registroSeleccionado?.id === registro.id;
+                  return (
+                    <li
+                      key={registro.id}
+                      className={`tc-registro-item ${
+                        activo ? "active" : ""
+                      }`}
+                      onClick={() => handleSeleccionRegistro(registro)}
+                    >
+                      <div className="tc-item-top">
+                        <span className={`tc-badge-tipo ${registro.tipo}`}>
+                          {registro.tipo}
+                        </span>
+                        <span className="tc-item-fecha">
+                          {formatearFecha(registro.created_at).split(',')[0]}
+                        </span>
+                      </div>
+                      <div className="tc-item-content">
+                        <h4 className="tc-item-titulo">{resumen.titulo}</h4>
+                        <p className="tc-item-meta">{resumen.meta}</p>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </aside>
+
+          {/* PANEL DETALLE */}
+          <section className="tc-detalle-panel">
+            {registroSeleccionado ? (
+              <>
+                <div className="tc-detalle-header">
+                  <div className="tc-detalle-info-head">
+                      <div className="tc-detalle-meta">
+                          <span className={`tc-badge-tipo ${registroSeleccionado.tipo}`}>
+                              {registroSeleccionado.tipo}
+                          </span>
+                          <span>
+                              <FaClock style={{marginRight:'4px'}}/>
+                              {formatearFecha(registroSeleccionado.created_at)}
+                          </span>
+                      </div>
+                      <h2 className="tc-detalle-titulo">
+                          {detalleSeleccionado.resumen}
+                      </h2>
+                  </div>
+                  
+                  {/* BOTÓN EDITAR */}
+                  {["cliente", "empleado", "proveedor"].includes(registroSeleccionado.tipo) && !modoEdicion && (
+                      <button
+                          className="tc-btn-editar"
+                          onClick={() => setModoEdicion(true)}
+                          disabled={loading}
+                      >
+                          <FaEdit /> Editar Datos
+                      </button>
+                  )}
+                </div>
+
+                <div className="tc-detalle-content-scroll">
+                  {modoEdicion ? (
+                    // MODO EDICION
+                    <div className="tc-grid-editable">
+                      <div className="tc-editable-header">
+                        <h3>Editando Información</h3>
+                        <button
+                          className="tc-btn-cancelar-edicion"
+                          onClick={() => setModoEdicion(false)}
+                          disabled={loading}
+                        >
+                          Cancelar
+                        </button>
+                      </div>
+                      
+                      {(registroSeleccionado.tipo === "cliente"
+                        ? CLIENTE_FIELDS
+                        : registroSeleccionado.tipo === "empleado"
+                          ? EMPLEADO_FIELDS
+                          : registroSeleccionado.tipo === "proveedor"
+                            ? PROVEEDOR_FIELDS
+                            : []
+                      ).map((field) => {
+                        const isError = errorCampo === field.key;
+                        
+                        let displayLabel = field.label;
+                        if (field.key === "nit" && datosEditables.tipo_documento) {
+                          displayLabel = toTitle(datosEditables.tipo_documento);
+                        }
+
+                        if (field.key === "tipo_regimen") {
+                          return (
+                            <div key={field.key} className="tc-field-group">
+                              <label className={isError ? "error" : ""}>{field.label}</label>
+                              <select
+                                value={datosEditables[field.key] || ""}
+                                onChange={(e) => setDatosEditables({...datosEditables, [field.key]: e.target.value})}
+                                className={`tc-input ${isError ? "error" : ""}`}
+                                disabled={loading}
+                              >
+                                <option value="">Seleccione...</option>
+                                {TIPO_REGIMEN_OPTIONS.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                              </select>
+                            </div>
+                          );
+                        }
+                        
+                        if (field.key === "tipo_documento" || field.key === "rep_legal_tipo_doc") {
+                           return (
+                            <div key={field.key} className="tc-field-group">
+                              <label className={isError ? "error" : ""}>{field.label}</label>
+                              <select
+                                value={datosEditables[field.key] || ""}
+                                onChange={(e) => setDatosEditables({...datosEditables, [field.key]: e.target.value})}
+                                className={`tc-input ${isError ? "error" : ""}`}
+                                disabled={loading}
+                              >
+                                <option value="">Seleccione...</option>
+                                {DOCUMENT_OPTIONS.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                              </select>
+                            </div>
+                          );
+                        }
+                        if (field.key.startsWith("declara_")) {
+                           return (
+                            <div key={field.key} className="tc-field-group">
+                              <label className={isError ? "error" : ""}>{field.label}</label>
+                              <select
+                                value={datosEditables[field.key] || ""}
+                                onChange={(e) => setDatosEditables({...datosEditables, [field.key]: e.target.value})}
+                                className={`tc-input ${isError ? "error" : ""}`}
+                                disabled={loading}
+                              >
+                                <option value="">Seleccione...</option>
+                                {RESPUESTA_PREGUNTA.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                              </select>
+                            </div>
+                          );
+                        }
+                        if (field.key === "codigo_ciiu") {
+                           return (
+                            <div key={field.key} className="tc-field-group">
+                              <label className={isError ? "error" : ""}>{field.label}</label>
+                              <SearchableSelect
+                                id="codigo_ciiu"
+                                options={ciiuOptions}
+                                value={datosEditables.codigo_ciiu}
+                                onChange={(option) => setDatosEditables((prev) => ({...prev, codigo_ciiu: option ? option.value : "", descripcion_ciiu: option ? option.label : ""}))}
+                                placeholder="Buscar..."
+                                disabled={loading}
+                                isInvalid={isError}
+                              />
+                            </div>
+                          );
+                        }
+                        if (field.key === "departamento") {
+                           return (
+                            <div key={field.key} className="tc-field-group">
+                              <label className={isError ? "error" : ""}>{field.label}</label>
+                              <SearchableSelect
+                                id="departamento"
+                                options={departmentOptions}
+                                value={datosEditables.departamento_codigo}
+                                onChange={(option) => setDatosEditables((prev) => ({...prev, departamento_codigo: option ? option.value : "", departamento: option ? option.name : "", ciudad_codigo: "", ciudad: ""}))}
+                                placeholder="Buscar..."
+                                disabled={loading}
+                                isInvalid={isError}
+                              />
+                            </div>
+                          );
+                        }
+                        if (field.key === "ciudad") {
+                           return (
+                            <div key={field.key} className="tc-field-group">
+                              <label className={isError ? "error" : ""}>{field.label}</label>
+                              <SearchableSelect
+                                id="ciudad"
+                                options={cityOptions}
+                                value={datosEditables.ciudad_codigo}
+                                onChange={(option) => setDatosEditables((prev) => ({...prev, ciudad_codigo: option ? option.value : "", ciudad: option ? option.name : ""}))}
+                                placeholder="Buscar..."
+                                disabled={loading || !datosEditables.departamento_codigo}
+                                isInvalid={isError}
+                              />
+                            </div>
+                          );
+                        }
+                        if (field.key === "descripcion_ciiu") return null;
+
+                        return (
+                          <div key={field.key} className="tc-field-group">
+                            <label className={errorCampo === field.key ? "error" : ""}>
+                              {displayLabel} {errorCampo === field.key && "(Duplicado)"}
+                            </label>
+                            <input
+                              type={field.type || "text"}
+                              value={datosEditables[field.key] || ""}
+                              onChange={(e) => {
+                                setDatosEditables({...datosEditables, [field.key]: e.target.value});
+                                if (errorCampo === field.key) setErrorCampo(null);
+                              }}
+                              className={`tc-input ${errorCampo === field.key ? "error" : ""}`}
+                              disabled={loading}
+                            />
+                          </div>
+                        );
+                      })}
+
+                      <div className="tc-section-title" style={{marginTop: '2rem'}}>
+                          <FaFolderOpen /> <span>Documentos (Edición)</span>
+                      </div>
+                      <div className="tc-docs-grid-edit">
+                          {(registroSeleccionado.tipo === "cliente" ? CLIENTE_DOCS : registroSeleccionado.tipo === "empleado" ? EMPLEADO_DOCS : registroSeleccionado.tipo === "proveedor" ? PROVEEDOR_DOCS : []).map((doc) => (
+                          <FileInput
+                              key={doc.key}
+                              label={doc.label}
+                              name={doc.key}
+                              file={archivosNuevos[doc.key]}
+                              existingUrl={datosEditables[doc.key]}
+                              onFileChange={handleFileChange}
+                              onRemove={handleRemoveFile}
+                          />
+                          ))}
+                      </div>
+                    </div>
+                  ) : (
+                    // MODO LECTURA
+                    <>
+                      {detalleSeleccionado.campos.length > 0 && (
+                        <div className="tc-grid-lectura">
+                          {detalleSeleccionado.campos.map((campo) => (
+                            <div key={campo.label} className="tc-field-lectura">
+                              <label>{campo.label}</label>
+                              <span title={campo.value}>{campo.value || "N/A"}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      <div className="tc-section-title">
+                        <FaFolderOpen />
+                        <span>Documentos adjuntos</span>
+                      </div>
+                      
+                      <div className="tc-docs-grid-read">
+                        {detalleSeleccionado.documentos.length > 0 ? (
+                          detalleSeleccionado.documentos.map((doc) => (
+                            <button
+                              key={doc.label}
+                              type="button"
+                              className="tc-doc-card"
+                              onClick={() => abrirPreviewArchivo(doc.url, doc.label)}
+                            >
+                              <div className="tc-doc-icon">
+                                {doc.label.toLowerCase().includes("pdf") ? (
+                                  <FaFilePdf style={{ color: "#E53E3E" }} />
+                                ) : (
+                                  <FaFileImage style={{ color: "#10b981" }} />
+                                )}
+                              </div>
+                              <span className="tc-doc-name">{doc.label}</span>
+                            </button>
+                          ))
+                        ) : (
+                          <span className="tc-no-docs">
+                            No se adjuntaron documentos.
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Inputs Adicionales */}
+                      {registroSeleccionado.tipo === "proveedor" && (
+                        <div className="tc-extra-inputs">
+                          <label>Cupo Aprobado:</label>
+                          <input
+                            type="text"
+                            value={cupoAprobado}
+                            onChange={(e) => setCupoAprobado(e.target.value)}
+                            placeholder="Ingrese el cupo aprobado..."
+                            disabled={loading}
+                          />
+                        </div>
+                      )}
+
+                      {registroSeleccionado.tipo === "empleado" && (
+                        <div className="tc-extra-inputs-grid">
+                          <div>
+                              <label>Fecha de Contratación</label>
+                              <input
+                              type="date"
+                              value={fechaContratacion}
+                              onChange={(e) => setFechaContratacion(e.target.value)}
+                              disabled={loading}
+                              />
+                          </div>
+                          <div>
+                              <label>Nombre de Cargo</label>
+                              <input
+                              type="text"
+                              value={nombreCargo}
+                              onChange={(e) => setNombreCargo(e.target.value)}
+                              placeholder="Ingrese el cargo"
+                              disabled={loading}
+                              />
+                          </div>
+                          <div>
+                              <label>Sede</label>
+                              <input
+                              type="text"
+                              value={sede}
+                              onChange={(e) => setSede(e.target.value)}
+                              placeholder="Ingrese la sede"
+                              disabled={loading}
+                              />
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+
+                {/* FOOTER ACCIONES */}
+                <div className="tc-detalle-footer">
+                  <button
+                    type="button"
+                    className="tc-btn-rechazar"
+                    onClick={abrirModalRechazo}
+                    disabled={loading}
+                  >
+                    <FaTimes /> Rechazar
+                  </button>
+                  <button
+                    type="button"
+                    className="tc-btn-aprobar"
+                    onClick={aprobarRegistro}
+                    disabled={loading}
+                  >
+                    <FaCheck /> Aprobar
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="tc-panel-vacio-seleccion">
+                <div className="tc-icono-vacio">
+                  <FaUser />
+                </div>
+                <h3>Selecciona una Solicitud</h3>
+                <p>
+                  Haz clic en un registro de la lista izquierda para ver el detalle completo.
+                </p>
+              </div>
+            )}
+          </section>
+        </div>
       </div>
 
       {modalRechazoAbierto && (
         <div
-          className="modal-overlay-backdrop"
+          className="tc-modal-overlay"
           onClick={cerrarModalRechazo}
         >
           <div
-            className="modal-card"
+            className="tc-modal-card"
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="modal-header">
+            <div className="tc-modal-header">
               <h2>Rechazar Solicitud</h2>
               <button
-                className="btn-close-modal"
+                className="tc-modal-close"
                 onClick={cerrarModalRechazo}
               >
                 <FaTimes />
               </button>
             </div>
-            <div className="modal-body">
+            <div className="tc-modal-body">
               <p>
                 Por favor, indica el motivo por el cual se rechaza esta
                 solicitud.
               </p>
               <textarea
-                className="textarea-motivo"
+                className="tc-modal-textarea"
                 placeholder="Escribe el motivo del rechazo aquí..."
                 value={motivoRechazo}
                 onChange={(event) => setMotivoRechazo(event.target.value)}
                 autoFocus
               />
             </div>
-            <div className="modal-footer">
+            <div className="tc-modal-footer">
               <button
                 type="button"
-                className="btn-cancelar"
+                className="tc-btn-modal-cancel"
                 onClick={cerrarModalRechazo}
                 disabled={loading}
               >
@@ -1669,7 +1473,7 @@ const PanelAprobaciones = ({ userRole }) => {
               </button>
               <button
                 type="button"
-                className="btn-confirmar-rechazo"
+                className="tc-btn-modal-confirm"
                 onClick={rechazarRegistro}
                 disabled={loading || !motivoRechazo.trim()}
               >
