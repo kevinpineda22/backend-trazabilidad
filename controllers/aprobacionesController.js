@@ -369,10 +369,27 @@ export const aprobarRegistro = async (req, res) => {
                     </tr>
                   </tbody>
                 </table>
-
-                <div style="text-align: center; margin-top: 35px;">
-                  <span style="display: inline-block; padding: 12px 24px; background-color: #89dc00; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px;">Gestión Completada</span>
+                
+                <!-- Visual Progress - Step 2 Active -->
+                <div style="margin: 30px 0;">
+                  <table width="100%" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td align="center" width="33%" style="position: relative;">
+                        <div style="width: 30px; height: 30px; background-color: #210d65; color: white; border-radius: 50%; line-height: 30px; font-weight: bold; margin: 0 auto; opacity: 0.6;">1</div>
+                        <div style="font-size: 11px; color: #666; margin-top: 5px;">Solicitud</div>
+                      </td>
+                      <td align="center" width="33%" style="position: relative;">
+                        <div style="width: 30px; height: 30px; background-color: #210d65; color: white; border-radius: 50%; line-height: 30px; font-weight: bold; margin: 0 auto; box-shadow: 0 0 0 3px rgba(33, 13, 101, 0.2);">2</div>
+                        <div style="font-size: 11px; color: #210d65; font-weight: bold; margin-top: 5px;">Aprobación</div>
+                      </td>
+                      <td align="center" width="33%" style="position: relative;">
+                        <div style="width: 30px; height: 30px; background-color: #e2e8f0; color: #94a3b8; border-radius: 50%; line-height: 30px; font-weight: bold; margin: 0 auto;">3</div>
+                        <div style="font-size: 11px; color: #94a3b8; margin-top: 5px;">Contabilidad</div>
+                      </td>
+                    </tr>
+                  </table>
                 </div>
+
               </div>
 
               <!-- Pie de Página -->

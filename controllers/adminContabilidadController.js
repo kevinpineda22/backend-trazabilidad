@@ -531,7 +531,7 @@ export const marcarEntidadCreada = async (req, res) => {
                 <html>
                 <body style="margin: 0; padding: 0; background-color: #f4f4f4; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
                     <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-top: 20px; margin-bottom: 20px;">
-                        <div style="background-color: #10b981; padding: 25px 30px; text-align: center;">
+                        <div style="background-color: #210d65; padding: 25px 30px; text-align: center;">
                             <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 600;">Gestión Completada</h1>
                         </div>
                         <div style="padding: 40px 30px; color: #333333;">
@@ -539,6 +539,27 @@ export const marcarEntidadCreada = async (req, res) => {
                             <p style="font-size: 16px; margin-bottom: 20px;">
                                 El área de Contabilidad informa que el <strong>${tipo}</strong>: <strong>${nombreEntidad}</strong> ya ha sido creado en el sistema contable y está listo para continuar con el proceso.
                             </p>
+                            
+                            <!-- Visual Progress - Step 3 Active -->
+                            <div style="margin: 30px 0;">
+                              <table width="100%" cellpadding="0" cellspacing="0">
+                                <tr>
+                                  <td align="center" width="33%" style="position: relative;">
+                                    <div style="width: 30px; height: 30px; background-color: #210d65; color: white; border-radius: 50%; line-height: 30px; font-weight: bold; margin: 0 auto; opacity: 0.6;">1</div>
+                                    <div style="font-size: 11px; color: #666; margin-top: 5px;">Solicitud</div>
+                                  </td>
+                                  <td align="center" width="33%" style="position: relative;">
+                                    <div style="width: 30px; height: 30px; background-color: #210d65; color: white; border-radius: 50%; line-height: 30px; font-weight: bold; margin: 0 auto; opacity: 0.6;">2</div>
+                                    <div style="font-size: 11px; color: #666; margin-top: 5px;">Aprobación</div>
+                                  </td>
+                                  <td align="center" width="33%" style="position: relative;">
+                                    <div style="width: 30px; height: 30px; background-color: #210d65; color: white; border-radius: 50%; line-height: 30px; font-weight: bold; margin: 0 auto; box-shadow: 0 0 0 3px rgba(33, 13, 101, 0.2);">3</div>
+                                    <div style="font-size: 11px; color: #210d65; font-weight: bold; margin-top: 5px;">Contabilidad</div>
+                                  </td>
+                                </tr>
+                              </table>
+                            </div>
+
                             <div style="text-align: center; margin-top: 30px;">
                                 <span style="display: inline-block; padding: 10px 20px; background-color: #f3f4f6; color: #374151; border-radius: 6px; font-weight: 600;">Estado: Creado por Contabilidad</span>
                             </div>

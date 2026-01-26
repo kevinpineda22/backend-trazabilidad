@@ -152,9 +152,26 @@ export const registrarEmpleadoPublico = async (req, res) => {
                   </tbody>
                 </table>
 
-                <div style="text-align: center; margin-top: 35px;">
-                  <p style="color: #210d65; font-weight: 600; font-size: 14px; margin: 0;">Ingrese al Panel para Aprobar</p>
+                <!-- Visual Progress - Step 1 Active -->
+                <div style="margin: 30px 0;">
+                  <table width="100%" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td align="center" width="33%" style="position: relative;">
+                        <div style="width: 30px; height: 30px; background-color: #210d65; color: white; border-radius: 50%; line-height: 30px; font-weight: bold; margin: 0 auto; box-shadow: 0 0 0 3px rgba(33, 13, 101, 0.2);">1</div>
+                        <div style="font-size: 11px; color: #210d65; font-weight: bold; margin-top: 5px;">Solicitud</div>
+                      </td>
+                      <td align="center" width="33%" style="position: relative;">
+                        <div style="width: 30px; height: 30px; background-color: #e2e8f0; color: #94a3b8; border-radius: 50%; line-height: 30px; font-weight: bold; margin: 0 auto;">2</div>
+                        <div style="font-size: 11px; color: #94a3b8; margin-top: 5px;">Aprobación</div>
+                      </td>
+                      <td align="center" width="33%" style="position: relative;">
+                        <div style="width: 30px; height: 30px; background-color: #e2e8f0; color: #94a3b8; border-radius: 50%; line-height: 30px; font-weight: bold; margin: 0 auto;">3</div>
+                        <div style="font-size: 11px; color: #94a3b8; margin-top: 5px;">Contabilidad</div>
+                      </td>
+                    </tr>
+                  </table>
                 </div>
+
               </div>
 
               <!-- Pie de Página -->
@@ -424,9 +441,26 @@ export const registrarClientePublico = async (req, res) => {
                   </tbody>
                 </table>
 
-                <div style="text-align: center; margin-top: 35px;">
-                  <p style="color: #210d65; font-weight: 600; font-size: 14px; margin: 0;">Ingrese al Panel para Aprobar</p>
+                <!-- Visual Progress - Step 1 Active -->
+                <div style="margin: 30px 0;">
+                  <table width="100%" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td align="center" width="33%" style="position: relative;">
+                        <div style="width: 30px; height: 30px; background-color: #210d65; color: white; border-radius: 50%; line-height: 30px; font-weight: bold; margin: 0 auto; box-shadow: 0 0 0 3px rgba(33, 13, 101, 0.2);">1</div>
+                        <div style="font-size: 11px; color: #210d65; font-weight: bold; margin-top: 5px;">Solicitud</div>
+                      </td>
+                      <td align="center" width="33%" style="position: relative;">
+                        <div style="width: 30px; height: 30px; background-color: #e2e8f0; color: #94a3b8; border-radius: 50%; line-height: 30px; font-weight: bold; margin: 0 auto;">2</div>
+                        <div style="font-size: 11px; color: #94a3b8; margin-top: 5px;">Aprobación</div>
+                      </td>
+                      <td align="center" width="33%" style="position: relative;">
+                        <div style="width: 30px; height: 30px; background-color: #e2e8f0; color: #94a3b8; border-radius: 50%; line-height: 30px; font-weight: bold; margin: 0 auto;">3</div>
+                        <div style="font-size: 11px; color: #94a3b8; margin-top: 5px;">Contabilidad</div>
+                      </td>
+                    </tr>
+                  </table>
                 </div>
+
               </div>
 
               <!-- Pie de Página -->
@@ -620,9 +654,26 @@ export const registrarProveedorPublico = async (req, res) => {
                   </tbody>
                 </table>
 
-                <div style="text-align: center; margin-top: 35px;">
-                  <p style="color: #210d65; font-weight: 600; font-size: 14px; margin: 0;">Ingrese al Panel para Aprobar</p>
+                <!-- Visual Progress - Step 1 Active -->
+                <div style="margin: 30px 0;">
+                  <table width="100%" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td align="center" width="33%" style="position: relative;">
+                        <div style="width: 30px; height: 30px; background-color: #210d65; color: white; border-radius: 50%; line-height: 30px; font-weight: bold; margin: 0 auto; box-shadow: 0 0 0 3px rgba(33, 13, 101, 0.2);">1</div>
+                        <div style="font-size: 11px; color: #210d65; font-weight: bold; margin-top: 5px;">Solicitud</div>
+                      </td>
+                      <td align="center" width="33%" style="position: relative;">
+                        <div style="width: 30px; height: 30px; background-color: #e2e8f0; color: #94a3b8; border-radius: 50%; line-height: 30px; font-weight: bold; margin: 0 auto;">2</div>
+                        <div style="font-size: 11px; color: #94a3b8; margin-top: 5px;">Aprobación</div>
+                      </td>
+                      <td align="center" width="33%" style="position: relative;">
+                        <div style="width: 30px; height: 30px; background-color: #e2e8f0; color: #94a3b8; border-radius: 50%; line-height: 30px; font-weight: bold; margin: 0 auto;">3</div>
+                        <div style="font-size: 11px; color: #94a3b8; margin-top: 5px;">Contabilidad</div>
+                      </td>
+                    </tr>
+                  </table>
                 </div>
+
               </div>
 
               <!-- Pie de Página -->
