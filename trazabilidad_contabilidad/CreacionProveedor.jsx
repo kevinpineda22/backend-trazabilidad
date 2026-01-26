@@ -1253,15 +1253,25 @@ const CreacionProveedor = () => {
 
         toast.dismiss(savingToast);
 
-        Swal.fire({
-          title: "¡Registro Completo!",
-          text: modoPublico
-            ? "Tu registro ha sido enviado y está pendiente de aprobación."
-            : "Proveedor creado correctamente con todos sus documentos.",
-          icon: "success",
-          customClass: SWAL_CUSTOM_CLASSES,
-          confirmButtonText: "✅ Entendido",
-        });
+        if (modoPublico) {
+          Swal.fire({
+            title: "¡Registro Completo!",
+            text: "Tu registro ha sido enviado y está pendiente de aprobación.",
+            icon: "success",
+            customClass: SWAL_CUSTOM_CLASSES,
+            confirmButtonText: "✅ Entendido",
+          }).then(() => {
+            window.location.reload();
+          });
+        } else {
+          Swal.fire({
+            title: "¡Registro Completo!",
+            text: "Proveedor creado correctamente con todos sus documentos.",
+            icon: "success",
+            customClass: SWAL_CUSTOM_CLASSES,
+            confirmButtonText: "✅ Entendido",
+          });
+        }
 
         resetForm();
       } catch (error) {

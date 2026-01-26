@@ -23,21 +23,13 @@ import Loader from "../components/Loader";
 import MensajeVacio from "../components/MensajeVacio";
 import HistorialTabla from "../components/HistorialTabla";
 
-const HistorialProveedoresAdminView = ({
-  onOpenExpediente,
-  userRole,
-  routePermission,
-}) => {
+const HistorialProveedoresAdminView = ({ onOpenExpediente, userRole }) => {
   const [historial, setHistorial] = useState([]);
   const [loading, setLoading] = useState(true);
   const [mostrarArchivados, setMostrarArchivados] = useState(false);
 
-  const hasAdminRole = ["super_admin", "admin", "admin_proveedor"].includes(
-    userRole,
-  );
-  const hasRouteAccess = routePermission === "full_access";
-  const canEdit = hasAdminRole || hasRouteAccess;
-  const isReadOnly = !canEdit;
+  // Solo Super Admin y Admin Contabilidad pueden dar el check final
+  const canValidate = ["super_admin", "admin"].includes(userRole);
 
   const fetchData = async () => {
     try {
@@ -390,8 +382,7 @@ const HistorialProveedoresAdminView = ({
                           <FaFolderOpen />
                         </button>
 
-                        {!isReadOnly &&
-                          !mostrarArchivados &&
+                        {!mostrarArchivados &&
                           (prov.is_creado ? (
                             <div
                               title="Creado por Contabilidad"
@@ -407,54 +398,60 @@ const HistorialProveedoresAdminView = ({
                               <FaCheckCircle />
                             </div>
                           ) : (
-                            <button
-                              onClick={() =>
-                                handleMarcarCreado(prov.id, nombreMostrar)
-                              }
-                              title="Marcar como Creado (Enviar Feedback)"
-                              style={{
-                                background: "#ecfdf5",
-                                color: "#059669",
-                                border: "none",
-                                width: "32px",
-                                height: "32px",
-                                borderRadius: "6px",
-                                cursor: "pointer",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                              }}
-                            >
-                              <FaClipboardCheck />
-                            </button>
+                            canValidate && (
+                              <button
+                                onClick={() =>
+                                  handleMarcarCreado(prov.id, nombreMostrar)
+                                }
+                                title="Marcar como Creado (Enviar Feedback)"
+                                style={{
+                                  background: "#ecfdf5",
+                                  color: "#059669",
+                                  border: "none",
+                                  width: "32px",
+                                  height: "32px",
+                                  borderRadius: "6px",
+                                  cursor: "pointer",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                }}
+                              >
+                                <FaClipboardCheck />
+                              </button>
+                            )
                           ))}
 
-                        {!isReadOnly && (
-                          <button
-                            onClick={() =>
-                              mostrarArchivados
-                                ? handleRestaurar(prov.id)
-                                : handleArchivar(prov.id)
-                            }
-                            className={`admin-cont-action-btn ${mostrarArchivados ? "restore" : "archive"}`}
-                            style={{
-                              background: mostrarArchivados
-                                ? "#f0fdf4"
-                                : "#fef2f2",
-                              color: mostrarArchivados ? "#16a34a" : "#dc2626",
-                              border: "none",
-                              width: "32px",
-                              height: "32px",
-                              borderRadius: "6px",
-                              cursor: "pointer",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                            }}
-                          >
-                            {mostrarArchivados ? <FaUndo /> : <FaArchive />}
-                          </button>
-                        )}
+                        {/* Botón Archivar (Disponible para todos) */}
+                        <button
+                          onClick={() =>
+                            mostrarArchivados
+                              ? handleRestaurar(prov.id)
+                              : handleArchivar(prov.id)
+                          }
+                          title={
+                            mostrarArchivados
+                              ? "Restaurar"
+                              : "Archivar (Solo para mí)"
+                          }
+                          className={`admin-cont-action-btn ${mostrarArchivados ? "restore" : "archive"}`}
+                          style={{
+                            background: mostrarArchivados
+                              ? "#f0fdf4"
+                              : "#fef2f2",
+                            color: mostrarArchivados ? "#16a34a" : "#dc2626",
+                            border: "none",
+                            width: "32px",
+                            height: "32px",
+                            borderRadius: "6px",
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          {mostrarArchivados ? <FaUndo /> : <FaArchive />}
+                        </button>
                       </div>
                     </td>
                   </tr>

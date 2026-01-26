@@ -30,19 +30,13 @@ const HistorialClientesAdminView = ({
   onPreview,
   onOpenExpediente,
   userRole,
-  routePermission,
 }) => {
   const [historial, setHistorial] = useState([]);
   const [loading, setLoading] = useState(true);
   const [mostrarArchivados, setMostrarArchivados] = useState(false);
 
-  // Definir permisos
-  const hasAdminRole = ["super_admin", "admin", "admin_cliente"].includes(
-    userRole,
-  );
-  const hasRouteAccess = routePermission === "full_access";
-  const canEdit = hasAdminRole || hasRouteAccess;
-  const isReadOnly = !canEdit;
+  // Solo Super Admin y Admin Contabilidad pueden dar el check final
+  const canValidate = ["super_admin", "admin"].includes(userRole);
 
   const fetchData = async () => {
     try {
@@ -440,8 +434,7 @@ const HistorialClientesAdminView = ({
                           <FaFolderOpen />
                         </button>
 
-                        {!isReadOnly &&
-                          !mostrarArchivados &&
+                        {!mostrarArchivados &&
                           (cli.is_creado ? (
                             <div
                               title="Creado por Contabilidad"
@@ -457,55 +450,60 @@ const HistorialClientesAdminView = ({
                               <FaCheckCircle />
                             </div>
                           ) : (
-                            <button
-                              onClick={() =>
-                                handleMarcarCreado(cli.id, nombrePrincipal)
-                              }
-                              title="Marcar como Creado (Enviar Feedback)"
-                              style={{
-                                background: "#ecfdf5",
-                                color: "#059669",
-                                border: "none",
-                                width: "32px",
-                                height: "32px",
-                                borderRadius: "6px",
-                                cursor: "pointer",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                              }}
-                            >
-                              <FaClipboardCheck />
-                            </button>
+                            canValidate && (
+                              <button
+                                onClick={() =>
+                                  handleMarcarCreado(cli.id, nombrePrincipal)
+                                }
+                                title="Marcar como Creado (Enviar Feedback)"
+                                style={{
+                                  background: "#ecfdf5",
+                                  color: "#059669",
+                                  border: "none",
+                                  width: "32px",
+                                  height: "32px",
+                                  borderRadius: "6px",
+                                  cursor: "pointer",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                }}
+                              >
+                                <FaClipboardCheck />
+                              </button>
+                            )
                           ))}
 
-                        {!isReadOnly && (
-                          <button
-                            onClick={() =>
-                              mostrarArchivados
-                                ? handleRestaurar(cli.id)
-                                : handleArchivar(cli.id)
-                            }
-                            className={`admin-cont-action-btn ${mostrarArchivados ? "restore" : "archive"}`}
-                            title={mostrarArchivados ? "Restaurar" : "Archivar"}
-                            style={{
-                              background: mostrarArchivados
-                                ? "#f0fdf4"
-                                : "#fef2f2",
-                              color: mostrarArchivados ? "#16a34a" : "#dc2626",
-                              border: "none",
-                              width: "32px",
-                              height: "32px",
-                              borderRadius: "6px",
-                              cursor: "pointer",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                            }}
-                          >
-                            {mostrarArchivados ? <FaUndo /> : <FaArchive />}
-                          </button>
-                        )}
+                        {/* Botón Archivar disponible para todos */}
+                        <button
+                          onClick={() =>
+                            mostrarArchivados
+                              ? handleRestaurar(cli.id)
+                              : handleArchivar(cli.id)
+                          }
+                          title={
+                            mostrarArchivados
+                              ? "Restaurar"
+                              : "Archivar (Solo para mí)"
+                          }
+                          className={`admin-cont-action-btn ${mostrarArchivados ? "restore" : "archive"}`}
+                          style={{
+                            background: mostrarArchivados
+                              ? "#f0fdf4"
+                              : "#fef2f2",
+                            color: mostrarArchivados ? "#16a34a" : "#dc2626",
+                            border: "none",
+                            width: "32px",
+                            height: "32px",
+                            borderRadius: "6px",
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          {mostrarArchivados ? <FaUndo /> : <FaArchive />}
+                        </button>
                       </div>
                     </td>
                   </tr>

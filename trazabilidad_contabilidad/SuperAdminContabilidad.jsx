@@ -58,7 +58,7 @@ const SuperAdminContabilidad = () => {
       const parsed = JSON.parse(info);
       const routes = parsed.personal_routes || [];
       // Buscar permiso para esta ruta específica
-      const currentRoute = routes.find(r => r.path === "/trazabilidad/admin");
+      const currentRoute = routes.find((r) => r.path === "/trazabilidad/admin");
       return currentRoute ? currentRoute.permission : null;
     } catch (e) {
       return null;
@@ -66,6 +66,10 @@ const SuperAdminContabilidad = () => {
   });
 
   const getAllowedViews = (role) => {
+    // Admin Tesorería: Solo Empleados y Proveedores (clientes oculto)
+    if (role === "admin_tesoreria") {
+      return [VISTAS.EMPLEADOS, VISTAS.PROVEEDORES];
+    }
     // En este módulo (Gestión Documental / Archivadores), se deben mostrar todas las carpetas
     // independientemente del rol del usuario (admin_proveedor, admin_cliente, etc.)
     return [VISTAS.EMPLEADOS, VISTAS.PROVEEDORES, VISTAS.CLIENTES];
@@ -160,6 +164,7 @@ const SuperAdminContabilidad = () => {
             empleadoId={selectedEmpleadoId}
             onBack={showEmpleadosList}
             onPreview={openPreview}
+            userRole={userRole}
           />
         );
       case VISTAS.EXPEDIENTE_PROVEEDOR:
@@ -168,6 +173,7 @@ const SuperAdminContabilidad = () => {
             proveedorId={selectedProveedorId}
             onBack={showProveedoresList}
             onPreview={openPreview}
+            userRole={userRole}
           />
         );
       case VISTAS.EXPEDIENTE_CLIENTE:
@@ -218,7 +224,11 @@ const SuperAdminContabilidad = () => {
           >
             <FaArrowLeft />
           </Link>
-          <img src={getAssetUrl("logoMK.webp")} alt="Logo" className="admin-cont-logo" />
+          <img
+            src={getAssetUrl("logoMK.webp")}
+            alt="Logo"
+            className="admin-cont-logo"
+          />
           <h2 className="admin-cont-sidebar-title">Gestión Documental</h2>
         </div>
 

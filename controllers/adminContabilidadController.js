@@ -6,21 +6,29 @@ import dotenv from "dotenv";
 dotenv.config();
 
 /**
- * Helper para obtener IDs archivados
+ * Helper para obtener IDs archivados POR EL USUARIO ACTUAL
+ * Requiere la tabla 'user_archived_records'
  */
-const getArchivadosIds = async (tipo) => {
+const getUserArchivedIds = async (userId, tipo) => {
+  if (!userId) return new Set();
+
   const { data, error } = await supabaseAxios.get(
-    `/registros_pendientes?select=registro_aprobado_id&tipo=eq.${tipo}&estado=eq.archivado_aprobado`,
+    `/user_archived_records?select=record_id&user_id=eq.${userId}&record_type=eq.${tipo}`,
   );
+
   if (error) {
-    console.error(`Error obteniendo archivados de ${tipo}:`, error);
+    // Si la tabla no existe, fallamos silenciosamente (retorna set vacío) para no romper todo mientras migran
+    console.warn(
+      `Advertencia: No se pudieron obtener archivados para ${tipo}. Verifique si existe la tabla 'user_archived_records'. Error:`,
+      error.message,
+    );
     return new Set();
   }
-  return new Set(data.map((r) => r.registro_aprobado_id));
+  return new Set(data.map((r) => r.record_id));
 };
 
 /**
- * Helper para obtener IDs marcados como creados por contabilidad
+ * Helper para obtener IDs marcados como creados por contabilidad (Estado Global)
  */
 const getCreadosIds = async (tipo) => {
   const { data, error } = await supabaseAxios.get(
@@ -35,8 +43,8 @@ const getCreadosIds = async (tipo) => {
 
 /**
  * @route GET /api/trazabilidad/admin/historial-empleados
- * Obtiene TODO el historial de empleados, uniendo el nombre del creador.
- * Incluye propiedad 'is_archivado'.
+ * Obtiene TODO el historial de empleados.
+ * Incluye propiedad 'is_archivado' basada en el usuario actual.
  */
 export const getHistorialEmpleadosAdmin = async (req, res) => {
   try {
@@ -51,8 +59,8 @@ export const getHistorialEmpleadosAdmin = async (req, res) => {
     );
     if (error) throw error;
 
-    // 2. Obtener IDs archivados
-    const archivadosIds = await getArchivadosIds("empleado");
+    // 2. Obtener IDs archivados (Personal) y creados (Global)
+    const archivadosIds = await getUserArchivedIds(user_id, "empleado");
     const creadosIds = await getCreadosIds("empleado");
 
     // 3. Marcar archivados y creados
@@ -73,8 +81,6 @@ export const getHistorialEmpleadosAdmin = async (req, res) => {
 
 /**
  * @route GET /api/trazabilidad/admin/historial-proveedores
- * Obtiene TODO el historial de proveedores.
- * Incluye propiedad 'is_archivado'.
  */
 export const getHistorialProveedoresAdmin = async (req, res) => {
   try {
@@ -88,7 +94,7 @@ export const getHistorialProveedoresAdmin = async (req, res) => {
     );
     if (error) throw error;
 
-    const archivadosIds = await getArchivadosIds("proveedor");
+    const archivadosIds = await getUserArchivedIds(user_id, "proveedor");
     const creadosIds = await getCreadosIds("proveedor");
 
     const resultado = (proveedores || []).map((prov) => ({
@@ -108,8 +114,6 @@ export const getHistorialProveedoresAdmin = async (req, res) => {
 
 /**
  * @route GET /api/trazabilidad/admin/historial-clientes
- * Obtiene TODO el historial de clientes.
- * Incluye propiedad 'is_archivado'.
  */
 export const getHistorialClientesAdmin = async (req, res) => {
   try {
@@ -123,7 +127,7 @@ export const getHistorialClientesAdmin = async (req, res) => {
     );
     if (error) throw error;
 
-    const archivadosIds = await getArchivadosIds("cliente");
+    const archivadosIds = await getUserArchivedIds(user_id, "cliente");
     const creadosIds = await getCreadosIds("cliente");
 
     const resultado = (clientes || []).map((cli) => ({
@@ -143,7 +147,8 @@ export const getHistorialClientesAdmin = async (req, res) => {
 
 /**
  * @route POST /api/trazabilidad/admin/archivar-entidad
- * Archiva una entidad (empleado, cliente, proveedor) buscando su registro de aprobación correspondiente.
+ * Archiva una entidad (empleado, cliente, proveedor) SOLO para el usuario actual.
+ * Inserta en la tabla 'user_archived_records'.
  */
 export const archivarEntidad = async (req, res) => {
   try {
@@ -158,67 +163,34 @@ export const archivarEntidad = async (req, res) => {
       return res.status(400).json({ message: "Tipo e ID son requeridos." });
     }
 
-    // 1. Buscar el registro en registros_pendientes
-    const { data: registros, error: searchError } = await supabaseAxios.get(
-      `/registros_pendientes?select=id&tipo=eq.${tipo}&registro_aprobado_id=eq.${id}`,
-    );
+    // Insertar en la tabla de archivados personal
+    // Usamos upsert para evitar error si ya existe (on_conflict ignora o actualiza)
+    // Pero como supabase simple insert falla con duplicados, mejor un select o intentamos insert y catch
 
-    if (searchError) throw searchError;
-
-    // 2. Si existe, actualizar estado
-    if (registros && registros.length > 0) {
-      const updates = registros.map((r) =>
-        supabaseAxios.patch(`/registros_pendientes?id=eq.${r.id}`, {
-          estado: "archivado_aprobado",
-        }),
-      );
-      await Promise.all(updates);
-      return res
-        .status(200)
-        .json({ message: "Entidad archivada correctamente." });
-    }
-
-    // 3. Si NO existe, crear un registro "fake" para soportar archivado de datos antiguos o creados manualmente
-    const tableMap = {
-      empleado: "empleados_contabilidad",
-      cliente: "clientes_contabilidad",
-      proveedor: "proveedores_contabilidad",
-    };
-
-    const tableName = tableMap[tipo];
-    if (!tableName) {
-      return res.status(400).json({ message: "Tipo de entidad no válido." });
-    }
-
-    // Verificar que la entidad exista realmente en su tabla
-    const { data: entityData, error: entityError } = await supabaseAxios.get(
-      `/${tableName}?id=eq.${id}&select=*`,
-    );
-
-    if (entityError) throw entityError;
-    if (!entityData || entityData.length === 0) {
-      return res
-        .status(404)
-        .json({ message: "La entidad no existe en la base de datos." });
-    }
-
-    // Crear registro en registros_pendientes con los datos actuales
-    const datosSnapshot = entityData[0];
-
-    await supabaseAxios.post(`/registros_pendientes`, {
-      tipo,
-      estado: "archivado_aprobado",
-      user_id: user_id, // El admin que archiva figura como creador del registro de historial
-      datos: datosSnapshot,
-      registro_aprobado_id: id,
-      created_at: new Date().toISOString(),
-      fecha_aprobacion: new Date().toISOString(), // Simulamos fecha de aprobación actual
-      aprobado_por: user_id,
+    // Check if duplicate handling is needed or if API handles it.
+    // Simple insert:
+    const { error } = await supabaseAxios.post(`/user_archived_records`, {
+      user_id: user_id,
+      record_id: id,
+      record_type: tipo,
     });
+
+    if (error) {
+      // Si es error de duplicado (código 23505 en postgres), lo ignoramos (ya estaba archivado)
+      if (error.code === "23505" || error.message?.includes("duplicate key")) {
+        return res
+          .status(200)
+          .json({ message: "La entidad ya estaba archivada." });
+      }
+      console.error("Error insertando en user_archived_records:", error);
+      // Fallback temporal si la tabla no existe: usar lógica antigua (Opcional, pero recomendado durante migración)
+      // Para este caso, asumiremos que se crea la tabla.
+      throw error;
+    }
 
     res
       .status(200)
-      .json({ message: "Entidad archivada correctamente (registro creado)." });
+      .json({ message: "Entidad archivada correctamente (personal)." });
   } catch (error) {
     console.error("Error al archivar entidad:", error);
     res
@@ -229,33 +201,27 @@ export const archivarEntidad = async (req, res) => {
 
 /**
  * @route POST /api/trazabilidad/admin/restaurar-entidad
- * Restaura una entidad archivada.
+ * Restaura una entidad archivada (la elimina de la lista de archivados del usuario).
  */
 export const restaurarEntidad = async (req, res) => {
   try {
     const { tipo, id } = req.body;
+    const user_id = req.user?.id;
+
+    if (!user_id) {
+      return res.status(401).json({ message: "Usuario no autenticado." });
+    }
+
     if (!tipo || !id) {
       return res.status(400).json({ message: "Tipo e ID son requeridos." });
     }
 
-    const { data: registros, error: searchError } = await supabaseAxios.get(
-      `/registros_pendientes?select=id&tipo=eq.${tipo}&registro_aprobado_id=eq.${id}`,
+    // Eliminar de user_archived_records
+    const { error } = await supabaseAxios.delete(
+      `/user_archived_records?user_id=eq.${user_id}&record_id=eq.${id}&record_type=eq.${tipo}`,
     );
 
-    if (searchError) throw searchError;
-    if (!registros || registros.length === 0) {
-      return res.status(404).json({
-        message: "No se encontró el registro de aprobación asociado.",
-      });
-    }
-
-    const updates = registros.map((r) =>
-      supabaseAxios.patch(`/registros_pendientes?id=eq.${r.id}`, {
-        estado: "aprobado", // Restaurar a aprobado
-      }),
-    );
-
-    await Promise.all(updates);
+    if (error) throw error;
 
     res.status(200).json({ message: "Entidad restaurada correctamente." });
   } catch (error) {
@@ -574,9 +540,45 @@ export const marcarEntidadCreada = async (req, res) => {
       await sendEmail(destinatario, subject, htmlContent);
     }
 
+    // --- Notificación a Tesorería (si existe la variable de entorno) ---
+    const emailTesoreria = process.env.ADMIN_TESORERIA_EMAIL;
+    if (emailTesoreria) {
+      const subjectTesoreria = `📢 Nuevo Tercero Registrado: ${nombreEntidad}`;
+      const htmlContentTesoreria = `
+        <!DOCTYPE html>
+        <html>
+        <body style="margin: 0; padding: 0; background-color: #f4f4f4; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+            <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-top: 20px; margin-bottom: 20px;">
+                <div style="background-color: #0d9488; padding: 25px 30px; text-align: center;">
+                    <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 600;">Nuevo Registro Contable</h1>
+                </div>
+                <div style="padding: 40px 30px; color: #333333;">
+                    <p style="font-size: 16px; margin-bottom: 20px;">Hola Tesorería,</p>
+                    <p style="font-size: 16px; margin-bottom: 20px;">
+                        Se informa que el tercero <strong>${nombreEntidad}</strong> (${tipo}) ha sido creado exitosamente en el sistema contable y requiere su atención para los procesos bancarios/pagos correspondientes.
+                    </p>
+                    <div style="text-align: center; margin-top: 30px;">
+                        <span style="display: inline-block; padding: 10px 20px; background-color: #f0fdfa; color: #0f766e; border-radius: 6px; font-weight: 600;">Registro Completado</span>
+                    </div>
+                </div>
+                 <div style="background-color: #f1f5f9; padding: 20px; text-align: center; border-top: 1px solid #e2e8f0;">
+                    <p style="color: #94a3b8; font-size: 13px; margin: 0;">Sistema de Trazabilidad</p>
+                </div>
+            </div>
+        </body>
+        </html>
+      `;
+      // Enviar correo sin await para no bloquear respuesta si falla
+      sendEmail(emailTesoreria, subjectTesoreria, htmlContentTesoreria).catch(
+        (err) => console.error("Error enviando correo a tesorería:", err),
+      );
+    }
+
     res
       .status(200)
-      .json({ message: "Entidad marcada como creada y notificación enviada." });
+      .json({
+        message: "Entidad marcada como creada y notificaciones enviadas.",
+      });
   } catch (error) {
     console.error("Error al marcar entidad como creada:", error);
     res.status(500).json({

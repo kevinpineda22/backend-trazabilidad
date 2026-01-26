@@ -25,7 +25,12 @@ const InfoItem = ({ label, value }) => (
   </div>
 );
 
-const ExpedienteProveedorView = ({ proveedorId, onBack, onPreview }) => {
+const ExpedienteProveedorView = ({
+  proveedorId,
+  onBack,
+  onPreview,
+  userRole,
+}) => {
   const [proveedor, setProveedor] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -41,7 +46,7 @@ const ExpedienteProveedorView = ({ proveedorId, onBack, onPreview }) => {
       try {
         setLoading(true);
         const { data } = await api.get(
-          `/trazabilidad/admin/expediente-proveedor/${proveedorId}`
+          `/trazabilidad/admin/expediente-proveedor/${proveedorId}`,
         );
         setProveedor(data.proveedor);
         setError(null);
@@ -81,26 +86,35 @@ const ExpedienteProveedorView = ({ proveedorId, onBack, onPreview }) => {
   // Crear array de documentos a partir del objeto proveedor
   let documentosDefinidos = [];
   if (proveedor) {
-    documentosDefinidos = [
-      { label: "RUT", url: proveedor.url_rut },
-      { label: "Cámara de Comercio", url: proveedor.url_camara_comercio },
-      {
-        label: "Certificación Bancaria",
-        url: proveedor.url_certificacion_bancaria,
-      },
-      {
-        label: "Documento Identidad Rep. Legal",
-        url: proveedor.url_doc_identidad_rep_legal,
-      },
-      {
-        label: "Composición Accionaria",
-        url: proveedor.url_composicion_accionaria,
-      },
-      {
-        label: "Certificado SAGRILAFT",
-        url: proveedor.url_certificado_sagrilaft,
-      },
-    ];
+    if (userRole === "admin_tesoreria") {
+      documentosDefinidos = [
+        {
+          label: "Certificación Bancaria",
+          url: proveedor.url_certificacion_bancaria,
+        },
+      ];
+    } else {
+      documentosDefinidos = [
+        { label: "RUT", url: proveedor.url_rut },
+        { label: "Cámara de Comercio", url: proveedor.url_camara_comercio },
+        {
+          label: "Certificación Bancaria",
+          url: proveedor.url_certificacion_bancaria,
+        },
+        {
+          label: "Documento Identidad Rep. Legal",
+          url: proveedor.url_doc_identidad_rep_legal,
+        },
+        {
+          label: "Composición Accionaria",
+          url: proveedor.url_composicion_accionaria,
+        },
+        {
+          label: "Certificado SAGRILAFT",
+          url: proveedor.url_certificado_sagrilaft,
+        },
+      ];
+    }
   }
 
   if (loading) {
@@ -265,7 +279,7 @@ const ExpedienteProveedorView = ({ proveedorId, onBack, onPreview }) => {
                   label="Fecha Creación"
                   value={format(
                     parseISO(proveedor.created_at),
-                    "dd/MM/yyyy hh:mm a"
+                    "dd/MM/yyyy hh:mm a",
                   )}
                 />
               </div>

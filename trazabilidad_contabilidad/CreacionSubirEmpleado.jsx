@@ -583,6 +583,8 @@ const CreacionSubirEmpleado = () => {
           icon: "success",
           customClass: SWAL_CUSTOM_CLASSES,
           confirmButtonText: "✅ Entendido",
+        }).then(() => {
+          window.location.reload();
         });
       } else {
         Swal.fire({

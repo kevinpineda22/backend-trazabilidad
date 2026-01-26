@@ -25,7 +25,12 @@ const InfoItem = ({ label, value }) => (
   </div>
 );
 
-const ExpedienteEmpleadoView = ({ empleadoId, onBack, onPreview }) => {
+const ExpedienteEmpleadoView = ({
+  empleadoId,
+  onBack,
+  onPreview,
+  userRole,
+}) => {
   const [empleado, setEmpleado] = useState(null);
   // ¡ELIMINADO! Ya no usamos el array 'documentos' del estado
   // const [documentos, setDocumentos] = useState([]);
@@ -44,7 +49,7 @@ const ExpedienteEmpleadoView = ({ empleadoId, onBack, onPreview }) => {
         setLoading(true);
         // El backend ahora solo nos devuelve el 'empleado'
         const { data } = await api.get(
-          `/trazabilidad/admin/expediente-empleado/${empleadoId}`
+          `/trazabilidad/admin/expediente-empleado/${empleadoId}`,
         );
         setEmpleado(data.empleado); // ¡Solo guardamos el empleado!
         setError(null);
@@ -77,13 +82,26 @@ const ExpedienteEmpleadoView = ({ empleadoId, onBack, onPreview }) => {
   // Creamos un array de documentos definidos a partir del objeto 'empleado'
   let documentosDefinidos = [];
   if (empleado) {
-    documentosDefinidos = [
-      { label: "Hoja de Vida", url: empleado.url_hoja_de_vida },
-      { label: "Documento de Identidad", url: empleado.url_cedula },
-      { label: "Certificado Bancario", url: empleado.url_certificado_bancario },
-      { label: "Habeas Data", url: empleado.url_habeas_data },
-      { label: "Autorización Firma", url: empleado.url_autorizacion_firma },
-    ];
+    if (userRole === "admin_tesoreria") {
+      // Para admin_tesoreria solo mostramos el certificado bancario
+      documentosDefinidos = [
+        {
+          label: "Certificado Bancario",
+          url: empleado.url_certificado_bancario,
+        },
+      ];
+    } else {
+      documentosDefinidos = [
+        { label: "Hoja de Vida", url: empleado.url_hoja_de_vida },
+        { label: "Documento de Identidad", url: empleado.url_cedula },
+        {
+          label: "Certificado Bancario",
+          url: empleado.url_certificado_bancario,
+        },
+        { label: "Habeas Data", url: empleado.url_habeas_data },
+        { label: "Autorización Firma", url: empleado.url_autorizacion_firma },
+      ];
+    }
   }
   // ------------------------------------
 
@@ -155,7 +173,7 @@ const ExpedienteEmpleadoView = ({ empleadoId, onBack, onPreview }) => {
                   label="Fecha Creación"
                   value={format(
                     parseISO(empleado.created_at),
-                    "dd/MM/yyyy hh:mm a"
+                    "dd/MM/yyyy hh:mm a",
                   )}
                 />
               </div>
