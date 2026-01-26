@@ -549,20 +549,29 @@ export const marcarEntidadCreada = async (req, res) => {
         <html>
         <body style="margin: 0; padding: 0; background-color: #f4f4f4; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
             <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-top: 20px; margin-bottom: 20px;">
-                <div style="background-color: #0d9488; padding: 25px 30px; text-align: center;">
+                <!-- Header Corporativo -->
+                <div style="background-color: #210d65; padding: 25px 30px; text-align: center;">
                     <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 600;">Nuevo Registro Contable</h1>
                 </div>
+                
                 <div style="padding: 40px 30px; color: #333333;">
-                    <p style="font-size: 16px; margin-bottom: 20px;">Hola Tesorería,</p>
-                    <p style="font-size: 16px; margin-bottom: 20px;">
-                        Se informa que el tercero <strong>${nombreEntidad}</strong> (${tipo}) ha sido creado exitosamente en el sistema contable y requiere su atención para los procesos bancarios/pagos correspondientes.
+                    <p style="font-size: 16px; margin-bottom: 20px;">Estimado equipo de Tesorería,</p>
+                    <p style="font-size: 16px; margin-bottom: 20px; line-height: 1.6;">
+                        Se informa que el tercero <strong>${nombreEntidad}</strong> (${tipo}) ha sido validado y creado exitosamente en el sistema contable.
                     </p>
+                    <p style="font-size: 16px; margin-bottom: 30px; line-height: 1.6;">
+                        El registro se encuentra habilitado para la gestión de procesos bancarios y pagos correspondientes.
+                    </p>
+
                     <div style="text-align: center; margin-top: 30px;">
-                        <span style="display: inline-block; padding: 10px 20px; background-color: #f0fdfa; color: #0f766e; border-radius: 6px; font-weight: 600;">Registro Completado</span>
+                        <span style="display: inline-block; padding: 12px 24px; background-color: #f3f4f6; color: #210d65; border-radius: 6px; font-weight: 700; border: 1px solid #e5e7eb;">
+                            ✅ Registro Validado
+                        </span>
                     </div>
                 </div>
+                
                  <div style="background-color: #f1f5f9; padding: 20px; text-align: center; border-top: 1px solid #e2e8f0;">
-                    <p style="color: #94a3b8; font-size: 13px; margin: 0;">Sistema de Trazabilidad</p>
+                    <p style="color: #64748b; font-size: 13px; margin: 0;">Sistema de Trazabilidad Corporativo</p>
                 </div>
             </div>
         </body>
@@ -574,11 +583,9 @@ export const marcarEntidadCreada = async (req, res) => {
       );
     }
 
-    res
-      .status(200)
-      .json({
-        message: "Entidad marcada como creada y notificaciones enviadas.",
-      });
+    res.status(200).json({
+      message: "Entidad marcada como creada y notificaciones enviadas.",
+    });
   } catch (error) {
     console.error("Error al marcar entidad como creada:", error);
     res.status(500).json({
