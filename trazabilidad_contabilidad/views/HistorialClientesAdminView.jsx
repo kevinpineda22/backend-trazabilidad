@@ -19,6 +19,7 @@ import {
   FaClock,
   FaCheckCircle,
   FaClipboardCheck,
+  FaSpinner,
 } from "react-icons/fa";
 
 // Importación de componentes reutilizables
@@ -34,6 +35,7 @@ const HistorialClientesAdminView = ({
   const [historial, setHistorial] = useState([]);
   const [loading, setLoading] = useState(true);
   const [mostrarArchivados, setMostrarArchivados] = useState(false);
+  const [processingIds, setProcessingIds] = useState([]);
 
   // Solo Super Admin y Admin Contabilidad pueden dar el check final
   const canValidate = ["super_admin", "admin"].includes(userRole);
@@ -55,31 +57,63 @@ const HistorialClientesAdminView = ({
     fetchData();
   }, []);
 
+  const addToProcessing = (id) => setProcessingIds((prev) => [...prev, id]);
+  const removeFromProcessing = (id) =>
+    setProcessingIds((prev) => prev.filter((pid) => pid !== id));
+
   const handleArchivar = async (id) => {
     if (!window.confirm("¿Archivar este cliente?")) return;
+    addToProcessing(id);
+    const toastId = toast.loading("Archivando...");
     try {
       await api.post("/trazabilidad/admin/archivar-entidad", {
         tipo: "cliente",
         id,
       });
-      toast.success("Cliente archivado.");
+      toast.update(toastId, {
+        render: "Cliente archivado.",
+        type: "success",
+        isLoading: false,
+        autoClose: 3000,
+      });
       fetchData();
     } catch (error) {
-      toast.error("Error al archivar.");
+      toast.update(toastId, {
+        render: "Error al archivar.",
+        type: "error",
+        isLoading: false,
+        autoClose: 3000,
+      });
+    } finally {
+      removeFromProcessing(id);
     }
   };
 
   const handleRestaurar = async (id) => {
     if (!window.confirm("¿Restaurar este cliente?")) return;
+    addToProcessing(id);
+    const toastId = toast.loading("Restaurando...");
     try {
       await api.post("/trazabilidad/admin/restaurar-entidad", {
         tipo: "cliente",
         id,
       });
-      toast.success("Cliente restaurado.");
+      toast.update(toastId, {
+        render: "Cliente restaurado.",
+        type: "success",
+        isLoading: false,
+        autoClose: 3000,
+      });
       fetchData();
     } catch (error) {
-      toast.error("Error al restaurar.");
+      toast.update(toastId, {
+        render: "Error al restaurar.",
+        type: "error",
+        isLoading: false,
+        autoClose: 3000,
+      });
+    } finally {
+      removeFromProcessing(id);
     }
   };
 
@@ -90,16 +124,31 @@ const HistorialClientesAdminView = ({
       )
     )
       return;
+    addToProcessing(id);
+    const toastId = toast.loading("Procesando validación y enviando correos...");
+
     try {
       await api.post("/trazabilidad/admin/marcar-creado", {
         tipo: "cliente",
         id,
       });
-      toast.success("Marcado como creado y notificado.");
+      toast.update(toastId, {
+        render: "¡Éxito! Marcado como creado y notificado.",
+        type: "success",
+        isLoading: false,
+        autoClose: 4000,
+      });
       fetchData();
     } catch (error) {
       console.error(error);
-      toast.error("Error al marcar como creado.");
+      toast.update(toastId, {
+        render: "Error al marcar como creado.",
+        type: "error",
+        isLoading: false,
+        autoClose: 3000,
+      });
+    } finally {
+      removeFromProcessing(id);
     }
   };
 
@@ -170,6 +219,10 @@ const HistorialClientesAdminView = ({
       </div>
 
       <div className="admin-cont-historial-wrapper">
+        <style>{`
+          @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+          .icon-spin { animation: spin 1s linear infinite; }
+        `}</style>
         {registrosFiltrados.length === 0 ? (
           <MensajeVacio
             mensaje={
@@ -455,21 +508,32 @@ const HistorialClientesAdminView = ({
                                 onClick={() =>
                                   handleMarcarCreado(cli.id, nombrePrincipal)
                                 }
+                                disabled={processingIds.includes(cli.id)}
                                 title="Marcar como Creado (Enviar Feedback)"
                                 style={{
-                                  background: "#ecfdf5",
-                                  color: "#059669",
+                                  background: processingIds.includes(cli.id)
+                                    ? "#e2e8f0"
+                                    : "#ecfdf5",
+                                  color: processingIds.includes(cli.id)
+                                    ? "#64748b"
+                                    : "#059669",
                                   border: "none",
                                   width: "32px",
                                   height: "32px",
                                   borderRadius: "6px",
-                                  cursor: "pointer",
+                                  cursor: processingIds.includes(cli.id)
+                                    ? "wait"
+                                    : "pointer",
                                   display: "flex",
                                   alignItems: "center",
                                   justifyContent: "center",
                                 }}
                               >
-                                <FaClipboardCheck />
+                                {processingIds.includes(cli.id) ? (
+                                  <FaSpinner className="icon-spin" />
+                                ) : (
+                                  <FaClipboardCheck />
+                                )}
                               </button>
                             )
                           ))}
@@ -481,6 +545,7 @@ const HistorialClientesAdminView = ({
                               ? handleRestaurar(cli.id)
                               : handleArchivar(cli.id)
                           }
+                          disabled={processingIds.includes(cli.id)}
                           title={
                             mostrarArchivados
                               ? "Restaurar"
@@ -496,13 +561,22 @@ const HistorialClientesAdminView = ({
                             width: "32px",
                             height: "32px",
                             borderRadius: "6px",
-                            cursor: "pointer",
+                            cursor: processingIds.includes(cli.id)
+                              ? "wait"
+                              : "pointer",
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
+                            opacity: processingIds.includes(cli.id) ? 0.6 : 1,
                           }}
                         >
-                          {mostrarArchivados ? <FaUndo /> : <FaArchive />}
+                          {processingIds.includes(cli.id) ? (
+                            <FaSpinner className="icon-spin" />
+                          ) : mostrarArchivados ? (
+                            <FaUndo />
+                          ) : (
+                            <FaArchive />
+                          )}
                         </button>
                       </div>
                     </td>

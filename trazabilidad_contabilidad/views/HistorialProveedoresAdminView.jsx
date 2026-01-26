@@ -18,6 +18,7 @@ import {
   FaClock,
   FaCheckCircle,
   FaClipboardCheck,
+  FaSpinner,
 } from "react-icons/fa";
 import Loader from "../components/Loader";
 import MensajeVacio from "../components/MensajeVacio";
@@ -27,6 +28,7 @@ const HistorialProveedoresAdminView = ({ onOpenExpediente, userRole }) => {
   const [historial, setHistorial] = useState([]);
   const [loading, setLoading] = useState(true);
   const [mostrarArchivados, setMostrarArchivados] = useState(false);
+  const [processingIds, setProcessingIds] = useState([]);
 
   // Solo Super Admin y Admin Contabilidad pueden dar el check final
   const canValidate = ["super_admin", "admin"].includes(userRole);
@@ -49,31 +51,63 @@ const HistorialProveedoresAdminView = ({ onOpenExpediente, userRole }) => {
     fetchData();
   }, []);
 
+  const addToProcessing = (id) => setProcessingIds((prev) => [...prev, id]);
+  const removeFromProcessing = (id) =>
+    setProcessingIds((prev) => prev.filter((pid) => pid !== id));
+
   const handleArchivar = async (id) => {
     if (!window.confirm("¿Archivar este proveedor?")) return;
+    addToProcessing(id);
+    const toastId = toast.loading("Archivando...");
     try {
       await api.post("/trazabilidad/admin/archivar-entidad", {
         tipo: "proveedor",
         id,
       });
-      toast.success("Proveedor archivado.");
+      toast.update(toastId, {
+        render: "Proveedor archivado.",
+        type: "success",
+        isLoading: false,
+        autoClose: 3000,
+      });
       fetchData();
     } catch (error) {
-      toast.error("Error al archivar.");
+      toast.update(toastId, {
+        render: "Error al archivar.",
+        type: "error",
+        isLoading: false,
+        autoClose: 3000,
+      });
+    } finally {
+      removeFromProcessing(id);
     }
   };
 
   const handleRestaurar = async (id) => {
     if (!window.confirm("¿Restaurar este proveedor?")) return;
+    addToProcessing(id);
+    const toastId = toast.loading("Restaurando...");
     try {
       await api.post("/trazabilidad/admin/restaurar-entidad", {
         tipo: "proveedor",
         id,
       });
-      toast.success("Proveedor restaurado.");
+      toast.update(toastId, {
+        render: "Proveedor restaurado.",
+        type: "success",
+        isLoading: false,
+        autoClose: 3000,
+      });
       fetchData();
     } catch (error) {
-      toast.error("Error al restaurar.");
+      toast.update(toastId, {
+        render: "Error al restaurar.",
+        type: "error",
+        isLoading: false,
+        autoClose: 3000,
+      });
+    } finally {
+      removeFromProcessing(id);
     }
   };
 
@@ -84,16 +118,32 @@ const HistorialProveedoresAdminView = ({ onOpenExpediente, userRole }) => {
       )
     )
       return;
+
+    addToProcessing(id);
+    const toastId = toast.loading("Procesando validación y enviando correos...");
+
     try {
       await api.post("/trazabilidad/admin/marcar-creado", {
         tipo: "proveedor",
         id,
       });
-      toast.success("Marcado como creado y notificado.");
+      toast.update(toastId, {
+        render: "¡Éxito! Marcado como creado y notificadores enviados.",
+        type: "success",
+        isLoading: false,
+        autoClose: 4000,
+      });
       fetchData();
     } catch (error) {
       console.error(error);
-      toast.error("Error al marcar como creado."); // OJO: Feedback
+      toast.update(toastId, {
+        render: "Error al marcar como creado.",
+        type: "error",
+        isLoading: false,
+        autoClose: 3000,
+      });
+    } finally {
+      removeFromProcessing(id);
     }
   };
 
@@ -151,6 +201,10 @@ const HistorialProveedoresAdminView = ({ onOpenExpediente, userRole }) => {
       </div>
 
       <div className="admin-cont-historial-wrapper">
+        <style>{`
+          @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+          .icon-spin { animation: spin 1s linear infinite; }
+        `}</style>
         {registrosFiltrados.length === 0 ? (
           <MensajeVacio
             mensaje={
@@ -403,21 +457,32 @@ const HistorialProveedoresAdminView = ({ onOpenExpediente, userRole }) => {
                                 onClick={() =>
                                   handleMarcarCreado(prov.id, nombreMostrar)
                                 }
+                                disabled={processingIds.includes(prov.id)}
                                 title="Marcar como Creado (Enviar Feedback)"
                                 style={{
-                                  background: "#ecfdf5",
-                                  color: "#059669",
+                                  background: processingIds.includes(prov.id)
+                                    ? "#e2e8f0"
+                                    : "#ecfdf5",
+                                  color: processingIds.includes(prov.id)
+                                    ? "#64748b"
+                                    : "#059669",
                                   border: "none",
                                   width: "32px",
                                   height: "32px",
                                   borderRadius: "6px",
-                                  cursor: "pointer",
+                                  cursor: processingIds.includes(prov.id)
+                                    ? "wait"
+                                    : "pointer",
                                   display: "flex",
                                   alignItems: "center",
                                   justifyContent: "center",
                                 }}
                               >
-                                <FaClipboardCheck />
+                                {processingIds.includes(prov.id) ? (
+                                  <FaSpinner className="icon-spin" />
+                                ) : (
+                                  <FaClipboardCheck />
+                                )}
                               </button>
                             )
                           ))}
@@ -429,6 +494,7 @@ const HistorialProveedoresAdminView = ({ onOpenExpediente, userRole }) => {
                               ? handleRestaurar(prov.id)
                               : handleArchivar(prov.id)
                           }
+                          disabled={processingIds.includes(prov.id)}
                           title={
                             mostrarArchivados
                               ? "Restaurar"
@@ -444,13 +510,22 @@ const HistorialProveedoresAdminView = ({ onOpenExpediente, userRole }) => {
                             width: "32px",
                             height: "32px",
                             borderRadius: "6px",
-                            cursor: "pointer",
+                            cursor: processingIds.includes(prov.id)
+                              ? "wait"
+                              : "pointer",
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
+                            opacity: processingIds.includes(prov.id) ? 0.6 : 1,
                           }}
                         >
-                          {mostrarArchivados ? <FaUndo /> : <FaArchive />}
+                          {processingIds.includes(prov.id) ? (
+                            <FaSpinner className="icon-spin" />
+                          ) : mostrarArchivados ? (
+                            <FaUndo />
+                          ) : (
+                            <FaArchive />
+                          )}
                         </button>
                       </div>
                     </td>

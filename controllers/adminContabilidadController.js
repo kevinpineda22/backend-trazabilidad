@@ -577,10 +577,12 @@ export const marcarEntidadCreada = async (req, res) => {
         </body>
         </html>
       `;
-      // Enviar correo sin await para no bloquear respuesta si falla
-      sendEmail(emailTesoreria, subjectTesoreria, htmlContentTesoreria).catch(
-        (err) => console.error("Error enviando correo a tesorería:", err),
-      );
+      // ✅ AWAIT AÑADIDO: Garantiza que el correo salga antes de responder al cliente
+      try {
+        await sendEmail(emailTesoreria, subjectTesoreria, htmlContentTesoreria);
+      } catch (err) {
+        console.error("Error fatal enviando correo a tesorería:", err);
+      }
     }
 
     res.status(200).json({
