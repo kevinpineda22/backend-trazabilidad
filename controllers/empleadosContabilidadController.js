@@ -4,7 +4,7 @@ import { supabaseAxios, storageClient } from "../services/supabaseClient.js";
 
 /**
  * @route POST /api/trazabilidad/empleados
- * (Esta función no se modifica)
+ * Actualizado: Ahora recibe y guarda el campo 'empresa'
  */
 export const createEmpleadoContabilidad = async (req, res) => {
   try {
@@ -16,6 +16,7 @@ export const createEmpleadoContabilidad = async (req, res) => {
     }
 
     const {
+      empresa, // <--- AGREGADO: Extraer empresa
       nombre,
       apellidos,
       tipo_documento,
@@ -52,6 +53,7 @@ export const createEmpleadoContabilidad = async (req, res) => {
 
     const payload = {
       user_id,
+      empresa: empresa || null, // <--- AGREGADO: Guardar en DB
       nombre,
       apellidos,
       tipo_documento,
@@ -106,7 +108,6 @@ export const createEmpleadoContabilidad = async (req, res) => {
 
 /**
  * @route GET /api/trazabilidad/empleados/historial
- * (Esta función no se modifica)
  */
 export const getHistorialEmpleados = async (req, res) => {
   try {
@@ -133,7 +134,6 @@ export const getHistorialEmpleados = async (req, res) => {
 
 /**
  * @route GET /api/trazabilidad/empleados/admin/expediente/:id
- * (Esta función no se modifica)
  */
 export const getExpedienteEmpleadoAdmin = async (req, res) => {
   try {
@@ -150,7 +150,7 @@ export const getExpedienteEmpleadoAdmin = async (req, res) => {
     const empleado = empleadoData[0];
     res.status(200).json({
       empleado: empleado,
-      documentos: [], // Frontend ahora lee las URLs desde el objeto empleado
+      documentos: [],
     });
   } catch (error) {
     console.error("Error al obtener expediente:", error);
@@ -163,12 +163,12 @@ export const getExpedienteEmpleadoAdmin = async (req, res) => {
 
 /**
  * @route PATCH /api/trazabilidad/empleados/:id
- * ¡NUEVA FUNCIÓN! Actualiza un registro de empleado.
+ * Actualizado: Ahora permite actualizar el campo 'empresa'
  */
 export const updateEmpleadoContabilidad = async (req, res) => {
   try {
-    const { id } = req.params; // ID del registro a actualizar
-    const user_id = req.user?.id; // ID del usuario que edita
+    const { id } = req.params;
+    const user_id = req.user?.id;
 
     if (!user_id) {
       return res.status(401).json({ message: "Usuario no autenticado." });
@@ -179,8 +179,8 @@ export const updateEmpleadoContabilidad = async (req, res) => {
         .json({ message: "No se proporcionó un ID para actualizar." });
     }
 
-    // Obtenemos solo los campos que el frontend podría enviar
     const {
+      empresa, // <--- AGREGADO
       nombre,
       apellidos,
       cedula,
@@ -194,9 +194,8 @@ export const updateEmpleadoContabilidad = async (req, res) => {
       url_autorizacion_firma,
     } = req.body;
 
-    // Construir el payload dinámicamente (Mejor Práctica de PATCH)
-    // Solo incluye campos que SÍ vinieron en el body.
     const payload = {};
+    if (empresa !== undefined) payload.empresa = empresa; // <--- AGREGADO
     if (nombre !== undefined) payload.nombre = nombre;
     if (apellidos !== undefined) payload.apellidos = apellidos;
     if (cedula !== undefined) payload.cedula = cedula;
@@ -214,31 +213,26 @@ export const updateEmpleadoContabilidad = async (req, res) => {
     if (url_autorizacion_firma !== undefined)
       payload.url_autorizacion_firma = url_autorizacion_firma;
 
-    // Si el payload está vacío, no hay nada que actualizar.
     if (Object.keys(payload).length === 0) {
       return res
         .status(400)
         .json({ message: "No se proporcionaron datos para actualizar." });
     }
 
-    // ¡Importante! El PATCH se filtra por ID y por user_id.
-    // Esto previene que un usuario edite registros de otro.
     const { data } = await supabaseAxios.patch(
       `/empleados_contabilidad?id=eq.${id}&user_id=eq.${user_id}`,
       payload,
-      { headers: { Prefer: "return=representation" } } // Devuelve el registro actualizado
+      { headers: { Prefer: "return=representation" } }
     );
 
-    // Si data está vacío, no se encontró un registro que coincida con (id Y user_id).
     if (!data || data.length === 0) {
       return res.status(404).json({
         message: "Registro no encontrado o no tiene permiso para editarlo.",
       });
     }
 
-    res.status(200).json(data[0]); // Devuelve el objeto actualizado
+    res.status(200).json(data[0]);
   } catch (error) {
-    // Manejo de errores idéntico al de 'create'
     console.error(
       "Error en updateEmpleadoContabilidad:",
       error.response ? error.response.data : error.message
