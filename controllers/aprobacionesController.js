@@ -102,6 +102,9 @@ export const aprobarRegistro = async (req, res) => {
             conflictKey: "cedula",
             payload: {
               ...basePayload,
+              // AGREGADO: Campo empresa
+              empresa: normalizar(datos.empresa), 
+              
               nombre: normalizar(datos.nombre),
               apellidos: normalizar(datos.apellidos),
               tipo_documento: normalizar(datos.tipo_documento),
@@ -110,23 +113,20 @@ export const aprobarRegistro = async (req, res) => {
               contacto: normalizar(datos.contacto),
               correo_electronico: normalizar(datos.correo_electronico),
               direccion: normalizar(datos.direccion),
-              // Nota: codigo_ciudad NO existe en la tabla empleados_contabilidad según el schema
+              
               url_hoja_de_vida: normalizar(datos.url_hoja_de_vida),
               url_cedula: normalizar(datos.url_cedula),
-              url_certificado_bancario: normalizar(
-                datos.url_certificado_bancario,
-              ),
+              url_certificado_bancario: normalizar(datos.url_certificado_bancario),
               url_habeas_data: normalizar(datos.url_habeas_data),
               url_autorizacion_firma: normalizar(datos.url_autorizacion_firma),
-              fecha_contratacion: normalizar(fechaContratacion), // Nuevo campo
+              
+              fecha_contratacion: normalizar(fechaContratacion),
               nombre_cargo: normalizar(nombreCargo),
               sede: normalizar(sede),
             },
           };
         }
         case "cliente": {
-          // Si vienen datos editados, los usamos. Si no, usamos los originales.
-          // Se hace merge por si acaso, pero idealmente datosAprobados trae todo.
           const datosOriginales = registro.datos || {};
           const datos = datosAprobados
             ? { ...datosOriginales, ...datosAprobados }
@@ -137,7 +137,6 @@ export const aprobarRegistro = async (req, res) => {
             conflictKey: "nit",
             payload: {
               ...basePayload,
-              // Campos generales
               fecha_diligenciamiento: normalizar(datos.fecha_diligenciamiento),
               tipo_regimen: normalizar(datos.tipo_regimen),
               tipo_documento: normalizar(datos.tipo_documento),
@@ -145,56 +144,36 @@ export const aprobarRegistro = async (req, res) => {
               dv: normalizar(datos.dv),
               razon_social: normalizar(datos.razon_social),
               nombre_establecimiento: normalizar(datos.nombre_establecimiento),
-              // Persona Natural
               primer_nombre: normalizar(datos.primer_nombre),
               segundo_nombre: normalizar(datos.segundo_nombre),
               primer_apellido: normalizar(datos.primer_apellido),
               segundo_apellido: normalizar(datos.segundo_apellido),
-              // CIIU
               codigo_ciiu: normalizar(datos.codigo_ciiu),
               descripcion_ciiu: normalizar(datos.descripcion_ciiu),
-              // Ubicación
               direccion_domicilio: normalizar(datos.direccion_domicilio),
               departamento: normalizar(datos.departamento),
               departamento_codigo: normalizar(datos.departamento_codigo),
               ciudad: normalizar(datos.ciudad),
               ciudad_codigo: normalizar(datos.ciudad_codigo),
-              // Contacto
-              email_factura_electronica: normalizar(
-                datos.email_factura_electronica,
-              ),
+              email_factura_electronica: normalizar(datos.email_factura_electronica),
               nombre_contacto: normalizar(datos.nombre_contacto),
               email_contacto: normalizar(datos.email_contacto),
               telefono_contacto: normalizar(datos.telefono_contacto),
-              // Representante Legal
               rep_legal_nombre: normalizar(datos.rep_legal_nombre),
               rep_legal_apellidos: normalizar(datos.rep_legal_apellidos),
               rep_legal_tipo_doc: normalizar(datos.rep_legal_tipo_doc),
               rep_legal_num_doc: normalizar(datos.rep_legal_num_doc),
-              // Declaraciones
               declara_pep: normalizar(datos.declara_pep),
-              declara_recursos_publicos: normalizar(
-                datos.declara_recursos_publicos,
-              ),
-              declara_obligaciones_tributarias: normalizar(
-                datos.declara_obligaciones_tributarias,
-              ),
-              // Cupo y plazo (campos específicos de cliente)
+              declara_recursos_publicos: normalizar(datos.declara_recursos_publicos),
+              declara_obligaciones_tributarias: normalizar(datos.declara_obligaciones_tributarias),
               cupo: normalizar(datos.cupo),
               plazo: normalizar(datos.plazo),
-              // Documentos - CLIENTES usa certificado_sagrilaft
               url_rut: normalizar(datos.url_rut),
               url_camara_comercio: normalizar(datos.url_camara_comercio),
-              url_certificado_sagrilaft: normalizar(
-                datos.url_certificado_sagrilaft,
-              ),
+              url_certificado_sagrilaft: normalizar(datos.url_certificado_sagrilaft),
               url_cedula: normalizar(datos.url_cedula),
-              url_certificacion_bancaria: normalizar(
-                datos.url_certificacion_bancaria,
-              ),
-              url_composicion_accionaria: normalizar(
-                datos.url_composicion_accionaria,
-              ),
+              url_certificacion_bancaria: normalizar(datos.url_certificacion_bancaria),
+              url_composicion_accionaria: normalizar(datos.url_composicion_accionaria),
             },
           };
         }
@@ -219,9 +198,7 @@ export const aprobarRegistro = async (req, res) => {
               direccion_domicilio: normalizar(datos.direccion_domicilio),
               departamento: normalizar(datos.departamento),
               ciudad: normalizar(datos.ciudad),
-              email_factura_electronica: normalizar(
-                datos.email_factura_electronica,
-              ),
+              email_factura_electronica: normalizar(datos.email_factura_electronica),
               nombre_contacto: normalizar(datos.nombre_contacto),
               email_contacto: normalizar(datos.email_contacto),
               telefono_contacto: normalizar(datos.telefono_contacto),
@@ -230,27 +207,15 @@ export const aprobarRegistro = async (req, res) => {
               rep_legal_tipo_doc: normalizar(datos.rep_legal_tipo_doc),
               rep_legal_num_doc: normalizar(datos.rep_legal_num_doc),
               declara_pep: normalizar(datos.declara_pep),
-              declara_recursos_publicos: normalizar(
-                datos.declara_recursos_publicos,
-              ),
-              declara_obligaciones_tributarias: normalizar(
-                datos.declara_obligaciones_tributarias,
-              ),
+              declara_recursos_publicos: normalizar(datos.declara_recursos_publicos),
+              declara_obligaciones_tributarias: normalizar(datos.declara_obligaciones_tributarias),
               cupo_aprobado: normalizar(cupoAprobado),
               url_rut: normalizar(datos.url_rut),
               url_camara_comercio: normalizar(datos.url_camara_comercio),
-              url_certificacion_bancaria: normalizar(
-                datos.url_certificacion_bancaria,
-              ),
-              url_doc_identidad_rep_legal: normalizar(
-                datos.url_doc_identidad_rep_legal,
-              ),
-              url_composicion_accionaria: normalizar(
-                datos.url_composicion_accionaria,
-              ),
-              url_certificado_sagrilaft: normalizar(
-                datos.url_certificado_sagrilaft,
-              ),
+              url_certificacion_bancaria: normalizar(datos.url_certificacion_bancaria),
+              url_doc_identidad_rep_legal: normalizar(datos.url_doc_identidad_rep_legal),
+              url_composicion_accionaria: normalizar(datos.url_composicion_accionaria),
+              url_certificado_sagrilaft: normalizar(datos.url_certificado_sagrilaft),
             },
           };
         }
@@ -291,12 +256,10 @@ export const aprobarRegistro = async (req, res) => {
     // Enviar correo al admin de contabilidad y a la copia
     try {
       const adminContabilidadEmail = process.env.ADMIN_CONTABILIDAD_EMAIL;
-      // Correo para el oficial de cumplimiento (SAGRILAFT)
       const adminSagrilaftEmail =
         process.env.ADMIN_SAGRILAFT_EMAIL || "johanmerkahorro777@gmail.com";
 
       if (adminContabilidadEmail) {
-        // Enviar a ambos correos (separados por coma)
         const recipients = [adminContabilidadEmail, adminSagrilaftEmail]
           .filter(Boolean)
           .join(",");
@@ -324,28 +287,17 @@ export const aprobarRegistro = async (req, res) => {
 
         const subject = `✅ Registro Aprobado: ${tipo} - ${nombreEntidad}`;
 
-        // Diseño profesional del correo en HTML
         const htmlContent = `
           <!DOCTYPE html>
           <html>
           <body style="margin: 0; padding: 0; background-color: #f4f4f4; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
             <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-top: 20px; margin-bottom: 20px;">
-              
-              <!-- Encabezado -->
               <div style="background-color: #210d65; padding: 25px 30px; text-align: center;">
                 <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 600; letter-spacing: 0.5px;">Registro Aprobado</h1>
               </div>
-
-              <!-- Contenido Principal -->
               <div style="padding: 40px 30px; color: #333333;">
-                <p style="font-size: 16px; line-height: 1.6; margin-top: 0; margin-bottom: 25px; color: #555555;">
-                  Estimado Administrador,
-                </p>
-                <p style="font-size: 16px; line-height: 1.6; margin-bottom: 30px; color: #555555;">
-                  El sistema de trazabilidad ha procesado existosamente una solicitud. El siguiente registro ha sido aprobado y añadido a la base de datos contable.
-                </p>
-
-                <!-- Tabla de Detalles -->
+                <p style="font-size: 16px; line-height: 1.6; margin-top: 0; margin-bottom: 25px; color: #555555;">Estimado Administrador,</p>
+                <p style="font-size: 16px; line-height: 1.6; margin-bottom: 30px; color: #555555;">El sistema de trazabilidad ha procesado existosamente una solicitud. El siguiente registro ha sido aprobado y añadido a la base de datos contable.</p>
                 <table style="width: 100%; border-collapse: separate; border-spacing: 0; margin-bottom: 30px; background-color: #f8fafc; border-radius: 6px; border: 1px solid #e2e8f0;">
                   <tbody>
                     <tr>
@@ -369,35 +321,9 @@ export const aprobarRegistro = async (req, res) => {
                     </tr>
                   </tbody>
                 </table>
-                
-                <!-- Visual Progress - Step 2 Active -->
-                <div style="margin: 30px 0;">
-                  <table width="100%" cellpadding="0" cellspacing="0">
-                    <tr>
-                      <td align="center" width="33%" style="position: relative;">
-                        <div style="width: 30px; height: 30px; background-color: #210d65; color: white; border-radius: 50%; line-height: 30px; font-weight: bold; margin: 0 auto; opacity: 0.6;">1</div>
-                        <div style="font-size: 11px; color: #666; margin-top: 5px;">Solicitud</div>
-                      </td>
-                      <td align="center" width="33%" style="position: relative;">
-                        <div style="width: 30px; height: 30px; background-color: #210d65; color: white; border-radius: 50%; line-height: 30px; font-weight: bold; margin: 0 auto; box-shadow: 0 0 0 3px rgba(33, 13, 101, 0.2);">2</div>
-                        <div style="font-size: 11px; color: #210d65; font-weight: bold; margin-top: 5px;">Aprobación</div>
-                      </td>
-                      <td align="center" width="33%" style="position: relative;">
-                        <div style="width: 30px; height: 30px; background-color: #e2e8f0; color: #94a3b8; border-radius: 50%; line-height: 30px; font-weight: bold; margin: 0 auto;">3</div>
-                        <div style="font-size: 11px; color: #94a3b8; margin-top: 5px;">Contabilidad</div>
-                      </td>
-                    </tr>
-                  </table>
-                </div>
-
               </div>
-
-              <!-- Pie de Página -->
               <div style="background-color: #f1f5f9; padding: 20px; text-align: center; border-top: 1px solid #e2e8f0;">
-                <p style="color: #94a3b8; font-size: 13px; margin: 0; line-height: 1.5;">
-                  Este es un mensaje automático del Sistema de Trazabilidad.<br>
-                  &copy; ${new Date().getFullYear()} Trazabilidad Contable.
-                </p>
+                <p style="color: #94a3b8; font-size: 13px; margin: 0; line-height: 1.5;">Este es un mensaje automático del Sistema de Trazabilidad.<br>&copy; ${new Date().getFullYear()} Trazabilidad Contable.</p>
               </div>
             </div>
           </body>
@@ -425,8 +351,6 @@ export const aprobarRegistro = async (req, res) => {
       error.response?.data || error.message,
     );
 
-    // El error 23505 (duplicate key) ya no debería ocurrir con UPSERT,
-    // pero lo dejamos por si acaso falla la resolución de conflictos.
     if (error.response?.data?.code === "23505") {
       return res.status(409).json({
         message:
