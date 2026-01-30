@@ -288,7 +288,7 @@ export const aprobarRegistro = async (req, res) => {
     if (necesitaUsuarioSiesa === "si" && registro.tipo === "empleado") {
       try {
         // Solo enviar a isazamanuel04@gmail.com
-        const recipientsSiesa = ["isazamanuel04@gmail.com"];
+        const recipientsSiesa = "isazamanuel04@gmail.com";
         await sendEmail({
           to: recipientsSiesa,
           subject: `🔑 Solicitud de Creación de Usuario Siesa: ${registro.datos?.nombre || "Empleado"} ${registro.datos?.apellidos || ""}`,
