@@ -126,6 +126,8 @@ export const aprobarRegistro = async (req, res) => {
               fecha_contratacion: normalizar(fechaContratacion),
               nombre_cargo: normalizar(nombreCargo),
               sede: normalizar(sede),
+              // AGREGADO: Campo necesita_usuario_siesa
+              necesita_usuario_siesa: normalizar(necesitaUsuarioSiesa),
             },
           };
         }
