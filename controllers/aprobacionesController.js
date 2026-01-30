@@ -16,7 +16,7 @@ export const obtenerPendientes = async (req, res) => {
 
     // Obtener todos los registros pendientes (estado: 'pendiente')
     const { data } = await supabaseAxios.get(
-      `/registros_pendientes?select=*&estado=eq.pendiente&order=created_at.desc`,
+      `/registros_pendientes?select=*&estado=eq.pendiente&order=created_at.desc`
     );
 
     res.status(200).json(data || []);
@@ -42,17 +42,14 @@ export const aprobarRegistro = async (req, res) => {
       fechaContratacion,
       nombreCargo,
       sede,
-      necesitaUsuarioSiesa,
+      necesitaUsuarioSiesa, // Recibimos el campo del frontend
     } = req.body;
     const user_id = req.user?.id;
 
     console.log(`[Aprobación] Procesando ID: ${id}`);
-    if (datosAprobados) {
-      console.log(
-        "[Aprobación] Datos editados recibidos:",
-        JSON.stringify(datosAprobados),
-      );
-    }
+    
+    // Normalizar la respuesta de SIESA para asegurar que el IF funcione
+    const siesaFlag = necesitaUsuarioSiesa ? String(necesitaUsuarioSiesa).toLowerCase().trim() : "no";
 
     if (!user_id) {
       return res.status(401).json({ message: "Usuario no autenticado." });
@@ -60,7 +57,7 @@ export const aprobarRegistro = async (req, res) => {
 
     // Obtener el registro pendiente
     const { data: registroPendiente } = await supabaseAxios.get(
-      `/registros_pendientes?id=eq.${id}`,
+      `/registros_pendientes?id=eq.${id}`
     );
 
     if (!registroPendiente || registroPendiente.length === 0) {
@@ -103,9 +100,7 @@ export const aprobarRegistro = async (req, res) => {
             conflictKey: "cedula",
             payload: {
               ...basePayload,
-              // AGREGADO: Campo empresa
               empresa: normalizar(datos.empresa),
-
               nombre: normalizar(datos.nombre),
               apellidos: normalizar(datos.apellidos),
               tipo_documento: normalizar(datos.tipo_documento),
@@ -114,20 +109,17 @@ export const aprobarRegistro = async (req, res) => {
               contacto: normalizar(datos.contacto),
               correo_electronico: normalizar(datos.correo_electronico),
               direccion: normalizar(datos.direccion),
-
               url_hoja_de_vida: normalizar(datos.url_hoja_de_vida),
               url_cedula: normalizar(datos.url_cedula),
-              url_certificado_bancario: normalizar(
-                datos.url_certificado_bancario,
-              ),
+              url_certificado_bancario: normalizar(datos.url_certificado_bancario),
               url_habeas_data: normalizar(datos.url_habeas_data),
               url_autorizacion_firma: normalizar(datos.url_autorizacion_firma),
-
+              
+              // Campos enriquecidos
               fecha_contratacion: normalizar(fechaContratacion),
               nombre_cargo: normalizar(nombreCargo),
               sede: normalizar(sede),
-              // AGREGADO: Campo necesita_usuario_siesa
-              necesita_usuario_siesa: normalizar(necesitaUsuarioSiesa),
+              necesita_usuario_siesa: siesaFlag, // Guardamos normalizado
             },
           };
         }
@@ -160,9 +152,7 @@ export const aprobarRegistro = async (req, res) => {
               departamento_codigo: normalizar(datos.departamento_codigo),
               ciudad: normalizar(datos.ciudad),
               ciudad_codigo: normalizar(datos.ciudad_codigo),
-              email_factura_electronica: normalizar(
-                datos.email_factura_electronica,
-              ),
+              email_factura_electronica: normalizar(datos.email_factura_electronica),
               nombre_contacto: normalizar(datos.nombre_contacto),
               email_contacto: normalizar(datos.email_contacto),
               telefono_contacto: normalizar(datos.telefono_contacto),
@@ -171,26 +161,16 @@ export const aprobarRegistro = async (req, res) => {
               rep_legal_tipo_doc: normalizar(datos.rep_legal_tipo_doc),
               rep_legal_num_doc: normalizar(datos.rep_legal_num_doc),
               declara_pep: normalizar(datos.declara_pep),
-              declara_recursos_publicos: normalizar(
-                datos.declara_recursos_publicos,
-              ),
-              declara_obligaciones_tributarias: normalizar(
-                datos.declara_obligaciones_tributarias,
-              ),
+              declara_recursos_publicos: normalizar(datos.declara_recursos_publicos),
+              declara_obligaciones_tributarias: normalizar(datos.declara_obligaciones_tributarias),
               cupo: normalizar(datos.cupo),
               plazo: normalizar(datos.plazo),
               url_rut: normalizar(datos.url_rut),
               url_camara_comercio: normalizar(datos.url_camara_comercio),
-              url_certificado_sagrilaft: normalizar(
-                datos.url_certificado_sagrilaft,
-              ),
+              url_certificado_sagrilaft: normalizar(datos.url_certificado_sagrilaft),
               url_cedula: normalizar(datos.url_cedula),
-              url_certificacion_bancaria: normalizar(
-                datos.url_certificacion_bancaria,
-              ),
-              url_composicion_accionaria: normalizar(
-                datos.url_composicion_accionaria,
-              ),
+              url_certificacion_bancaria: normalizar(datos.url_certificacion_bancaria),
+              url_composicion_accionaria: normalizar(datos.url_composicion_accionaria),
             },
           };
         }
@@ -215,9 +195,7 @@ export const aprobarRegistro = async (req, res) => {
               direccion_domicilio: normalizar(datos.direccion_domicilio),
               departamento: normalizar(datos.departamento),
               ciudad: normalizar(datos.ciudad),
-              email_factura_electronica: normalizar(
-                datos.email_factura_electronica,
-              ),
+              email_factura_electronica: normalizar(datos.email_factura_electronica),
               nombre_contacto: normalizar(datos.nombre_contacto),
               email_contacto: normalizar(datos.email_contacto),
               telefono_contacto: normalizar(datos.telefono_contacto),
@@ -226,27 +204,15 @@ export const aprobarRegistro = async (req, res) => {
               rep_legal_tipo_doc: normalizar(datos.rep_legal_tipo_doc),
               rep_legal_num_doc: normalizar(datos.rep_legal_num_doc),
               declara_pep: normalizar(datos.declara_pep),
-              declara_recursos_publicos: normalizar(
-                datos.declara_recursos_publicos,
-              ),
-              declara_obligaciones_tributarias: normalizar(
-                datos.declara_obligaciones_tributarias,
-              ),
+              declara_recursos_publicos: normalizar(datos.declara_recursos_publicos),
+              declara_obligaciones_tributarias: normalizar(datos.declara_obligaciones_tributarias),
               cupo_aprobado: normalizar(cupoAprobado),
               url_rut: normalizar(datos.url_rut),
               url_camara_comercio: normalizar(datos.url_camara_comercio),
-              url_certificacion_bancaria: normalizar(
-                datos.url_certificacion_bancaria,
-              ),
-              url_doc_identidad_rep_legal: normalizar(
-                datos.url_doc_identidad_rep_legal,
-              ),
-              url_composicion_accionaria: normalizar(
-                datos.url_composicion_accionaria,
-              ),
-              url_certificado_sagrilaft: normalizar(
-                datos.url_certificado_sagrilaft,
-              ),
+              url_certificacion_bancaria: normalizar(datos.url_certificacion_bancaria),
+              url_doc_identidad_rep_legal: normalizar(datos.url_doc_identidad_rep_legal),
+              url_composicion_accionaria: normalizar(datos.url_composicion_accionaria),
+              url_certificado_sagrilaft: normalizar(datos.url_certificado_sagrilaft),
             },
           };
         }
@@ -262,8 +228,7 @@ export const aprobarRegistro = async (req, res) => {
     }
 
     console.log(
-      `[Aprobación] Insertando/Actualizando en ${infoInsercion.tablaDestino}. Payload:`,
-      JSON.stringify(infoInsercion.payload),
+      `[Aprobación] Insertando/Actualizando en ${infoInsercion.tablaDestino}.`
     );
 
     const { data: nuevoRegistro } = await supabaseAxios.post(
@@ -273,26 +238,27 @@ export const aprobarRegistro = async (req, res) => {
         headers: {
           Prefer: "resolution=merge-duplicates,return=representation",
         },
-      },
+      }
     );
 
-    // Actualizar estado del registro pendiente con el ID del registro aprobado
+    // Actualizar estado del registro pendiente
     await supabaseAxios.patch(`/registros_pendientes?id=eq.${id}`, {
       estado: "aprobado",
       aprobado_por: user_id,
       fecha_aprobacion: new Date().toISOString(),
-      registro_aprobado_id: nuevoRegistro[0]?.id, // Guardar el ID del registro creado
+      registro_aprobado_id: nuevoRegistro[0]?.id,
     });
 
-    // --- NUEVO: Correo SIESA para Empleados ---
-    if (necesitaUsuarioSiesa === "si" && registro.tipo === "empleado") {
+    // -------------------------------------------------------------------------
+    // CORRECCIÓN PRINCIPAL: ENVÍO CORREO SIESA
+    // -------------------------------------------------------------------------
+    if (siesaFlag === "si" && registro.tipo === "empleado") {
       try {
-        // Solo enviar a isazamanuel04@gmail.com
+        console.log("Enviando correo de solicitud SIESA...");
         const recipientsSiesa = "isazamanuel04@gmail.com";
-        await sendEmail({
-          to: recipientsSiesa,
-          subject: `🔑 Solicitud de Creación de Usuario Siesa: ${registro.datos?.nombre || "Empleado"} ${registro.datos?.apellidos || ""}`,
-          html: `
+        const subjectSiesa = `🔑 Solicitud de Usuario Siesa: ${registro.datos?.nombre || "Empleado"} ${registro.datos?.apellidos || ""}`;
+        
+        const htmlContentSiesa = `
             <!DOCTYPE html>
             <html>
             <body style="margin:0;padding:0;background:#f4f4f4;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
@@ -334,8 +300,12 @@ export const aprobarRegistro = async (req, res) => {
               </div>
             </body>
             </html>
-          `,
-        });
+          `;
+
+        // FIX: Enviar argumentos separados en lugar de objeto
+        await sendEmail(recipientsSiesa, subjectSiesa, htmlContentSiesa);
+        console.log("Correo SIESA enviado con éxito.");
+
       } catch (err) {
         console.error("Error enviando correo de usuario Siesa:", err);
       }
@@ -404,7 +374,7 @@ export const aprobarRegistro = async (req, res) => {
                       <td style="padding: 15px 20px; color: #64748b; font-weight: 600; font-size: 14px;">Fecha Aprobación</td>
                       <td style="padding: 15px 20px; color: #334155; font-weight: 500; font-size: 14px;">${new Date().toLocaleDateString(
                         "es-CO",
-                        { year: "numeric", month: "long", day: "numeric" },
+                        { year: "numeric", month: "long", day: "numeric" }
                       )}</td>
                     </tr>
                   </tbody>
@@ -425,7 +395,7 @@ export const aprobarRegistro = async (req, res) => {
     } catch (emailError) {
       console.error(
         "Error enviando correo al admin de contabilidad:",
-        emailError,
+        emailError
       );
     }
 
@@ -436,7 +406,7 @@ export const aprobarRegistro = async (req, res) => {
   } catch (error) {
     console.error(
       "Error al aprobar registro:",
-      error.response?.data || error.message,
+      error.response?.data || error.message
     );
 
     if (error.response?.data?.code === "23505") {
@@ -470,7 +440,7 @@ export const rechazarRegistro = async (req, res) => {
 
     // Obtener el registro pendiente
     const { data: registroPendiente } = await supabaseAxios.get(
-      `/registros_pendientes?id=eq.${id}`,
+      `/registros_pendientes?id=eq.${id}`
     );
 
     if (!registroPendiente || registroPendiente.length === 0) {
@@ -494,7 +464,7 @@ export const rechazarRegistro = async (req, res) => {
         motivo_rechazo: motivo || "Sin motivo especificado",
         fecha_rechazo: new Date().toISOString(),
       },
-      { headers: { Prefer: "return=representation" } },
+      { headers: { Prefer: "return=representation" } }
     );
 
     res.status(200).json({
@@ -523,7 +493,7 @@ export const obtenerHistorial = async (req, res) => {
     }
 
     const { data } = await supabaseAxios.get(
-      `/registros_pendientes?select=*&estado=in.(aprobado,rechazado,creado_contabilidad)&order=created_at.desc`,
+      `/registros_pendientes?select=*&estado=in.(aprobado,rechazado,creado_contabilidad)&order=created_at.desc`
     );
 
     res.status(200).json(data || []);
@@ -549,7 +519,7 @@ export const obtenerArchivados = async (req, res) => {
     }
 
     const { data } = await supabaseAxios.get(
-      `/registros_pendientes?select=*&estado=in.(archivado_aprobado,archivado_rechazado)&order=created_at.desc`,
+      `/registros_pendientes?select=*&estado=in.(archivado_aprobado,archivado_rechazado)&order=created_at.desc`
     );
 
     res.status(200).json(data || []);
@@ -577,7 +547,7 @@ export const archivarRegistro = async (req, res) => {
 
     // Obtener el registro actual
     const { data: registroActual } = await supabaseAxios.get(
-      `/registros_pendientes?id=eq.${id}`,
+      `/registros_pendientes?id=eq.${id}`
     );
 
     if (!registroActual || registroActual.length === 0) {
@@ -600,7 +570,7 @@ export const archivarRegistro = async (req, res) => {
     const { data } = await supabaseAxios.patch(
       `/registros_pendientes?id=eq.${id}`,
       { estado: nuevoEstado },
-      { headers: { Prefer: "return=representation" } },
+      { headers: { Prefer: "return=representation" } }
     );
 
     res.status(200).json({
@@ -631,7 +601,7 @@ export const restaurarRegistro = async (req, res) => {
 
     // Obtener el registro actual
     const { data: registroActual } = await supabaseAxios.get(
-      `/registros_pendientes?id=eq.${id}`,
+      `/registros_pendientes?id=eq.${id}`
     );
 
     if (!registroActual || registroActual.length === 0) {
@@ -654,7 +624,7 @@ export const restaurarRegistro = async (req, res) => {
     const { data } = await supabaseAxios.patch(
       `/registros_pendientes?id=eq.${id}`,
       { estado: nuevoEstado },
-      { headers: { Prefer: "return=representation" } },
+      { headers: { Prefer: "return=representation" } }
     );
 
     res.status(200).json({
