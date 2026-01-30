@@ -60,7 +60,7 @@ export const generarToken = async (req, res) => {
 
     // Mapeo de tipos a rutas del frontend
     const rutasPorTipo = {
-      empleado: "/trazabilidad/crear-empleado",
+      empleado: "/autogestion",
       cliente: "/trazabilidad/crear-cliente",
       proveedor: "/trazabilidad/crear-proveedor",
     };
@@ -76,7 +76,7 @@ export const generarToken = async (req, res) => {
   } catch (error) {
     console.error(
       "Error al generar token:",
-      error.response?.data || error.message
+      error.response?.data || error.message,
     );
     res.status(500).json({
       message: "Error al generar token.",
@@ -99,7 +99,7 @@ export const validarToken = async (req, res) => {
 
     // Buscar el token
     const { data } = await supabaseAxios.get(
-      `/tokens_registro?token=eq.${token}`
+      `/tokens_registro?token=eq.${token}`,
     );
 
     if (!data || data.length === 0) {
@@ -150,7 +150,7 @@ export const listarTokens = async (req, res) => {
     }
 
     const { data: tokens } = await supabaseAxios.get(
-      `/tokens_registro?select=*&order=created_at.desc`
+      `/tokens_registro?select=*&order=created_at.desc`,
     );
 
     if (!tokens?.length) {
@@ -181,12 +181,12 @@ export const listarTokens = async (req, res) => {
         (perfiles || []).map((perfil) => [
           perfil.user_id || perfil.id,
           { nombre: perfil.nombre },
-        ])
+        ]),
       );
     } catch (profileError) {
       console.warn(
         "No se pudo obtener perfiles para los tokens:",
-        profileError.response?.data || profileError.message
+        profileError.response?.data || profileError.message,
       );
     }
 
@@ -199,7 +199,7 @@ export const listarTokens = async (req, res) => {
   } catch (error) {
     console.error(
       "Error al listar tokens:",
-      error.response?.data || error.message || error
+      error.response?.data || error.message || error,
     );
     res.status(500).json({
       message: "Error al listar tokens.",
@@ -217,7 +217,7 @@ export const marcarTokenUsado = async (token) => {
     const { data } = await supabaseAxios.patch(
       `/tokens_registro?token=eq.${token}`,
       { usado: true, fecha_uso: new Date().toISOString() },
-      { headers: { Prefer: "return=representation" } }
+      { headers: { Prefer: "return=representation" } },
     );
     return data[0];
   } catch (error) {
@@ -243,7 +243,7 @@ export const eliminarToken = async (req, res) => {
     // Por ahora permitimos eliminar si está autenticado, asumiendo que el frontend filtra o que cualquier admin puede borrar.
 
     const { error } = await supabaseAxios.delete(
-      `/tokens_registro?id=eq.${id}`
+      `/tokens_registro?id=eq.${id}`,
     );
 
     if (error) throw error;

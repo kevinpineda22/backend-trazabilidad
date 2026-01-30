@@ -42,6 +42,7 @@ export const aprobarRegistro = async (req, res) => {
       fechaContratacion,
       nombreCargo,
       sede,
+      necesitaUsuarioSiesa,
     } = req.body;
     const user_id = req.user?.id;
 
@@ -103,8 +104,8 @@ export const aprobarRegistro = async (req, res) => {
             payload: {
               ...basePayload,
               // AGREGADO: Campo empresa
-              empresa: normalizar(datos.empresa), 
-              
+              empresa: normalizar(datos.empresa),
+
               nombre: normalizar(datos.nombre),
               apellidos: normalizar(datos.apellidos),
               tipo_documento: normalizar(datos.tipo_documento),
@@ -113,13 +114,15 @@ export const aprobarRegistro = async (req, res) => {
               contacto: normalizar(datos.contacto),
               correo_electronico: normalizar(datos.correo_electronico),
               direccion: normalizar(datos.direccion),
-              
+
               url_hoja_de_vida: normalizar(datos.url_hoja_de_vida),
               url_cedula: normalizar(datos.url_cedula),
-              url_certificado_bancario: normalizar(datos.url_certificado_bancario),
+              url_certificado_bancario: normalizar(
+                datos.url_certificado_bancario,
+              ),
               url_habeas_data: normalizar(datos.url_habeas_data),
               url_autorizacion_firma: normalizar(datos.url_autorizacion_firma),
-              
+
               fecha_contratacion: normalizar(fechaContratacion),
               nombre_cargo: normalizar(nombreCargo),
               sede: normalizar(sede),
@@ -155,7 +158,9 @@ export const aprobarRegistro = async (req, res) => {
               departamento_codigo: normalizar(datos.departamento_codigo),
               ciudad: normalizar(datos.ciudad),
               ciudad_codigo: normalizar(datos.ciudad_codigo),
-              email_factura_electronica: normalizar(datos.email_factura_electronica),
+              email_factura_electronica: normalizar(
+                datos.email_factura_electronica,
+              ),
               nombre_contacto: normalizar(datos.nombre_contacto),
               email_contacto: normalizar(datos.email_contacto),
               telefono_contacto: normalizar(datos.telefono_contacto),
@@ -164,16 +169,26 @@ export const aprobarRegistro = async (req, res) => {
               rep_legal_tipo_doc: normalizar(datos.rep_legal_tipo_doc),
               rep_legal_num_doc: normalizar(datos.rep_legal_num_doc),
               declara_pep: normalizar(datos.declara_pep),
-              declara_recursos_publicos: normalizar(datos.declara_recursos_publicos),
-              declara_obligaciones_tributarias: normalizar(datos.declara_obligaciones_tributarias),
+              declara_recursos_publicos: normalizar(
+                datos.declara_recursos_publicos,
+              ),
+              declara_obligaciones_tributarias: normalizar(
+                datos.declara_obligaciones_tributarias,
+              ),
               cupo: normalizar(datos.cupo),
               plazo: normalizar(datos.plazo),
               url_rut: normalizar(datos.url_rut),
               url_camara_comercio: normalizar(datos.url_camara_comercio),
-              url_certificado_sagrilaft: normalizar(datos.url_certificado_sagrilaft),
+              url_certificado_sagrilaft: normalizar(
+                datos.url_certificado_sagrilaft,
+              ),
               url_cedula: normalizar(datos.url_cedula),
-              url_certificacion_bancaria: normalizar(datos.url_certificacion_bancaria),
-              url_composicion_accionaria: normalizar(datos.url_composicion_accionaria),
+              url_certificacion_bancaria: normalizar(
+                datos.url_certificacion_bancaria,
+              ),
+              url_composicion_accionaria: normalizar(
+                datos.url_composicion_accionaria,
+              ),
             },
           };
         }
@@ -198,7 +213,9 @@ export const aprobarRegistro = async (req, res) => {
               direccion_domicilio: normalizar(datos.direccion_domicilio),
               departamento: normalizar(datos.departamento),
               ciudad: normalizar(datos.ciudad),
-              email_factura_electronica: normalizar(datos.email_factura_electronica),
+              email_factura_electronica: normalizar(
+                datos.email_factura_electronica,
+              ),
               nombre_contacto: normalizar(datos.nombre_contacto),
               email_contacto: normalizar(datos.email_contacto),
               telefono_contacto: normalizar(datos.telefono_contacto),
@@ -207,15 +224,27 @@ export const aprobarRegistro = async (req, res) => {
               rep_legal_tipo_doc: normalizar(datos.rep_legal_tipo_doc),
               rep_legal_num_doc: normalizar(datos.rep_legal_num_doc),
               declara_pep: normalizar(datos.declara_pep),
-              declara_recursos_publicos: normalizar(datos.declara_recursos_publicos),
-              declara_obligaciones_tributarias: normalizar(datos.declara_obligaciones_tributarias),
+              declara_recursos_publicos: normalizar(
+                datos.declara_recursos_publicos,
+              ),
+              declara_obligaciones_tributarias: normalizar(
+                datos.declara_obligaciones_tributarias,
+              ),
               cupo_aprobado: normalizar(cupoAprobado),
               url_rut: normalizar(datos.url_rut),
               url_camara_comercio: normalizar(datos.url_camara_comercio),
-              url_certificacion_bancaria: normalizar(datos.url_certificacion_bancaria),
-              url_doc_identidad_rep_legal: normalizar(datos.url_doc_identidad_rep_legal),
-              url_composicion_accionaria: normalizar(datos.url_composicion_accionaria),
-              url_certificado_sagrilaft: normalizar(datos.url_certificado_sagrilaft),
+              url_certificacion_bancaria: normalizar(
+                datos.url_certificacion_bancaria,
+              ),
+              url_doc_identidad_rep_legal: normalizar(
+                datos.url_doc_identidad_rep_legal,
+              ),
+              url_composicion_accionaria: normalizar(
+                datos.url_composicion_accionaria,
+              ),
+              url_certificado_sagrilaft: normalizar(
+                datos.url_certificado_sagrilaft,
+              ),
             },
           };
         }
@@ -252,6 +281,51 @@ export const aprobarRegistro = async (req, res) => {
       fecha_aprobacion: new Date().toISOString(),
       registro_aprobado_id: nuevoRegistro[0]?.id, // Guardar el ID del registro creado
     });
+
+    // --- NUEVO: Correo SIESA para Empleados ---
+    if (necesitaUsuarioSiesa === "si" && registro.tipo === "empleado") {
+      try {
+        const adminContab = process.env.ADMIN_CONTABILIDAD_EMAIL;
+        const adminSagrilaft =
+          process.env.ADMIN_SAGRILAFT_EMAIL || "johanmerkahorro777@gmail.com";
+        // Lista de destinatarios: Manuel + Admins actuales del flujo
+        const recipientsSiesa = ["isazamanuel04@gmail.com"];
+        if (adminContab) recipientsSiesa.push(adminContab);
+        if (adminSagrilaft) recipientsSiesa.push(adminSagrilaft);
+
+        const nombreEmp = `${infoInsercion.payload.nombre} ${infoInsercion.payload.apellidos}`;
+        const cedulaEmp = infoInsercion.payload.cedula;
+
+        const subjectSiesa = `⚠️ Solicitud Usuario SIESA: ${nombreEmp}`;
+        const htmlSiesa = `
+          <!DOCTYPE html>
+          <html>
+          <body style="margin: 0; padding: 0; background-color: #f4f4f4; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+            <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-top: 20px; margin-bottom: 20px;">
+              <div style="background-color: #c53030; padding: 25px 30px; text-align: center;">
+                <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 600;">Solicitud Usuario SIESA</h1>
+              </div>
+              <div style="padding: 40px 30px; color: #333333;">
+                <p style="font-size: 16px; margin-bottom: 20px;">Se ha aprobado un nuevo empleado que requiere usuario en el sistema <strong>SIESA</strong>.</p>
+                <div style="background-color: #fff5f5; border-left: 4px solid #c53030; padding: 15px; margin-bottom: 20px;">
+                    <p style="margin: 5px 0;"><strong>Empleado:</strong> ${nombreEmp}</p>
+                    <p style="margin: 5px 0;"><strong>Cédula:</strong> ${cedulaEmp}</p>
+                    <p style="margin: 5px 0;"><strong>Cargo:</strong> ${infoInsercion.payload.nombre_cargo || "N/A"}</p>
+                    <p style="margin: 5px 0;"><strong>Sede:</strong> ${infoInsercion.payload.sede || "N/A"}</p>
+                </div>
+                <p style="font-size: 14px; color: #666;">Por favor proceder con la creación del usuario.</p>
+              </div>
+            </div>
+          </body>
+          </html>
+        `;
+
+        await sendEmail(recipientsSiesa.join(","), subjectSiesa, htmlSiesa);
+        console.log("Correo SIESA enviado a:", recipientsSiesa);
+      } catch (errSiesa) {
+        console.error("Error enviando correo SIESA:", errSiesa);
+      }
+    }
 
     // Enviar correo al admin de contabilidad y a la copia
     try {
