@@ -287,45 +287,57 @@ export const aprobarRegistro = async (req, res) => {
     // --- NUEVO: Correo SIESA para Empleados ---
     if (necesitaUsuarioSiesa === "si" && registro.tipo === "empleado") {
       try {
-        const adminContab = process.env.ADMIN_CONTABILIDAD_EMAIL;
-        const adminSagrilaft =
-          process.env.ADMIN_SAGRILAFT_EMAIL || "johanmerkahorro777@gmail.com";
-        // Lista de destinatarios: Manuel + Admins actuales del flujo
+        // Solo enviar a isazamanuel04@gmail.com
         const recipientsSiesa = ["isazamanuel04@gmail.com"];
-        if (adminContab) recipientsSiesa.push(adminContab);
-        if (adminSagrilaft) recipientsSiesa.push(adminSagrilaft);
-
-        const nombreEmp = `${infoInsercion.payload.nombre} ${infoInsercion.payload.apellidos}`;
-        const cedulaEmp = infoInsercion.payload.cedula;
-
-        const subjectSiesa = `⚠️ Solicitud Usuario SIESA: ${nombreEmp}`;
-        const htmlSiesa = `
-          <!DOCTYPE html>
-          <html>
-          <body style="margin: 0; padding: 0; background-color: #f4f4f4; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
-            <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-top: 20px; margin-bottom: 20px;">
-              <div style="background-color: #c53030; padding: 25px 30px; text-align: center;">
-                <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 600;">Solicitud Usuario SIESA</h1>
-              </div>
-              <div style="padding: 40px 30px; color: #333333;">
-                <p style="font-size: 16px; margin-bottom: 20px;">Se ha aprobado un nuevo empleado que requiere usuario en el sistema <strong>SIESA</strong>.</p>
-                <div style="background-color: #fff5f5; border-left: 4px solid #c53030; padding: 15px; margin-bottom: 20px;">
-                    <p style="margin: 5px 0;"><strong>Empleado:</strong> ${nombreEmp}</p>
-                    <p style="margin: 5px 0;"><strong>Cédula:</strong> ${cedulaEmp}</p>
-                    <p style="margin: 5px 0;"><strong>Cargo:</strong> ${infoInsercion.payload.nombre_cargo || "N/A"}</p>
-                    <p style="margin: 5px 0;"><strong>Sede:</strong> ${infoInsercion.payload.sede || "N/A"}</p>
+        await sendEmail({
+          to: recipientsSiesa,
+          subject: `🔑 Solicitud de Creación de Usuario Siesa: ${registro.datos?.nombre || "Empleado"} ${registro.datos?.apellidos || ""}`,
+          html: `
+            <!DOCTYPE html>
+            <html>
+            <body style="margin:0;padding:0;background:#f4f4f4;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
+              <div style="max-width:600px;margin:0 auto;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 4px 6px rgba(0,0,0,0.05);margin-top:20px;margin-bottom:20px;">
+                <div style="background:#210d65;padding:25px 30px;text-align:center;">
+                  <h1 style="color:#fff;margin:0;font-size:24px;font-weight:600;letter-spacing:0.5px;">Solicitud de Usuario Siesa</h1>
                 </div>
-                <p style="font-size: 14px; color: #666;">Por favor proceder con la creación del usuario.</p>
+                <div style="padding:40px 30px;color:#333;">
+                  <p style="font-size:16px;line-height:1.6;margin-top:0;margin-bottom:25px;color:#555;">
+                    Se ha aprobado un empleado que requiere usuario en Siesa.
+                  </p>
+                  <table style="width:100%;border-collapse:separate;border-spacing:0;margin-bottom:30px;background:#f8fafc;border-radius:6px;border:1px solid #e2e8f0;">
+                    <tbody>
+                      <tr>
+                        <td style="padding:15px 20px;border-bottom:1px solid #e2e8f0;color:#64748b;font-weight:600;font-size:14px;width:35%;">Nombre Completo</td>
+                        <td style="padding:15px 20px;border-bottom:1px solid #e2e8f0;color:#334155;font-weight:500;font-size:14px;">${registro.datos?.nombre || ""} ${registro.datos?.apellidos || ""}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding:15px 20px;border-bottom:1px solid #e2e8f0;color:#64748b;font-weight:600;font-size:14px;">Documento</td>
+                        <td style="padding:15px 20px;border-bottom:1px solid #e2e8f0;color:#334155;font-weight:500;font-size:14px;">${registro.datos?.cedula || ""}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding:15px 20px;border-bottom:1px solid #e2e8f0;color:#64748b;font-weight:600;font-size:14px;">Correo</td>
+                        <td style="padding:15px 20px;border-bottom:1px solid #e2e8f0;color:#334155;font-weight:500;font-size:14px;">${registro.datos?.correo_electronico || ""}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding:15px 20px;border-bottom:1px solid #e2e8f0;color:#64748b;font-weight:600;font-size:14px;">Empresa</td>
+                        <td style="padding:15px 20px;border-bottom:1px solid #e2e8f0;color:#334155;font-weight:500;font-size:14px;">${registro.datos?.empresa || ""}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  <div style="text-align:center;margin-top:30px;">
+                    <span style="display:inline-block;background:#210d65;color:#fff;padding:10px 24px;border-radius:6px;font-size:16px;font-weight:600;letter-spacing:1px;">Acción requerida: Crear usuario en Siesa</span>
+                  </div>
+                </div>
+                <div style="background:#210d65;padding:18px 30px;text-align:center;">
+                  <span style="color:#fff;font-size:13px;">Trazabilidad Contabilidad &copy; ${new Date().getFullYear()}</span>
+                </div>
               </div>
-            </div>
-          </body>
-          </html>
-        `;
-
-        await sendEmail(recipientsSiesa.join(","), subjectSiesa, htmlSiesa);
-        console.log("Correo SIESA enviado a:", recipientsSiesa);
-      } catch (errSiesa) {
-        console.error("Error enviando correo SIESA:", errSiesa);
+            </body>
+            </html>
+          `,
+        });
+      } catch (err) {
+        console.error("Error enviando correo de usuario Siesa:", err);
       }
     }
 
