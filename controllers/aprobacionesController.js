@@ -40,15 +40,14 @@ export const aprobarRegistro = async (req, res) => {
       cupoAprobado,
       datosAprobados,
       fechaContratacion,
-      nombreCargo,
+      nombreCargo, // <--- Este es el cargo aprobado
       sede,
-      necesitaUsuarioSiesa, // Recibimos el campo del frontend
+      necesitaUsuarioSiesa,
     } = req.body;
     const user_id = req.user?.id;
 
     console.log(`[Aprobación] Procesando ID: ${id}`);
     
-    // Normalizar la respuesta de SIESA para asegurar que el IF funcione
     const siesaFlag = necesitaUsuarioSiesa ? String(necesitaUsuarioSiesa).toLowerCase().trim() : "no";
 
     if (!user_id) {
@@ -119,7 +118,7 @@ export const aprobarRegistro = async (req, res) => {
               fecha_contratacion: normalizar(fechaContratacion),
               nombre_cargo: normalizar(nombreCargo),
               sede: normalizar(sede),
-              necesita_usuario_siesa: siesaFlag, // Guardamos normalizado
+              necesita_usuario_siesa: siesaFlag,
             },
           };
         }
@@ -250,7 +249,7 @@ export const aprobarRegistro = async (req, res) => {
     });
 
     // -------------------------------------------------------------------------
-    // CORRECCIÓN PRINCIPAL: ENVÍO CORREO SIESA
+    // CORRECCIÓN: ENVÍO CORREO SIESA (CON CARGO INCLUIDO)
     // -------------------------------------------------------------------------
     if (siesaFlag === "si" && registro.tipo === "empleado") {
       try {
@@ -285,6 +284,10 @@ export const aprobarRegistro = async (req, res) => {
                         <td style="padding:15px 20px;border-bottom:1px solid #e2e8f0;color:#334155;font-weight:500;font-size:14px;">${registro.datos?.correo_electronico || ""}</td>
                       </tr>
                       <tr>
+                        <td style="padding:15px 20px;border-bottom:1px solid #e2e8f0;color:#64748b;font-weight:600;font-size:14px;">Cargo Aprobado</td>
+                        <td style="padding:15px 20px;border-bottom:1px solid #e2e8f0;color:#334155;font-weight:500;font-size:14px;">${nombreCargo || "No especificado"}</td>
+                      </tr>
+                      <tr>
                         <td style="padding:15px 20px;border-bottom:1px solid #e2e8f0;color:#64748b;font-weight:600;font-size:14px;">Empresa</td>
                         <td style="padding:15px 20px;border-bottom:1px solid #e2e8f0;color:#334155;font-weight:500;font-size:14px;">${registro.datos?.empresa || ""}</td>
                       </tr>
@@ -302,7 +305,6 @@ export const aprobarRegistro = async (req, res) => {
             </html>
           `;
 
-        // FIX: Enviar argumentos separados en lugar de objeto
         await sendEmail(recipientsSiesa, subjectSiesa, htmlContentSiesa);
         console.log("Correo SIESA enviado con éxito.");
 
