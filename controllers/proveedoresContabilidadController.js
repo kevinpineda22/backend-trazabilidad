@@ -14,6 +14,15 @@ export const createProveedorContabilidad = async (req, res) => {
       url_doc_identidad_rep_legal,
       url_composicion_accionaria,
       url_certificado_sagrilaft,
+
+      // Nuevos campos
+      registra_en_bolsa,
+      url_certificado_bolsa,
+      tipo_proveedor,
+      federaciones_recaudo, // string or JSON
+      url_certificado_fenalce,
+      url_certificado_asohofrucol,
+      url_certificado_fedepapa,
     } = req.body;
     const user_id = req.user?.id;
     if (!user_id) {
@@ -42,19 +51,28 @@ export const createProveedorContabilidad = async (req, res) => {
       url_doc_identidad_rep_legal,
       url_composicion_accionaria,
       url_certificado_sagrilaft,
+
+      // Nuevos campos en payload
+      registra_en_bolsa,
+      url_certificado_bolsa: url_certificado_bolsa || null,
+      tipo_proveedor,
+      federaciones_recaudo,
+      url_certificado_fenalce: url_certificado_fenalce || null,
+      url_certificado_asohofrucol: url_certificado_asohofrucol || null,
+      url_certificado_fedepapa: url_certificado_fedepapa || null,
     };
 
     const { data } = await supabaseAxios.post(
       "/proveedores_contabilidad",
       payload,
-      { headers: { Prefer: "return=representation" } }
+      { headers: { Prefer: "return=representation" } },
     );
 
     res.status(201).json(data[0]);
   } catch (error) {
     console.error(
       "Error en createProveedorContabilidad:",
-      error.response ? error.response.data : error.message
+      error.response ? error.response.data : error.message,
     );
     if (error.response) {
       if (error.response.data?.code === "23505") {
@@ -88,7 +106,7 @@ export const getHistorialProveedores = async (req, res) => {
       return res.status(401).json({ message: "Usuario no autenticado." });
     }
     const { data, error } = await supabaseAxios.get(
-      `/proveedores_contabilidad?select=*,profiles(nombre)&user_id=eq.${user_id}&order=created_at.desc`
+      `/proveedores_contabilidad?select=*,profiles(nombre)&user_id=eq.${user_id}&order=created_at.desc`,
     );
     if (error) throw error;
     res.status(200).json(data || []);
@@ -152,7 +170,7 @@ export const updateProveedorContabilidad = async (req, res) => {
     const { data } = await supabaseAxios.patch(
       `/proveedores_contabilidad?id=eq.${id}&user_id=eq.${user_id}`,
       payload,
-      { headers: { Prefer: "return=representation" } }
+      { headers: { Prefer: "return=representation" } },
     );
 
     if (!data || data.length === 0) {
@@ -165,7 +183,7 @@ export const updateProveedorContabilidad = async (req, res) => {
   } catch (error) {
     console.error(
       "Error en updateProveedorContabilidad:",
-      error.response ? error.response.data : error.message
+      error.response ? error.response.data : error.message,
     );
     if (error.response) {
       if (error.response.data?.code === "23505") {
