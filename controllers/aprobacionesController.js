@@ -324,7 +324,7 @@ export const aprobarRegistro = async (req, res) => {
     if (siesaFlag === "si" && registro.tipo === "empleado") {
       try {
         console.log("Enviando correo de solicitud SIESA...");
-        const recipientsSiesa = "isazamanuel04@gmail.com";
+        const recipientsSiesa = "sistemas@merkahorrosas.com";
         const subjectSiesa = `🔑 Solicitud de Usuario Siesa: ${registro.datos?.nombre || "Empleado"} ${registro.datos?.apellidos || ""}`;
 
         const htmlContentSiesa = `
@@ -386,7 +386,7 @@ export const aprobarRegistro = async (req, res) => {
     try {
       const adminContabilidadEmail = process.env.ADMIN_CONTABILIDAD_EMAIL;
       const adminSagrilaftEmail =
-        process.env.ADMIN_SAGRILAFT_EMAIL || "johanmerkahorro777@gmail.com";
+        process.env.ADMIN_SAGRILAFT_EMAIL;
 
       if (adminContabilidadEmail) {
         const recipients = [adminContabilidadEmail, adminSagrilaftEmail]
