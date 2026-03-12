@@ -385,8 +385,7 @@ export const aprobarRegistro = async (req, res) => {
     // Enviar correo al admin de contabilidad y a la copia
     try {
       const adminContabilidadEmail = process.env.ADMIN_CONTABILIDAD_EMAIL;
-      const adminSagrilaftEmail =
-        process.env.ADMIN_SAGRILAFT_EMAIL;
+      const adminSagrilaftEmail = process.env.ADMIN_SAGRILAFT_EMAIL;
 
       if (adminContabilidadEmail) {
         const recipients = [adminContabilidadEmail, adminSagrilaftEmail]
@@ -706,6 +705,60 @@ export const restaurarRegistro = async (req, res) => {
     console.error("Error al restaurar registro:", error);
     res.status(500).json({
       message: "Error al restaurar registro.",
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * @route PUT /api/trazabilidad/aprobaciones/actualizar/:id
+ * Actualiza los datos de un registro pendiente sin cambiar su estado
+ */
+export const actualizarRegistroPendiente = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { datosAprobados } = req.body;
+    const user_id = req.user?.id;
+
+    if (!user_id) {
+      return res.status(401).json({ message: "Usuario no autenticado." });
+    }
+
+    // Obtener el registro pendiente
+    const { data: registroPendiente } = await supabaseAxios.get(
+      `/registros_pendientes?id=eq.${id}`,
+    );
+
+    if (!registroPendiente || registroPendiente.length === 0) {
+      return res.status(404).json({ message: "Registro no encontrado." });
+    }
+
+    const registro = registroPendiente[0];
+
+    if (registro.estado !== "pendiente") {
+      return res
+        .status(400)
+        .json({ message: "Solo se pueden actualizar registros pendientes." });
+    }
+
+    // Unir los datos existentes con los actualizados
+    const datosActualizados = { ...registro.datos, ...datosAprobados };
+
+    // Actualizar en la base de datos
+    const { data } = await supabaseAxios.patch(
+      `/registros_pendientes?id=eq.${id}`,
+      { datos: datosActualizados },
+      { headers: { Prefer: "return=representation" } },
+    );
+
+    res.status(200).json({
+      message: "Registro actualizado correctamente.",
+      data: data[0],
+    });
+  } catch (error) {
+    console.error("Error al actualizar registro pendiente:", error);
+    res.status(500).json({
+      message: "Error al actualizar registro pendiente.",
       error: error.message,
     });
   }

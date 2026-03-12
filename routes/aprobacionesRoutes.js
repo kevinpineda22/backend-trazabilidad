@@ -9,6 +9,7 @@ import {
   obtenerArchivados,
   archivarRegistro,
   restaurarRegistro,
+  actualizarRegistroPendiente,
 } from "../controllers/aprobacionesController.js";
 
 const router = express.Router();
@@ -16,6 +17,7 @@ const router = express.Router();
 // Todas las rutas requieren autenticación
 router.get("/pendientes", authMiddleware, obtenerPendientes);
 router.post("/aprobar/:id", authMiddleware, aprobarRegistro);
+router.put("/actualizar/:id", authMiddleware, actualizarRegistroPendiente);
 router.post("/rechazar/:id", authMiddleware, rechazarRegistro);
 router.get("/historial", authMiddleware, obtenerHistorial);
 router.get("/archivados", authMiddleware, obtenerArchivados);
