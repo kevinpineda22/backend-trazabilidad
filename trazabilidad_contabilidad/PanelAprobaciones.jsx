@@ -347,6 +347,8 @@ const EMPLEADO_FIELDS = [
   { key: "contacto", label: "Contacto" },
   { key: "correo_electronico", label: "Correo electrónico" },
   { key: "direccion", label: "Dirección" },
+  { key: "talla_camisa", label: "Talla Camisa" },
+  { key: "talla_pantalon", label: "Talla Pantalón" },
 ];
 
 const PROVEEDOR_FIELDS = [

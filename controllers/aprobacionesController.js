@@ -365,7 +365,7 @@ export const aprobarRegistro = async (req, res) => {
               </div>
               <div style="padding: 40px 30px; color: #333333;">
                 <p style="font-size: 16px; line-height: 1.6; margin-top: 0; margin-bottom: 25px; color: #555555;">Estimado Administrador,</p>
-                <p style="font-size: 16px; line-height: 1.6; margin-bottom: 30px; color: #555555;">El sistema de trazabilidad ha procesado existosamente una solicitud. El siguiente registro ha sido aprobado y añadido a la base de datos contable.</p>
+                <p style="font-size: 16px; line-height: 1.6; margin-bottom: 30px; color: #555555;">El sistema de trazabilidad ha procesado exitosamente una solicitud. El siguiente registro ha sido aprobado y añadido a la base de datos contable.</p>
                 <table style="width: 100%; border-collapse: separate; border-spacing: 0; margin-bottom: 30px; background-color: #f8fafc; border-radius: 6px; border: 1px solid #e2e8f0;">
                   <tbody>
                     <tr>

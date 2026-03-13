@@ -41,9 +41,10 @@ export const generarToken = async (req, res) => {
     // Generar token único (32 caracteres hexadecimales)
     const token = crypto.randomBytes(32).toString("hex");
 
-    // Fecha de expiración: 3 días desde ahora
+    // Días de expiración según tipo (proveedores tienen más plazo)
+    const diasExpiracion = { empleado: 3, cliente: 3, proveedor: 10 };
     const expiracion = new Date();
-    expiracion.setDate(expiracion.getDate() + 3);
+    expiracion.setDate(expiracion.getDate() + (diasExpiracion[tipo] || 3));
 
     const payload = {
       token,

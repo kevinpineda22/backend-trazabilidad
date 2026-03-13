@@ -322,6 +322,8 @@ const CreacionSubirEmpleado = () => {
   const [contacto, setContacto] = useState("");
   const [correo, setCorreo] = useState("");
   const [direccion, setDireccion] = useState("");
+  const [tallaCamisa, setTallaCamisa] = useState("");
+  const [tallaPantalon, setTallaPantalon] = useState("");
   const [hojaDeVida, setHojaDeVida] = useState(null);
   const [cedulaFile, setCedulaFile] = useState(null);
   const [certificadoBancario, setCertificadoBancario] = useState(null);
@@ -408,6 +410,8 @@ const CreacionSubirEmpleado = () => {
     setContacto("");
     setCorreo("");
     setDireccion("");
+    setTallaCamisa("");
+    setTallaPantalon("");
     setHojaDeVida(null);
     setCedulaFile(null);
     setCertificadoBancario(null);
@@ -462,6 +466,8 @@ const CreacionSubirEmpleado = () => {
     setContacto(item.contacto || "");
     setCorreo(item.correo_electronico || "");
     setDireccion(item.direccion || "");
+    setTallaCamisa(item.talla_camisa || "");
+    setTallaPantalon(item.talla_pantalon || "");
     setHojaDeVida(item.url_hoja_de_vida || null);
     setCedulaFile(item.url_cedula || null);
     setCertificadoBancario(item.url_certificado_bancario || null);
@@ -714,6 +720,8 @@ const CreacionSubirEmpleado = () => {
       contacto,
       correo_electronico: correo,
       direccion,
+      talla_camisa: tallaCamisa,
+      talla_pantalon: tallaPantalon,
     };
 
     const confirmationDetails = {
@@ -902,7 +910,36 @@ const CreacionSubirEmpleado = () => {
           />
         </div>
 
-        {/* Fila 3 - Códigos */}
+        {/* Tallas Básicas */}
+        <div className="tc-form-group">
+          <label htmlFor="talla_camisa">Talla Camisa</label>
+          <select
+            id="talla_camisa"
+            value={tallaCamisa}
+            onChange={(e) => setTallaCamisa(e.target.value)}
+            className="tc-form-input"
+          >
+            <option value="">Seleccione...</option>
+            <option value="XS">XS</option>
+            <option value="S">S</option>
+            <option value="M">M</option>
+            <option value="L">L</option>
+            <option value="XL">XL</option>
+            <option value="XXL">XXL</option>
+            <option value="XXXL">XXXL</option>
+          </select>
+        </div>
+        <div className="tc-form-group">
+          <label htmlFor="talla_pantalon">Talla Pantalón</label>
+          <input
+            type="text"
+            id="talla_pantalon"
+            value={tallaPantalon}
+            onChange={(e) => setTallaPantalon(e.target.value)}
+            placeholder="Ej: 30, 32, 34"
+            className="tc-form-input"
+          />
+        </div>
       </div>
 
       {/* Separador */}
