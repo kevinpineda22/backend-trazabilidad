@@ -319,68 +319,8 @@ export const aprobarRegistro = async (req, res) => {
     });
 
     // -------------------------------------------------------------------------
-    // CORRECCIÓN: ENVÍO CORREO SIESA (CON CARGO INCLUIDO)
+    // CORRECCIÓN: ENVÍO CORREO SIESA (CON CARGO INCLUIDO) - MOVIDO A adminContabilidadController.js
     // -------------------------------------------------------------------------
-    if (siesaFlag === "si" && registro.tipo === "empleado") {
-      try {
-        console.log("Enviando correo de solicitud SIESA...");
-        const recipientsSiesa = "sistemas@merkahorrosas.com";
-        const subjectSiesa = `🔑 Solicitud de Usuario Siesa: ${registro.datos?.nombre || "Empleado"} ${registro.datos?.apellidos || ""}`;
-
-        const htmlContentSiesa = `
-            <!DOCTYPE html>
-            <html>
-            <body style="margin:0;padding:0;background:#f4f4f4;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
-              <div style="max-width:600px;margin:0 auto;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 4px 6px rgba(0,0,0,0.05);margin-top:20px;margin-bottom:20px;">
-                <div style="background:#210d65;padding:25px 30px;text-align:center;">
-                  <h1 style="color:#fff;margin:0;font-size:24px;font-weight:600;letter-spacing:0.5px;">Solicitud de Usuario Siesa</h1>
-                </div>
-                <div style="padding:40px 30px;color:#333;">
-                  <p style="font-size:16px;line-height:1.6;margin-top:0;margin-bottom:25px;color:#555;">
-                    Se ha aprobado un empleado que requiere usuario en Siesa.
-                  </p>
-                  <table style="width:100%;border-collapse:separate;border-spacing:0;margin-bottom:30px;background:#f8fafc;border-radius:6px;border:1px solid #e2e8f0;">
-                    <tbody>
-                      <tr>
-                        <td style="padding:15px 20px;border-bottom:1px solid #e2e8f0;color:#64748b;font-weight:600;font-size:14px;width:35%;">Nombre Completo</td>
-                        <td style="padding:15px 20px;border-bottom:1px solid #e2e8f0;color:#334155;font-weight:500;font-size:14px;">${registro.datos?.nombre || ""} ${registro.datos?.apellidos || ""}</td>
-                      </tr>
-                      <tr>
-                        <td style="padding:15px 20px;border-bottom:1px solid #e2e8f0;color:#64748b;font-weight:600;font-size:14px;">Documento</td>
-                        <td style="padding:15px 20px;border-bottom:1px solid #e2e8f0;color:#334155;font-weight:500;font-size:14px;">${registro.datos?.cedula || ""}</td>
-                      </tr>
-                      <tr>
-                        <td style="padding:15px 20px;border-bottom:1px solid #e2e8f0;color:#64748b;font-weight:600;font-size:14px;">Correo</td>
-                        <td style="padding:15px 20px;border-bottom:1px solid #e2e8f0;color:#334155;font-weight:500;font-size:14px;">${registro.datos?.correo_electronico || ""}</td>
-                      </tr>
-                      <tr>
-                        <td style="padding:15px 20px;border-bottom:1px solid #e2e8f0;color:#64748b;font-weight:600;font-size:14px;">Cargo Aprobado</td>
-                        <td style="padding:15px 20px;border-bottom:1px solid #e2e8f0;color:#334155;font-weight:500;font-size:14px;">${nombreCargo || "No especificado"}</td>
-                      </tr>
-                      <tr>
-                        <td style="padding:15px 20px;border-bottom:1px solid #e2e8f0;color:#64748b;font-weight:600;font-size:14px;">Empresa</td>
-                        <td style="padding:15px 20px;border-bottom:1px solid #e2e8f0;color:#334155;font-weight:500;font-size:14px;">${registro.datos?.empresa || ""}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                  <div style="text-align:center;margin-top:30px;">
-                    <span style="display:inline-block;background:#210d65;color:#fff;padding:10px 24px;border-radius:6px;font-size:16px;font-weight:600;letter-spacing:1px;">Acción requerida: Crear usuario en Siesa</span>
-                  </div>
-                </div>
-                <div style="background:#210d65;padding:18px 30px;text-align:center;">
-                  <span style="color:#fff;font-size:13px;">Trazabilidad Contabilidad &copy; ${new Date().getFullYear()}</span>
-                </div>
-              </div>
-            </body>
-            </html>
-          `;
-
-        await sendEmail(recipientsSiesa, subjectSiesa, htmlContentSiesa);
-        console.log("Correo SIESA enviado con éxito.");
-      } catch (err) {
-        console.error("Error enviando correo de usuario Siesa:", err);
-      }
-    }
 
     // Enviar correo al admin de contabilidad y a la copia
     try {
