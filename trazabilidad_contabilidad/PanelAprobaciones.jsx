@@ -33,6 +33,148 @@ import Swal from "sweetalert2";
 
 const BUCKET_NAME = "documentos_contabilidad";
 
+// --- Constantes de Dotación (integradas desde FormularioDotación) ---
+const dotacionTipoMap = {
+  "Auxiliar Cárnico": "carnicero",
+  "Auxiliar Fruver": "fruver",
+  "Surtidor y Bodeguero": "surtidorBodeguero",
+  Domiciliario: "domiciliario",
+  "Servicio Generales": "servicioGenerales",
+  "Lider Punto": "liderPunto",
+  Administrativos: "administrativos",
+  Cajera: "cajera",
+  "Monitor de Servicio": "monitorServicio",
+};
+
+const dotacionItems = {
+  carnicero: [
+    { key: "conjunto", label: "Conjunto Carnicería" },
+    { key: "cofia", label: "Cofia", soloUnidades: true },
+    { key: "gorra", label: "Gorra", soloUnidades: true },
+    { key: "tapabocas", label: "Tapabocas", soloUnidades: true },
+    { key: "botas", label: "Botas" },
+  ],
+  fruver: [
+    { key: "delantal", label: "Delantal", soloUnidades: true },
+    { key: "camisa", label: "Camisa" },
+    { key: "pantalon", label: "Pantalón" },
+    { key: "guantes", label: "Guantes", soloUnidades: true },
+    { key: "botas", label: "Botas" },
+  ],
+  surtidorBodeguero: [
+    { key: "camisa", label: "Camisa" },
+    { key: "pantalon", label: "Pantalón" },
+    { key: "botas", label: "Botas" },
+  ],
+  domiciliario: [
+    { key: "camibuso", label: "Camibuso" },
+    { key: "pantalon", label: "Pantalón" },
+    { key: "botas", label: "Botas" },
+    { key: "impermeable", label: "Impermeable" },
+  ],
+  servicioGenerales: [
+    { key: "conjuntoAseo", label: "Conjunto Aseo General" },
+    { key: "calzado", label: "Calzado" },
+  ],
+  liderPunto: [
+    { key: "camisa", label: "Camisa" },
+    { key: "pantalonCargo", label: "Pantalón Cargo" },
+    { key: "bonoCalzado", label: "Bono de Calzado" },
+  ],
+  administrativos: [
+    { key: "camisa", label: "Camisa" },
+    { key: "pantalon", label: "Pantalón" },
+    { key: "botasSeguridad", label: "Botas de Seguridad" },
+    { key: "bonoCalzado", label: "Bono de Calzado" },
+  ],
+  cajera: [
+    { key: "camisa", label: "Camisa" },
+    { key: "pantalon", label: "Pantalón" },
+    { key: "botas", label: "Botas" },
+    { key: "bonoCalzado", label: "Bono de Calzado" },
+  ],
+  monitorServicio: [
+    { key: "camisa", label: "Camisa" },
+    { key: "pantalon", label: "Pantalón" },
+    { key: "botas", label: "Botas" },
+    { key: "bonoCalzado", label: "Bono de Calzado" },
+  ],
+};
+
+const TALLAS_CIRCULO = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"];
+const INPUT_TALLA_NUMERICA_KEYS = [
+  "botas",
+  "botasSeguridad",
+  "pantalon",
+  "pantalonCargo",
+  "calzado",
+];
+
+const SEDES_OPTIONS = [
+  "Copacabana Plaza",
+  "Villa Hermosa",
+  "Girardota Parque",
+  "Girardota Llano",
+  "Copacabana Vegas",
+  "Copacabana San Juan",
+  "Supermercados Barbosa",
+];
+
+const INITIAL_DOTACION_STATE = {
+  carnicero: {
+    conjunto: { checked: false, talla: "", unidades: "" },
+    cofia: { checked: false, talla: "", unidades: "" },
+    gorra: { checked: false, talla: "", unidades: "" },
+    tapabocas: { checked: false, talla: "", unidades: "" },
+    botas: { checked: false, talla: "", unidades: "" },
+  },
+  fruver: {
+    delantal: { checked: false, talla: "", unidades: "" },
+    camisa: { checked: false, talla: "", unidades: "" },
+    pantalon: { checked: false, talla: "", unidades: "" },
+    guantes: { checked: false, talla: "", unidades: "" },
+    botas: { checked: false, talla: "", unidades: "" },
+  },
+  surtidorBodeguero: {
+    camisa: { checked: false, talla: "", unidades: "" },
+    pantalon: { checked: false, talla: "", unidades: "" },
+    botas: { checked: false, talla: "", unidades: "" },
+  },
+  domiciliario: {
+    camibuso: { checked: false, talla: "", unidades: "" },
+    pantalon: { checked: false, talla: "", unidades: "" },
+    botas: { checked: false, talla: "", unidades: "" },
+    impermeable: { checked: false, talla: "", unidades: "" },
+  },
+  servicioGenerales: {
+    conjuntoAseo: { checked: false, talla: "", unidades: "" },
+    calzado: { checked: false, talla: "", unidades: "" },
+  },
+  liderPunto: {
+    camisa: { checked: false, talla: "", unidades: "" },
+    pantalonCargo: { checked: false, talla: "", unidades: "" },
+    bonoCalzado: { checked: false, valor: 70000 },
+  },
+  administrativos: {
+    camisa: { checked: false, talla: "", unidades: "" },
+    pantalon: { checked: false, talla: "", unidades: "" },
+    botasSeguridad: { checked: false, talla: "", unidades: "" },
+    bonoCalzado: { checked: false, valor: 70000 },
+  },
+  cajera: {
+    camisa: { checked: false, talla: "", unidades: "" },
+    pantalon: { checked: false, talla: "", unidades: "" },
+    botas: { checked: false, talla: "", unidades: "" },
+    bonoCalzado: { checked: false, valor: 70000 },
+  },
+  monitorServicio: {
+    camisa: { checked: false, talla: "", unidades: "" },
+    pantalon: { checked: false, talla: "", unidades: "" },
+    botas: { checked: false, talla: "", unidades: "" },
+    bonoCalzado: { checked: false, valor: 70000 },
+  },
+};
+
 // --- Componente FileInput ---
 const FileInput = ({
   label,
@@ -298,6 +440,14 @@ const PanelAprobaciones = ({ userRole }) => {
   const [nombreCargo, setNombreCargo] = useState("");
   const [sede, setSede] = useState("");
   const [necesitaUsuarioSiesa, setNecesitaUsuarioSiesa] = useState("");
+
+  // Estados de Dotación (para empleados)
+  const [dotacionTipo, setDotacionTipo] = useState("");
+  const [showDotacionOptions, setShowDotacionOptions] = useState(false);
+  const [dotacionData, setDotacionData] = useState(
+    JSON.parse(JSON.stringify(INITIAL_DOTACION_STATE)),
+  );
+  const [fechaEntregaDotacion, setFechaEntregaDotacion] = useState("");
 
   const [datosEditables, setDatosEditables] = useState({});
   const [modoEdicion, setModoEdicion] = useState(false);
@@ -689,6 +839,10 @@ const PanelAprobaciones = ({ userRole }) => {
     setNombreCargo("");
     setSede("");
     setNecesitaUsuarioSiesa("");
+    setDotacionTipo("");
+    setShowDotacionOptions(false);
+    setDotacionData(JSON.parse(JSON.stringify(INITIAL_DOTACION_STATE)));
+    setFechaEntregaDotacion("");
     setModoEdicion(false);
     setErrorCampo(null);
     setArchivosNuevos({});
@@ -719,6 +873,30 @@ const PanelAprobaciones = ({ userRole }) => {
     } else {
       setDatosEditables((prev) => ({ ...prev, [name]: null }));
     }
+  };
+
+  // --- Handlers de Dotación ---
+  const handleDotacionTipoChange = (value) => {
+    setDotacionTipo(value);
+    setShowDotacionOptions(!!value);
+  };
+
+  const handleDotacionChange = (tipo, item, field, value) => {
+    setDotacionData((prev) => ({
+      ...prev,
+      [tipo]: {
+        ...prev[tipo],
+        [item]: { ...prev[tipo][item], [field]: value },
+      },
+    }));
+  };
+
+  const getSedeOptionsForEmpleado = () => {
+    const empresa = registroSeleccionado?.datos?.empresa || "";
+    const lower = empresa.toLowerCase();
+    if (lower === "megamayorista") return ["Megamayorista"];
+    if (lower === "construahorro") return ["Construahorro"];
+    return SEDES_OPTIONS;
   };
 
   const guardarEdicion = async () => {
@@ -810,6 +988,35 @@ const PanelAprobaciones = ({ userRole }) => {
         return Swal.fire(
           "Atención",
           "Todos los campos de contratación (Fecha, Cargo, Sede) son obligatorios.",
+          "warning",
+        );
+      }
+      // Validar dotación
+      if (!dotacionTipo) {
+        return Swal.fire(
+          "Atención",
+          "Debes seleccionar un Tipo de Dotación.",
+          "warning",
+        );
+      }
+      if (!fechaEntregaDotacion) {
+        return Swal.fire(
+          "Atención",
+          "Debes indicar la Fecha de Entrega de Dotación.",
+          "warning",
+        );
+      }
+      const tipoKey = dotacionTipoMap[dotacionTipo];
+      const hasSelectedItems =
+        tipoKey &&
+        Object.entries(dotacionData[tipoKey]).some(([key, item]) => {
+          if (key === "bonoCalzado") return item.checked;
+          return item.checked && item.unidades && item.talla !== undefined;
+        });
+      if (!hasSelectedItems) {
+        return Swal.fire(
+          "Atención",
+          "Selecciona al menos un ítem de dotación con talla y unidades.",
           "warning",
         );
       }
@@ -921,6 +1128,54 @@ const PanelAprobaciones = ({ userRole }) => {
           }
         } catch (errSocio) {
           console.error("Error actualizando Sociodemográfico:", errSocio);
+        }
+
+        // --------------------------------------------------------
+        // REGISTRO AUTOMÁTICO DE DOTACIÓN
+        // --------------------------------------------------------
+        try {
+          setLoadingText("Registrando dotación...");
+          const raw = registroSeleccionado.datos || {};
+
+          const dotacionPayload = {
+            nombre: `${raw.nombre || ""} ${raw.apellidos || ""}`.trim(),
+            empresa: raw.empresa || "",
+            documento: raw.cedula || "",
+            sede: sede,
+            cargo: nombreCargo,
+            fechaIngreso: fechaContratacion,
+            fechaEntrega: fechaEntregaDotacion,
+            dotacionTipo: dotacionTipo,
+            registradoPor: "Panel de Aprobaciones",
+            fechaRegistro: new Date().toISOString(),
+            dotacion: dotacionData,
+          };
+
+          const dotResponse = await fetch(
+            "https://backend-dotacion.vercel.app/api/dotacion",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(dotacionPayload),
+            },
+          );
+          const dotResult = await dotResponse.json();
+          if (!dotResponse.ok) {
+            console.error("Error registrando dotación:", dotResult.error);
+            // Si el documento ya existe en dotación, solo advertir, no bloquear
+            if (
+              dotResult.error &&
+              dotResult.error.includes("documento ya existe")
+            ) {
+              console.warn(
+                "El documento ya existe en dotación, se omite registro.",
+              );
+            }
+          } else {
+            console.log("Dotación registrada con éxito.");
+          }
+        } catch (errDot) {
+          console.error("Error registrando dotación:", errDot);
         }
       }
 
@@ -1561,14 +1816,20 @@ const PanelAprobaciones = ({ userRole }) => {
                               />
                             </div>
                             <div>
-                              <label>Sede</label>
-                              <input
-                                type="text"
-                                className="tc-input"
+                              <label>Sede <span className="tc-required-mark">*</span></label>
+                              <select
+                                className="tc-input tc-select-styled"
                                 value={sede}
                                 onChange={(e) => setSede(e.target.value)}
-                                placeholder="Ej: Copacabana"
-                              />
+                                disabled={loading}
+                              >
+                                <option value="">Selecciona una sede</option>
+                                {getSedeOptionsForEmpleado().map((s) => (
+                                  <option key={s} value={s}>
+                                    {s}
+                                  </option>
+                                ))}
+                              </select>
                             </div>
                           </div>
 
@@ -1638,6 +1899,228 @@ const PanelAprobaciones = ({ userRole }) => {
                               </div>
                             </div>
                           )}
+
+                          {/* --- SECCIÓN DE DOTACIÓN --- */}
+                          <div
+                            style={{
+                              marginTop: "1.5rem",
+                              borderTop: "2px solid #210d65",
+                              paddingTop: "1rem",
+                            }}
+                          >
+                            <h3
+                              style={{
+                                fontSize: "1rem",
+                                color: "#210d65",
+                                marginBottom: "1rem",
+                              }}
+                            >
+                              <FaTshirt /> Asignación de Dotación
+                            </h3>
+                            <div className="tc-extra-inputs-grid">
+                              <div>
+                                <label>
+                                  Fecha Entrega Dotación{" "}
+                                  <span className="tc-required-mark">*</span>
+                                </label>
+                                <input
+                                  type="date"
+                                  className="tc-input"
+                                  value={fechaEntregaDotacion}
+                                  onChange={(e) =>
+                                    setFechaEntregaDotacion(e.target.value)
+                                  }
+                                  disabled={loading}
+                                />
+                              </div>
+                              <div>
+                                <label>
+                                  Tipo Dotación{" "}
+                                  <span className="tc-required-mark">*</span>
+                                </label>
+                                <select
+                                  className="tc-input tc-select-styled"
+                                  value={dotacionTipo}
+                                  onChange={(e) =>
+                                    handleDotacionTipoChange(e.target.value)
+                                  }
+                                  disabled={loading}
+                                >
+                                  <option value="">
+                                    Seleccione una opción
+                                  </option>
+                                  {Object.keys(dotacionTipoMap).map((tipo) => (
+                                    <option key={tipo} value={tipo}>
+                                      {tipo}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+                            </div>
+
+                            {showDotacionOptions && dotacionTipo && (
+                              <div
+                                className="tc-dotacion-items-section"
+                                style={{ marginTop: "1rem" }}
+                              >
+                                <h4
+                                  style={{
+                                    fontSize: "0.95rem",
+                                    color: "#2d3748",
+                                    marginBottom: "0.75rem",
+                                  }}
+                                >
+                                  Seleccione la Dotación - {dotacionTipo}
+                                </h4>
+                                {dotacionItems[
+                                  dotacionTipoMap[dotacionTipo]
+                                ].map((item) => {
+                                  const tipoKey =
+                                    dotacionTipoMap[dotacionTipo];
+                                  const itemData =
+                                    dotacionData[tipoKey][item.key];
+                                  return (
+                                    <div
+                                      key={item.key}
+                                      className="tc-dotacion-item-row"
+                                    >
+                                      <label className="tc-dotacion-checkbox-label">
+                                        <input
+                                          type="checkbox"
+                                          checked={itemData.checked}
+                                          onChange={(e) =>
+                                            handleDotacionChange(
+                                              tipoKey,
+                                              item.key,
+                                              "checked",
+                                              e.target.checked,
+                                            )
+                                          }
+                                        />
+                                        {item.label}
+                                      </label>
+
+                                      {itemData.checked &&
+                                        item.key !== "bonoCalzado" && (
+                                          <div className="tc-dotacion-item-details">
+                                            {item.soloUnidades ? (
+                                              <>
+                                                <label>Unidades</label>
+                                                <input
+                                                  type="number"
+                                                  className="tc-input"
+                                                  min="1"
+                                                  value={itemData.unidades}
+                                                  onChange={(e) =>
+                                                    handleDotacionChange(
+                                                      tipoKey,
+                                                      item.key,
+                                                      "unidades",
+                                                      e.target.value,
+                                                    )
+                                                  }
+                                                />
+                                              </>
+                                            ) : (
+                                              <>
+                                                <label>Talla</label>
+                                                {INPUT_TALLA_NUMERICA_KEYS.includes(
+                                                  item.key,
+                                                ) ? (
+                                                  <input
+                                                    type="text"
+                                                    className="tc-input"
+                                                    placeholder="Ej: 38, 40, 42"
+                                                    value={itemData.talla}
+                                                    onChange={(e) =>
+                                                      handleDotacionChange(
+                                                        tipoKey,
+                                                        item.key,
+                                                        "talla",
+                                                        e.target.value,
+                                                      )
+                                                    }
+                                                  />
+                                                ) : (
+                                                  <div className="tc-dotacion-tallas-circulo">
+                                                    {TALLAS_CIRCULO.map(
+                                                      (talla) => (
+                                                        <label
+                                                          key={talla}
+                                                          className={`tc-dotacion-talla-circulo ${
+                                                            itemData.talla ===
+                                                            talla
+                                                              ? "selected"
+                                                              : ""
+                                                          }`}
+                                                        >
+                                                          <input
+                                                            type="radio"
+                                                            name={`talla-${tipoKey}-${item.key}`}
+                                                            value={talla}
+                                                            checked={
+                                                              itemData.talla ===
+                                                              talla
+                                                            }
+                                                            onChange={() =>
+                                                              handleDotacionChange(
+                                                                tipoKey,
+                                                                item.key,
+                                                                "talla",
+                                                                talla,
+                                                              )
+                                                            }
+                                                          />
+                                                          <span>{talla}</span>
+                                                        </label>
+                                                      ),
+                                                    )}
+                                                  </div>
+                                                )}
+                                                <label
+                                                  style={{
+                                                    marginTop: "0.5rem",
+                                                  }}
+                                                >
+                                                  Unidades
+                                                </label>
+                                                <input
+                                                  type="number"
+                                                  className="tc-input"
+                                                  min="1"
+                                                  value={itemData.unidades}
+                                                  onChange={(e) =>
+                                                    handleDotacionChange(
+                                                      tipoKey,
+                                                      item.key,
+                                                      "unidades",
+                                                      e.target.value,
+                                                    )
+                                                  }
+                                                />
+                                              </>
+                                            )}
+                                          </div>
+                                        )}
+
+                                      {itemData.checked &&
+                                        item.key === "bonoCalzado" && (
+                                          <div className="tc-dotacion-item-details">
+                                            <label>Valor</label>
+                                            <input
+                                              type="text"
+                                              className="tc-input"
+                                              value={`$${itemData.valor.toLocaleString("es-CO")}`}
+                                              disabled
+                                            />
+                                          </div>
+                                        )}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
                         </div>
                       )}
                     </>

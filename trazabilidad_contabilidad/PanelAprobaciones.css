@@ -1079,6 +1079,103 @@
   font-weight: bold;
 }
 
+/* --- Estilos de Dotación integrada --- */
+.tc-dotacion-items-section {
+  margin-top: 1rem;
+}
+
+.tc-dotacion-item-row {
+  margin-bottom: 1rem;
+  padding: 0.8rem 1rem;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  background: linear-gradient(135deg, #fdfdfd, #f4f7f9);
+  box-shadow: 0 2px 6px rgba(33, 13, 101, 0.05);
+  transition: box-shadow 0.3s ease, transform 0.2s ease;
+}
+
+.tc-dotacion-item-row:hover {
+  box-shadow: 0 4px 12px rgba(33, 13, 101, 0.1);
+  transform: translateY(-1px);
+}
+
+.tc-dotacion-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  color: #2d3748;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.tc-dotacion-checkbox-label input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #210d65;
+}
+
+.tc-dotacion-item-details {
+  margin-top: 0.5rem;
+  margin-left: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.tc-dotacion-item-details label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #4a5568;
+}
+
+.tc-dotacion-tallas-circulo {
+  display: flex;
+  gap: 0.5rem;
+  margin: 0.3rem 0 0.5rem 0;
+  flex-wrap: wrap;
+}
+
+.tc-dotacion-talla-circulo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+}
+
+.tc-dotacion-talla-circulo input[type="radio"] {
+  display: none;
+}
+
+.tc-dotacion-talla-circulo span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #fff;
+  color: #210d65;
+  border: 2px solid #e2e8f0;
+  font-weight: 600;
+  font-size: 0.85rem;
+  box-shadow: 0 2px 4px rgba(33, 13, 101, 0.06);
+  transition: background 0.18s, border 0.18s, color 0.18s, box-shadow 0.18s;
+}
+
+.tc-dotacion-talla-circulo.selected span,
+.tc-dotacion-talla-circulo input[type="radio"]:checked + span {
+  background: #210d65;
+  color: #fff;
+  border: 2px solid #210d65;
+  box-shadow: 0 4px 10px rgba(33, 13, 101, 0.2);
+}
+
+.tc-select-styled {
+  appearance: auto;
+  cursor: pointer;
+}
+
 @keyframes spin {
   0% {
     transform: rotate(0deg);
