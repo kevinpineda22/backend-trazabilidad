@@ -349,6 +349,7 @@ const EMPLEADO_FIELDS = [
   { key: "direccion", label: "Dirección" },
   { key: "talla_camisa", label: "Talla Camisa" },
   { key: "talla_pantalon", label: "Talla Pantalón" },
+  { key: "talla_zapato", label: "Talla Zapato" },
 ];
 
 const PROVEEDOR_FIELDS = [
@@ -640,6 +641,9 @@ const PanelAprobaciones = ({ userRole }) => {
               value: datos.correo_electronico || "N/A",
             },
             { label: "Dirección", value: datos.direccion || "N/A" },
+            { label: "Talla Camisa", value: datos.talla_camisa || "N/A" },
+            { label: "Talla Pantalón", value: datos.talla_pantalon || "N/A" },
+            { label: "Talla Zapato", value: datos.talla_zapato || "N/A" },
           ],
           documentos: mapDocs([
             { label: "Hoja de Vida", url: datos.url_hoja_de_vida },

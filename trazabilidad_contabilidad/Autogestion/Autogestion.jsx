@@ -80,6 +80,7 @@ const FIELD_LABELS = {
   estatura: "Estatura",
   tallaCamisa: "Talla Camisa",
   tallaPantalon: "Talla Pantalón",
+  tallaZapato: "Talla Zapato",
 
   // Paso 2
   direccion: "Dirección",
@@ -196,6 +197,7 @@ const Autogestion = () => {
       estatura: "",
       tallaCamisa: "",
       tallaPantalon: "",
+      tallaZapato: "",
       tipoVivienda: "",
       caracteristicasVivienda: "",
       estrato: "",
@@ -350,6 +352,7 @@ const Autogestion = () => {
           "estatura",
           "tallaCamisa",
           "tallaPantalon",
+          "tallaZapato",
         ];
       case 2:
         return [
@@ -612,6 +615,7 @@ const Autogestion = () => {
         direccion: data.direccion,
         talla_camisa: data.tallaCamisa || null,
         talla_pantalon: data.tallaPantalon || null,
+        talla_zapato: data.tallaZapato || null,
 
         // Estado inicial para el panel
         cargo: "PENDIENTE_APROBACION",
@@ -1067,6 +1071,18 @@ const Autogestion = () => {
                       className="ag-input"
                       {...register("tallaPantalon")}
                       placeholder="Ej: 30, 32, 34"
+                    />
+                  </div>
+                </div>
+
+                <div className="ag-form-group">
+                  <label className="ag-label">Talla Zapato</label>
+                  <div className="ag-input-wrapper">
+                    <input
+                      type="text"
+                      className="ag-input"
+                      {...register("tallaZapato")}
+                      placeholder="Ej: 38, 40, 42"
                     />
                   </div>
                 </div>
