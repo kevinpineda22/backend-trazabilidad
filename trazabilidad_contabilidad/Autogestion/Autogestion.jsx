@@ -126,6 +126,11 @@ const FIELD_LABELS = {
   contactoNombres: "Nombre Contacto Emergencia",
   contactoCelular: "Celular Contacto",
   parentescoContacto: "Parentesco Contacto",
+  contactoDireccion: "Dirección Contacto",
+  contacto2Nombres: "Nombre 2do Contacto",
+  contacto2Celular: "Celular 2do Contacto",
+  contacto2Parentesco: "Parentesco 2do Contacto",
+  contacto2Direccion: "Dirección 2do Contacto",
 
   // Paso 6
   aceptaTerminos: "Aceptar Términos",
@@ -237,6 +242,11 @@ const Autogestion = () => {
       contactoNombres: "",
       contactoCelular: "",
       parentescoContacto: "",
+      contactoDireccion: "",
+      contacto2Nombres: "",
+      contacto2Celular: "",
+      contacto2Parentesco: "",
+      contacto2Direccion: "",
       aceptaTerminos: false,
     },
   });
@@ -391,6 +401,11 @@ const Autogestion = () => {
           "contactoNombres",
           "contactoCelular",
           "parentescoContacto",
+          "contactoDireccion",
+          "contacto2Nombres",
+          "contacto2Celular",
+          "contacto2Parentesco",
+          "contacto2Direccion",
         ];
       default:
         return [];
@@ -570,6 +585,11 @@ const Autogestion = () => {
           contactoNombres: data.contactoNombres,
           contactoCelular: data.contactoCelular,
           parentescoContacto: data.parentescoContacto,
+          contactoDireccion: data.contactoDireccion || "",
+          contacto2Nombres: data.contacto2Nombres || "",
+          contacto2Celular: data.contacto2Celular || "",
+          contacto2Parentesco: data.contacto2Parentesco || "",
+          contacto2Direccion: data.contacto2Direccion || "",
 
           fechaDiligenciamiento: new Date().toISOString().split("T")[0],
         };
@@ -1847,6 +1867,92 @@ const Autogestion = () => {
                       className="ag-input ag-input-uppercase ag-input-with-icon"
                       placeholder="Ej: MADRE"
                       {...register("parentescoContacto", { required: true })}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                </div>
+
+                <div className="ag-form-group">
+                  <label className="ag-label">
+                    Dirección Contacto <span className="ag-required">*</span>
+                  </label>
+                  <div className="ag-input-wrapper">
+                    <MapPin size={18} className="ag-input-icon" />
+                    <input
+                      className="ag-input ag-input-uppercase ag-input-with-icon"
+                      placeholder="Ej: CALLE 50 # 45 - 30"
+                      {...register("contactoDireccion", { required: true })}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                </div>
+
+                <div className="ag-form-group ag-col-full">
+                  <hr
+                    style={{
+                      border: "0",
+                      borderTop: "1px dashed #ccc",
+                      margin: "1rem 0",
+                    }}
+                  />
+                  <h3
+                    style={{
+                      fontSize: "1rem",
+                      color: "#666",
+                      marginBottom: "0.5rem",
+                    }}
+                  >
+                    Segundo Contacto de Emergencia (Opcional)
+                  </h3>
+                </div>
+
+                <div className="ag-form-group">
+                  <label className="ag-label">Nombre Contacto 2</label>
+                  <div className="ag-input-wrapper">
+                    <User size={18} className="ag-input-icon" />
+                    <input
+                      className="ag-input ag-input-uppercase ag-input-with-icon"
+                      placeholder="Ej: JUAN LÓPEZ"
+                      {...register("contacto2Nombres")}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                </div>
+
+                <div className="ag-form-group">
+                  <label className="ag-label">Celular Contacto 2</label>
+                  <div className="ag-input-wrapper">
+                    <Phone size={18} className="ag-input-icon" />
+                    <input
+                      type="number"
+                      className="ag-input ag-input-with-icon"
+                      placeholder="Ej: 3101234567"
+                      {...register("contacto2Celular")}
+                    />
+                  </div>
+                </div>
+
+                <div className="ag-form-group">
+                  <label className="ag-label">Parentesco Contacto 2</label>
+                  <div className="ag-input-wrapper">
+                    <Heart size={18} className="ag-input-icon" />
+                    <input
+                      className="ag-input ag-input-uppercase ag-input-with-icon"
+                      placeholder="Ej: HERMANO"
+                      {...register("contacto2Parentesco")}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                </div>
+
+                <div className="ag-form-group">
+                  <label className="ag-label">Dirección Contacto 2</label>
+                  <div className="ag-input-wrapper">
+                    <MapPin size={18} className="ag-input-icon" />
+                    <input
+                      className="ag-input ag-input-uppercase ag-input-with-icon"
+                      placeholder="Ej: CARRERA 10 # 20 - 30"
+                      {...register("contacto2Direccion")}
                       onChange={handleInputChange}
                     />
                   </div>
