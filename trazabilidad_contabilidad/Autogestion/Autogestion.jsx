@@ -536,6 +536,9 @@ const Autogestion = () => {
           edad: data.edad,
           peso: data.peso,
           estatura: data.estatura,
+          tallaCamisa: data.tallaCamisa || "",
+          tallaPantalon: data.tallaPantalon || "",
+          tallaZapato: data.tallaZapato || "",
 
           tipoVivienda: data.tipoVivienda,
           caracteristicasVivienda: data.caracteristicasVivienda,
