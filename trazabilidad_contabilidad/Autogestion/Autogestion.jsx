@@ -303,27 +303,44 @@ const Autogestion = () => {
 
   // --- EFFECT: LOCAL STORAGE PERSISTENCE ---
   useEffect(() => {
-    const savedData = localStorage.getItem("ag_form_data");
-    const savedStep = localStorage.getItem("ag_step");
-    if (savedData) {
-      try {
-        reset(JSON.parse(savedData));
-      } catch (e) {
-        console.error("Error cargando datos", e);
+    try {
+      const savedData = localStorage.getItem("ag_form_data");
+      const savedStep = localStorage.getItem("ag_step");
+      if (savedData) {
+        try {
+          const parsed = JSON.parse(savedData);
+          // Solo restaurar si tiene los campos básicos esperados
+          if (parsed && parsed.empresa !== undefined) {
+            reset(parsed);
+          }
+        } catch (e) {
+          console.error("Error cargando datos guardados, limpiando...", e);
+          localStorage.removeItem("ag_form_data");
+        }
       }
+      if (savedStep) setStep(Number(savedStep));
+    } catch {
+      // localStorage no disponible (modo privado/incognito)
     }
-    if (savedStep) setStep(Number(savedStep));
   }, [reset]);
 
   useEffect(() => {
     const subscription = watch((value) => {
-      localStorage.setItem("ag_form_data", JSON.stringify(value));
+      try {
+        localStorage.setItem("ag_form_data", JSON.stringify(value));
+      } catch {
+        // localStorage no disponible o sin espacio — el formulario sigue funcionando
+      }
     });
     return () => subscription.unsubscribe();
   }, [watch]);
 
   useEffect(() => {
-    localStorage.setItem("ag_step", step);
+    try {
+      localStorage.setItem("ag_step", step);
+    } catch {
+      // localStorage no disponible
+    }
   }, [step]);
 
   useEffect(() => {
@@ -331,9 +348,17 @@ const Autogestion = () => {
   }, [tipoDocumento, setValue]);
 
   // --- HANDLERS ---
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setValue(name, value.toUpperCase());
+  // Wrapper de register() que convierte a mayúsculas sin romper react-hook-form
+  // (evita problemas de escritura en dispositivos móviles)
+  const registerUpper = (name, options) => {
+    const { onChange, ...rest } = register(name, options);
+    return {
+      ...rest,
+      onChange: (e) => {
+        e.target.value = e.target.value.toUpperCase();
+        return onChange(e);
+      },
+    };
   };
 
   const handleSignatureSave = (dataUrl) => {
@@ -485,28 +510,47 @@ const Autogestion = () => {
     );
 
     try {
-      // 2. Subir Archivos a Supabase
+      // 2. Subir Archivos a Supabase (uno por uno para detectar errores)
       const folderName = `AUTOGESTION_${data.numeroDocumento}_${Date.now()}`;
       const bucket = "documentos_contabilidad";
       const folderPath = `empleados/${folderName}`;
 
-      const uploadPromise = (file, name) => {
-        const ext = file.name.split(".").pop();
-        return uploadFileToBucket({
-          bucket,
-          path: `${folderPath}/${name}.${ext}`,
-          file,
-        });
+      const uploadSingle = async (file, name, label) => {
+        try {
+          const ext = file.name.split(".").pop();
+          const url = await uploadFileToBucket({
+            bucket,
+            path: `${folderPath}/${name}.${ext}`,
+            file,
+          });
+          if (!url) throw new Error("URL vacía");
+          return url;
+        } catch (err) {
+          console.error(`❌ Error subiendo ${label}:`, err);
+          throw new Error(`No se pudo subir "${label}". Verifica tu conexión e intenta de nuevo.`);
+        }
       };
 
-      const [urlHv, urlCedula, urlBanco, urlHabeas, urlFirma] =
-        await Promise.all([
-          uploadPromise(hojaDeVida, "hoja_de_vida"),
-          uploadPromise(cedulaFile, "cedula"),
-          uploadPromise(certificadoBancario, "certificado_bancario"),
-          uploadPromise(habeasData, "habeas_data"),
-          uploadPromise(autorizacionFirma, "autorizacion_firma"),
+      toast.dismiss(loadToast);
+      const loadToast2 = toast.loading("Subiendo documentos...");
+
+      let urlHv, urlCedula, urlBanco, urlHabeas, urlFirma;
+      try {
+        [urlHv, urlCedula, urlBanco, urlHabeas, urlFirma] = await Promise.all([
+          uploadSingle(hojaDeVida, "hoja_de_vida", "Hoja de Vida"),
+          uploadSingle(cedulaFile, "cedula", "Cédula"),
+          uploadSingle(certificadoBancario, "certificado_bancario", "Certificado Bancario"),
+          uploadSingle(habeasData, "habeas_data", "Habeas Data"),
+          uploadSingle(autorizacionFirma, "autorizacion_firma", "Autorización Firma"),
         ]);
+      } catch (uploadErr) {
+        toast.dismiss(loadToast2);
+        Swal.fire("Error al subir documentos", uploadErr.message, "error");
+        return;
+      }
+
+      toast.dismiss(loadToast2);
+      const loadToast3 = toast.loading("Guardando información...");
 
       // 3. ENVIAR A SOCIODEMOGRÁFICO (Adaptado a tus formRoutes)
       try {
@@ -639,6 +683,8 @@ const Autogestion = () => {
         talla_camisa: data.tallaCamisa || null,
         talla_pantalon: data.tallaPantalon || null,
         talla_zapato: data.tallaZapato || null,
+        barrio: data.barrio || null,
+        municipio: data.municipioResidencia || null,
 
         // Estado inicial para el panel
         cargo: "PENDIENTE_APROBACION",
@@ -658,9 +704,13 @@ const Autogestion = () => {
       await apiTrazabilidad.post(endpoint, payloadTrazabilidad);
 
       // Limpieza y Redirección
-      localStorage.removeItem("ag_form_data");
-      localStorage.removeItem("ag_step");
-      toast.dismiss(loadToast);
+      try {
+        localStorage.removeItem("ag_form_data");
+        localStorage.removeItem("ag_step");
+      } catch {
+        // localStorage no disponible
+      }
+      toast.dismiss(loadToast3);
 
       Swal.fire({
         title: "¡Registro Exitoso!",
@@ -671,13 +721,13 @@ const Autogestion = () => {
         window.location.reload();
       });
     } catch (error) {
-      console.error(error);
-      toast.dismiss(loadToast);
-      Swal.fire(
-        "Error",
-        "Hubo un problema al guardar tu información. Intenta nuevamente.",
-        "error",
-      );
+      console.error("❌ Error en el registro:", error);
+      toast.dismiss();
+      const mensaje =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Hubo un problema al guardar tu información. Intenta nuevamente.";
+      Swal.fire("Error", mensaje, "error");
     } finally {
       setIsSubmitting(false);
     }
@@ -695,7 +745,12 @@ const Autogestion = () => {
     const handleFileChange = (e) => {
       const file = e.target.files[0];
       if (file) {
-        if (file.type !== "application/pdf") {
+        // Validar PDF: verificar MIME type O extensión del archivo
+        // (en móviles el MIME type puede ser incorrecto para PDFs válidos)
+        const isPdf =
+          file.type === "application/pdf" ||
+          file.name.toLowerCase().endsWith(".pdf");
+        if (!isPdf) {
           Swal.fire(
             "Formato Incorrecto",
             "Este sistema solo permite archivos PDF.",
@@ -724,15 +779,16 @@ const Autogestion = () => {
         <label className="ag-label">
           {label} {required && <span className="ag-required">*</span>}
         </label>
-        <div
+        <label
           className={`ag-file-upload ${fileState ? "has-file" : ""}`}
-          onClick={() => fileInputRef.current?.click()}
+          htmlFor={`file-${label.replace(/\s/g, "_")}`}
         >
           <input
             type="file"
+            id={`file-${label.replace(/\s/g, "_")}`}
             ref={fileInputRef}
             onChange={handleFileChange}
-            accept=".pdf"
+            accept=".pdf,application/pdf"
             style={{ display: "none" }}
           />
           {fileState ? (
@@ -749,6 +805,7 @@ const Autogestion = () => {
                 className="ag-file-remove"
                 onClick={(e) => {
                   e.stopPropagation();
+                  e.preventDefault();
                   setFileState(null);
                 }}
                 title="Eliminar archivo"
@@ -767,7 +824,7 @@ const Autogestion = () => {
               </div>
             </>
           )}
-        </div>
+        </label>
       </div>
     );
   };
@@ -882,11 +939,10 @@ const Autogestion = () => {
                     <input
                       className="ag-input ag-input-uppercase ag-input-with-icon"
                       placeholder="Ej: JUAN ESTEBAN"
-                      {...register("nombres", {
+                      {...registerUpper("nombres", {
                         required: true,
                         pattern: letterPattern,
                       })}
-                      onChange={handleInputChange}
                     />
                   </div>
                   {errors.nombres && (
@@ -906,11 +962,10 @@ const Autogestion = () => {
                     <input
                       className="ag-input ag-input-uppercase ag-input-with-icon"
                       placeholder="Ej: PÉREZ GONZÁLEZ"
-                      {...register("apellidos", {
+                      {...registerUpper("apellidos", {
                         required: true,
                         pattern: letterPattern,
                       })}
-                      onChange={handleInputChange}
                     />
                   </div>
                   {errors.apellidos && (
@@ -1021,8 +1076,7 @@ const Autogestion = () => {
                   <input
                     className="ag-input ag-input-uppercase"
                     placeholder="Ej: MEDELLÍN"
-                    {...register("ciudadNacimiento", { required: true })}
-                    onChange={handleInputChange}
+                    {...registerUpper("ciudadNacimiento", { required: true })}
                   />
                 </div>
 
@@ -1129,8 +1183,7 @@ const Autogestion = () => {
                     <MapPin size={18} className="ag-input-icon" />
                     <input
                       className="ag-input ag-input-uppercase ag-input-with-icon"
-                      {...register("direccion", { required: true })}
-                      onChange={handleInputChange}
+                      {...registerUpper("direccion", { required: true })}
                       placeholder="Ej: CRA 50 # 20 - 10 APTO 201"
                     />
                   </div>
@@ -1145,8 +1198,7 @@ const Autogestion = () => {
                     <input
                       className="ag-input ag-input-uppercase ag-input-with-icon"
                       placeholder="Ej: ROBLEDO"
-                      {...register("barrio", { required: true })}
-                      onChange={handleInputChange}
+                      {...registerUpper("barrio", { required: true })}
                     />
                   </div>
                 </div>
@@ -1160,8 +1212,7 @@ const Autogestion = () => {
                     <input
                       className="ag-input ag-input-uppercase ag-input-with-icon"
                       placeholder="Ej: MEDELLÍN"
-                      {...register("municipioResidencia", { required: true })}
-                      onChange={handleInputChange}
+                      {...registerUpper("municipioResidencia", { required: true })}
                     />
                   </div>
                 </div>
@@ -1243,8 +1294,7 @@ const Autogestion = () => {
                     <input
                       className="ag-input ag-input-uppercase ag-input-with-icon"
                       placeholder="Ej: COLOMBIA"
-                      {...register("paisOrigen", { required: true })}
-                      onChange={handleInputChange}
+                      {...registerUpper("paisOrigen", { required: true })}
                     />
                   </div>
                 </div>
@@ -1734,10 +1784,9 @@ const Autogestion = () => {
                       <input
                         placeholder="Ej: GASTRITIS, MIGRAÑA..."
                         className="ag-input ag-input-uppercase ag-input-with-icon"
-                        {...register("descripcionEnfermedad", {
+                        {...registerUpper("descripcionEnfermedad", {
                           required: true,
                         })}
-                        onChange={handleInputChange}
                       />
                     </div>
                   </div>
@@ -1802,9 +1851,8 @@ const Autogestion = () => {
                         <Users size={18} className="ag-input-icon" />
                         <input
                           className="ag-input ag-input-uppercase ag-input-with-icon"
-                          {...register("nombresHijos", { required: true })}
+                          {...registerUpper("nombresHijos", { required: true })}
                           placeholder="Ej: JUAN (5); MARIA (10)"
-                          onChange={handleInputChange}
                         />
                       </div>
                     </div>
@@ -1839,8 +1887,7 @@ const Autogestion = () => {
                     <input
                       className="ag-input ag-input-uppercase ag-input-with-icon"
                       placeholder="Ej: MARÍA PÉREZ"
-                      {...register("contactoNombres", { required: true })}
-                      onChange={handleInputChange}
+                      {...registerUpper("contactoNombres", { required: true })}
                     />
                   </div>
                 </div>
@@ -1869,8 +1916,7 @@ const Autogestion = () => {
                     <input
                       className="ag-input ag-input-uppercase ag-input-with-icon"
                       placeholder="Ej: MADRE"
-                      {...register("parentescoContacto", { required: true })}
-                      onChange={handleInputChange}
+                      {...registerUpper("parentescoContacto", { required: true })}
                     />
                   </div>
                 </div>
@@ -1884,8 +1930,7 @@ const Autogestion = () => {
                     <input
                       className="ag-input ag-input-uppercase ag-input-with-icon"
                       placeholder="Ej: CALLE 50 # 45 - 30"
-                      {...register("contactoDireccion", { required: true })}
-                      onChange={handleInputChange}
+                      {...registerUpper("contactoDireccion", { required: true })}
                     />
                   </div>
                 </div>
@@ -1916,8 +1961,7 @@ const Autogestion = () => {
                     <input
                       className="ag-input ag-input-uppercase ag-input-with-icon"
                       placeholder="Ej: JUAN LÓPEZ"
-                      {...register("contacto2Nombres")}
-                      onChange={handleInputChange}
+                      {...registerUpper("contacto2Nombres")}
                     />
                   </div>
                 </div>
@@ -1942,8 +1986,7 @@ const Autogestion = () => {
                     <input
                       className="ag-input ag-input-uppercase ag-input-with-icon"
                       placeholder="Ej: HERMANO"
-                      {...register("contacto2Parentesco")}
-                      onChange={handleInputChange}
+                      {...registerUpper("contacto2Parentesco")}
                     />
                   </div>
                 </div>
@@ -1955,8 +1998,7 @@ const Autogestion = () => {
                     <input
                       className="ag-input ag-input-uppercase ag-input-with-icon"
                       placeholder="Ej: CARRERA 10 # 20 - 30"
-                      {...register("contacto2Direccion")}
-                      onChange={handleInputChange}
+                      {...registerUpper("contacto2Direccion")}
                     />
                   </div>
                 </div>

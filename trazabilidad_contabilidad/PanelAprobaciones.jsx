@@ -347,6 +347,8 @@ const EMPLEADO_FIELDS = [
   { key: "contacto", label: "Contacto" },
   { key: "correo_electronico", label: "Correo electrónico" },
   { key: "direccion", label: "Dirección" },
+  { key: "barrio", label: "Barrio" },
+  { key: "municipio", label: "Municipio" },
   { key: "talla_camisa", label: "Talla Camisa" },
   { key: "talla_pantalon", label: "Talla Pantalón" },
   { key: "talla_zapato", label: "Talla Zapato" },
@@ -641,6 +643,8 @@ const PanelAprobaciones = ({ userRole }) => {
               value: datos.correo_electronico || "N/A",
             },
             { label: "Dirección", value: datos.direccion || "N/A" },
+            { label: "Barrio", value: datos.barrio || "N/A" },
+            { label: "Municipio", value: datos.municipio || "N/A" },
             { label: "Talla Camisa", value: datos.talla_camisa || "N/A" },
             { label: "Talla Pantalón", value: datos.talla_pantalon || "N/A" },
             { label: "Talla Zapato", value: datos.talla_zapato || "N/A" },
@@ -748,6 +752,16 @@ const PanelAprobaciones = ({ userRole }) => {
             },
             // NUEVO CONTACTO COMPRAS
             { label: "Compras", value: datos.contacto_compras_nombre || "N/A" },
+            {
+              label: "Cupo Solicitado",
+              value: datos.cupo
+                ? new Intl.NumberFormat("es-CO", {
+                    style: "currency",
+                    currency: "COP",
+                    maximumFractionDigits: 0,
+                  }).format(datos.cupo)
+                : "N/A",
+            },
           ],
           documentos: mapDocs([
             { label: "RUT", url: datos.url_rut },
@@ -977,12 +991,11 @@ const PanelAprobaciones = ({ userRole }) => {
     if (!registroSeleccionado) return;
 
     if (registroSeleccionado.tipo === "proveedor") {
-      const cupoRaw = (cupoAprobado || "").trim();
       const condicionRaw = (condicionPago || "").trim();
-      if (!cupoRaw || !condicionRaw) {
+      if (!condicionRaw) {
         return Swal.fire({
           title: "Campos Requeridos",
-          text: "Para aprobar un proveedor, debes asignar un 'Cupo Aprobado' y una 'Condición de Pago'.",
+          text: "Para aprobar un proveedor, debes asignar una 'Condición de Pago'.",
           icon: "warning",
           confirmButtonColor: "#f59e0b",
         });
@@ -1068,8 +1081,9 @@ const PanelAprobaciones = ({ userRole }) => {
 
       const payload = {};
       if (registroSeleccionado.tipo === "proveedor") {
-        // Enviar cupo limpio (solo números) para evitar errores en backend
-        payload.cupoAprobado = cupoAprobado.replace(/\D/g, "");
+        // Cupo viene del formulario del proveedor (datos)
+        const cupoFromDatos = (registroSeleccionado.datos?.cupo || "").toString().replace(/\D/g, "");
+        payload.cupoAprobado = cupoFromDatos;
         payload.condicionPago = condicionPago;
       }
 
@@ -1727,40 +1741,6 @@ const PanelAprobaciones = ({ userRole }) => {
                             <FaCheck /> Datos de Aprobación (Requeridos)
                           </div>
                           <div className="tc-enrichment-grid">
-                            <div className="tc-enrichment-field">
-                              <label>
-                                Cupo Aprobado{" "}
-                                <span className="tc-required-mark">*</span>
-                              </label>
-                              <input
-                                type="text"
-                                className="tc-enrichment-input"
-                                value={cupoAprobado}
-                                onChange={(e) => {
-                                  // Eliminar todo lo que no sea número
-                                  const rawValue = e.target.value.replace(
-                                    /\D/g,
-                                    "",
-                                  );
-                                  if (!rawValue) {
-                                    setCupoAprobado("");
-                                    return;
-                                  }
-                                  // Formatear a moneda COP sin decimales
-                                  const formatted = new Intl.NumberFormat(
-                                    "es-CO",
-                                    {
-                                      style: "currency",
-                                      currency: "COP",
-                                      maximumFractionDigits: 0,
-                                    },
-                                  ).format(rawValue);
-                                  setCupoAprobado(formatted);
-                                }}
-                                placeholder="Ej: $5.000.000"
-                                disabled={loading}
-                              />
-                            </div>
                             <div className="tc-enrichment-field">
                               <label>
                                 Condición de Pago{" "}

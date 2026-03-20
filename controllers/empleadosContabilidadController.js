@@ -25,6 +25,8 @@ export const createEmpleadoContabilidad = async (req, res) => {
       contacto,
       correo_electronico,
       direccion,
+      barrio,
+      municipio,
       url_hoja_de_vida,
       url_cedula,
       url_certificado_bancario,
@@ -62,6 +64,8 @@ export const createEmpleadoContabilidad = async (req, res) => {
       contacto: contacto || null,
       correo_electronico: correo_electronico || null,
       direccion: direccion || null,
+      barrio: barrio || null,
+      municipio: municipio || null,
       url_hoja_de_vida,
       url_cedula,
       url_certificado_bancario,
@@ -187,6 +191,8 @@ export const updateEmpleadoContabilidad = async (req, res) => {
       contacto,
       correo_electronico,
       direccion,
+      barrio,
+      municipio,
       url_hoja_de_vida,
       url_cedula,
       url_certificado_bancario,
@@ -203,6 +209,8 @@ export const updateEmpleadoContabilidad = async (req, res) => {
     if (correo_electronico !== undefined)
       payload.correo_electronico = correo_electronico;
     if (direccion !== undefined) payload.direccion = direccion;
+    if (barrio !== undefined) payload.barrio = barrio;
+    if (municipio !== undefined) payload.municipio = municipio;
     if (url_hoja_de_vida !== undefined)
       payload.url_hoja_de_vida = url_hoja_de_vida;
     if (url_cedula !== undefined) payload.url_cedula = url_cedula;

@@ -141,7 +141,7 @@ const FileInput = ({ label, name, file, setFile, isRequired = false }) => {
           type="file"
           id={name}
           name={name}
-          accept=".pdf,.jpg,.jpeg,.png,.webp"
+          accept=".pdf"
           onChange={handleFileChange}
           ref={fileInputRef}
           style={{ display: "none" }}
@@ -325,6 +325,7 @@ const EMPTY_FORM = {
   registra_en_bolsa: "",
   tipo_proveedor: "",
   federaciones_recaudo: [], // Array de IDs
+  cupo: "",
 };
 
 const DOCUMENT_OPTIONS = [
@@ -934,6 +935,7 @@ const CreacionProveedor = () => {
         formData.federaciones_recaudo?.length > 0
           ? formData.federaciones_recaudo.join(",")
           : null,
+      cupo: formData.cupo ? formData.cupo.replace(/\D/g, "") || null : null,
     };
   }, [
     buildNombreNatural,
@@ -949,6 +951,7 @@ const CreacionProveedor = () => {
     formData.registra_en_bolsa,
     formData.tipo_proveedor,
     formData.federaciones_recaudo,
+    formData.cupo,
     formData.email_factura_electronica,
     formData.fecha_diligenciamiento,
     formData.descripcion_ciiu,
@@ -980,9 +983,7 @@ const CreacionProveedor = () => {
         if (!docIdentidadRepLegal)
           errors.docIdentidadRepLegal =
             "Copia del documento de identidad del representante legal es requerida.";
-        if (!certificadoSagrilaft)
-          errors.certificadoSagrilaft =
-            "Formato SAGRILAFT firmado por el oficial de cumplimiento es requerido.";
+        // SAGRILAFT es opcional
         if (!composicionAccionaria)
           errors.composicionAccionaria = "Composición Accionaria es requerida.";
 
@@ -1020,6 +1021,8 @@ const CreacionProveedor = () => {
       }
 
       // Nuevos campos obligatorios
+      if (!formData.cupo || !formData.cupo.trim())
+        errors.cupo = "El cupo es requerido.";
       if (!formData.registra_en_bolsa)
         errors.registra_en_bolsa = "Selecciona si registra en bolsa.";
       if (!formData.tipo_proveedor)
@@ -2269,6 +2272,42 @@ const CreacionProveedor = () => {
           )}
 
           <div className="tc-form-separator">
+            <span>Cupo</span>
+          </div>
+
+          <div className="tc-form-grid grid-2-cols">
+            <div className="tc-form-group">
+              <label htmlFor="cupo">
+                Cupo<span className="required">*</span>
+              </label>
+              <input
+                id="cupo"
+                name="cupo"
+                type="text"
+                value={formData.cupo}
+                onChange={(e) => {
+                  const rawValue = e.target.value.replace(/\D/g, "");
+                  if (!rawValue) {
+                    setFormData((prev) => ({ ...prev, cupo: "" }));
+                    return;
+                  }
+                  const formatted = new Intl.NumberFormat("es-CO", {
+                    style: "currency",
+                    currency: "COP",
+                    maximumFractionDigits: 0,
+                  }).format(rawValue);
+                  setFormData((prev) => ({ ...prev, cupo: formatted }));
+                }}
+                placeholder="Ej: $5.000.000"
+                className={`tc-form-input ${formErrors.cupo ? "is-invalid" : ""}`}
+              />
+              {formErrors.cupo && (
+                <span className="tc-validation-error">{formErrors.cupo}</span>
+              )}
+            </div>
+          </div>
+
+          <div className="tc-form-separator">
             <span>Declaraciones y Tratamiento de Datos</span>
           </div>
 
@@ -2516,11 +2555,11 @@ const CreacionProveedor = () => {
               isRequired={true}
             />
             <FileInput
-              label="Formato SAGRILAFT firmado por el oficial de cumplimiento"
+              label="Formato SAGRILAFT firmado por el oficial de cumplimiento (Opcional)"
               name="certificado_sagrilaft"
               file={certificadoSagrilaft}
               setFile={setCertificadoSagrilaft}
-              isRequired={true}
+              isRequired={false}
             />
             <FileInput
               label="Composición Accionaria"

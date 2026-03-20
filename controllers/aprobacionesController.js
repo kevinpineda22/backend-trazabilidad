@@ -111,6 +111,8 @@ export const aprobarRegistro = async (req, res) => {
               contacto: normalizar(datos.contacto),
               correo_electronico: normalizar(datos.correo_electronico),
               direccion: normalizar(datos.direccion),
+              barrio: normalizar(datos.barrio),
+              municipio: normalizar(datos.municipio),
               url_hoja_de_vida: normalizar(datos.url_hoja_de_vida),
               url_cedula: normalizar(datos.url_cedula),
               url_certificado_bancario: normalizar(
@@ -208,6 +210,7 @@ export const aprobarRegistro = async (req, res) => {
               razon_social: normalizar(datos.razon_social),
               nombre_establecimiento: normalizar(datos.nombre_establecimiento),
               codigo_ciiu: normalizar(datos.codigo_ciiu),
+              descripcion_ciiu: normalizar(datos.descripcion_ciiu),
               direccion_domicilio: normalizar(datos.direccion_domicilio),
               departamento: normalizar(datos.departamento),
               ciudad: normalizar(datos.ciudad),

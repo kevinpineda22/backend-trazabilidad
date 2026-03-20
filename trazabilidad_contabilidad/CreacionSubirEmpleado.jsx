@@ -322,6 +322,8 @@ const CreacionSubirEmpleado = () => {
   const [contacto, setContacto] = useState("");
   const [correo, setCorreo] = useState("");
   const [direccion, setDireccion] = useState("");
+  const [barrio, setBarrio] = useState("");
+  const [municipio, setMunicipio] = useState("");
   const [hojaDeVida, setHojaDeVida] = useState(null);
   const [cedulaFile, setCedulaFile] = useState(null);
   const [certificadoBancario, setCertificadoBancario] = useState(null);
@@ -408,6 +410,8 @@ const CreacionSubirEmpleado = () => {
     setContacto("");
     setCorreo("");
     setDireccion("");
+    setBarrio("");
+    setMunicipio("");
     setHojaDeVida(null);
     setCedulaFile(null);
     setCertificadoBancario(null);
@@ -462,6 +466,8 @@ const CreacionSubirEmpleado = () => {
     setContacto(item.contacto || "");
     setCorreo(item.correo_electronico || "");
     setDireccion(item.direccion || "");
+    setBarrio(item.barrio || "");
+    setMunicipio(item.municipio || "");
     setHojaDeVida(item.url_hoja_de_vida || null);
     setCedulaFile(item.url_cedula || null);
     setCertificadoBancario(item.url_certificado_bancario || null);
@@ -714,6 +720,8 @@ const CreacionSubirEmpleado = () => {
       contacto,
       correo_electronico: correo,
       direccion,
+      barrio: barrio || null,
+      municipio: municipio || null,
     };
 
     const confirmationDetails = {
@@ -898,6 +906,28 @@ const CreacionSubirEmpleado = () => {
             value={direccion}
             onChange={(e) => setDireccion(e.target.value)}
             placeholder="Ej: Calle 50 # 45 - 30"
+            className="tc-form-input"
+          />
+        </div>
+        <div className="tc-form-group">
+          <label htmlFor="barrio">Barrio</label>
+          <input
+            type="text"
+            id="barrio"
+            value={barrio}
+            onChange={(e) => setBarrio(e.target.value)}
+            placeholder="Ej: Robledo"
+            className="tc-form-input"
+          />
+        </div>
+        <div className="tc-form-group">
+          <label htmlFor="municipio">Municipio</label>
+          <input
+            type="text"
+            id="municipio"
+            value={municipio}
+            onChange={(e) => setMunicipio(e.target.value)}
+            placeholder="Ej: Medellín"
             className="tc-form-input"
           />
         </div>
