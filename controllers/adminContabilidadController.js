@@ -517,6 +517,10 @@ export const marcarEntidadCreada = async (req, res) => {
                             <td style="padding:15px 20px;border-bottom:1px solid #e2e8f0;color:#64748b;font-weight:600;font-size:14px;">Empresa</td>
                             <td style="padding:15px 20px;border-bottom:1px solid #e2e8f0;color:#334155;font-weight:500;font-size:14px;">${emp.empresa || ""}</td>
                           </tr>
+                          <tr>
+                            <td style="padding:15px 20px;border-bottom:1px solid #e2e8f0;color:#64748b;font-weight:600;font-size:14px;">Sede</td>
+                            <td style="padding:15px 20px;border-bottom:1px solid #e2e8f0;color:#334155;font-weight:500;font-size:14px;">${emp.sede || "No especificada"}</td>
+                          </tr>
                         </tbody>
                       </table>
                       <div style="text-align:center;margin-top:30px;">
