@@ -1,5 +1,6 @@
 import dotenv from "dotenv";
 import express from "express";
+import rateLimit from "express-rate-limit";
 import { corsMiddleware } from "./config/corsConfig.js";
 
 // --- Importar las rutas (Asumo que tienen la extensión .js) ---
@@ -20,6 +21,16 @@ const PORT = process.env.PORT || 3000;
 
 // Aplicar CORS middleware global
 app.use(corsMiddleware);
+
+// Rate limiting global
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: "Demasiadas solicitudes, intenta más tarde." },
+});
+app.use(globalLimiter);
 
 // Aumentar el límite de payload para JSON complejos (ya no es Multer)
 app.use(express.json({ limit: "50mb" }));
