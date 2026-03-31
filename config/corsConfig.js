@@ -25,6 +25,8 @@ const corsOptions = {
     "Authorization",
     "X-Requested-With",
     "Accept",
+    "Cache-Control",
+    "Pragma",
   ],
 };
 
