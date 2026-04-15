@@ -10,9 +10,11 @@ import {
   FaInfoCircle,
   FaDownload,
 } from "react-icons/fa";
+import { FaExchangeAlt } from "react-icons/fa";
 import { format, parseISO } from "date-fns";
 import { toast } from "react-toastify";
 import Loader from "../components/Loader";
+import ReemplazarDocumentoModal from "../components/ReemplazarDocumentoModal";
 
 // Importa los estilos del expediente de empleado (reutilizamos)
 import "./ExpedienteEmpleadoView.css";
@@ -29,6 +31,7 @@ const ExpedienteClienteView = ({ clienteId, onBack, onPreview }) => {
   const [cliente, setCliente] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [docReemplazar, setDocReemplazar] = useState(null);
 
   useEffect(() => {
     if (!clienteId) {
@@ -41,7 +44,7 @@ const ExpedienteClienteView = ({ clienteId, onBack, onPreview }) => {
       try {
         setLoading(true);
         const { data } = await api.get(
-          `/trazabilidad/admin/expediente-cliente/${clienteId}`
+          `/trazabilidad/admin/expediente-cliente/${clienteId}`,
         );
         setCliente(data.cliente);
         setError(null);
@@ -78,24 +81,42 @@ const ExpedienteClienteView = ({ clienteId, onBack, onPreview }) => {
     }
   };
 
+  const refetchExpediente = async () => {
+    try {
+      const { data } = await api.get(
+        `/trazabilidad/admin/expediente-cliente/${clienteId}`,
+      );
+      setCliente(data.cliente);
+    } catch (err) {
+      console.error("Error refetching expediente cliente:", err);
+    }
+  };
+
   // Crear array de documentos a partir del objeto cliente
   let documentosDefinidos = [];
   if (cliente) {
     documentosDefinidos = [
-      { label: "RUT", url: cliente.url_rut },
-      { label: "Cámara de Comercio", url: cliente.url_camara_comercio },
+      { label: "RUT", url: cliente.url_rut, campo: "url_rut" },
+      {
+        label: "Cámara de Comercio",
+        url: cliente.url_camara_comercio,
+        campo: "url_camara_comercio",
+      },
       {
         label: "Certificación Bancaria",
         url: cliente.url_certificacion_bancaria,
+        campo: "url_certificacion_bancaria",
       },
-      { label: "Cédula", url: cliente.url_cedula },
+      { label: "Cédula", url: cliente.url_cedula, campo: "url_cedula" },
       {
         label: "Composición Accionaria",
         url: cliente.url_composicion_accionaria,
+        campo: "url_composicion_accionaria",
       },
       {
         label: "Certificado SAGRILAFT",
         url: cliente.url_certificado_sagrilaft,
+        campo: "url_certificado_sagrilaft",
       },
     ];
   }
@@ -257,7 +278,7 @@ const ExpedienteClienteView = ({ clienteId, onBack, onPreview }) => {
                   label="Fecha Creación"
                   value={format(
                     parseISO(cliente.created_at),
-                    "dd/MM/yyyy hh:mm a"
+                    "dd/MM/yyyy hh:mm a",
                   )}
                 />
               </div>
@@ -295,6 +316,12 @@ const ExpedienteClienteView = ({ clienteId, onBack, onPreview }) => {
                       >
                         <FaDownload /> Descargar
                       </a>
+                      <button
+                        className="file-action-btn replace"
+                        onClick={() => setDocReemplazar(doc)}
+                      >
+                        <FaExchangeAlt /> Reemplazar
+                      </button>
                     </div>
                   </li>
                 ))}
@@ -313,6 +340,18 @@ const ExpedienteClienteView = ({ clienteId, onBack, onPreview }) => {
           )}
         </div>
       </div>
+
+      {/* Modal de Reemplazo */}
+      <ReemplazarDocumentoModal
+        isOpen={!!docReemplazar}
+        onClose={() => setDocReemplazar(null)}
+        docLabel={docReemplazar?.label || ""}
+        docCampo={docReemplazar?.campo || ""}
+        expedienteTipo="cliente"
+        expedienteId={clienteId}
+        currentUrl={docReemplazar?.url || ""}
+        onDocReemplazado={refetchExpediente}
+      />
     </>
   );
 };

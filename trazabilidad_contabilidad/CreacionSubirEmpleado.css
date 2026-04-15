@@ -25,7 +25,6 @@
   display: flex;
   flex-direction: column;
   gap: 2rem;
-  font-family: "Poppins", sans-serif;
 }
 
 .tc-card {
@@ -556,10 +555,6 @@
 }
 
 /* SweetAlert2 Customization for minimal design */
-.tc-swal-container {
-  font-family: "Poppins", sans-serif !important;
-}
-
 .tc-swal-title {
   color: var(--tc-primary) !important;
   font-weight: 600 !important;

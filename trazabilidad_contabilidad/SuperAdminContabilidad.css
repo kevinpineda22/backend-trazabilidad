@@ -21,7 +21,6 @@
   display: flex;
   min-height: 100vh;
   background-color: var(--admin-cont-bg-main);
-  font-family: "Poppins", sans-serif;
   position: fixed;
   top: 0;
   left: 0;
@@ -888,7 +887,6 @@
 /* --- Personalización de Toastify (Alertas) --- */
 .Toastify__toast {
   border-radius: 12px !important;
-  font-family: "Poppins", sans-serif !important;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
 }
 

@@ -12,6 +12,7 @@ import tokensRoutes from "./routes/tokensRoutes.js";
 import aprobacionesRoutes from "./routes/aprobacionesRoutes.js";
 import registroPublicoRoutes from "./routes/registroPublicoRoutes.js";
 import adminDocumentosRoutes from "./routes/adminDocumentosRoutes.js";
+import documentosVersionesRoutes from "./routes/documentosVersionesRoutes.js";
 
 // Cargar variables de entorno
 dotenv.config();
@@ -46,6 +47,7 @@ app.use(`${apiBase}/tokens`, tokensRoutes);
 app.use(`${apiBase}/aprobaciones`, aprobacionesRoutes);
 app.use(`${apiBase}/registro-publico`, registroPublicoRoutes);
 app.use(`${apiBase}/admin-documentos`, adminDocumentosRoutes);
+app.use(`${apiBase}/documentos-versiones`, documentosVersionesRoutes);
 
 // --- Rutas de Bienvenida y Salud ---
 app.get("/", (req, res) => {

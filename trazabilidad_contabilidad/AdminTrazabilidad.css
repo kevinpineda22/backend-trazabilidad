@@ -22,7 +22,6 @@
     display: flex;
     min-height: 100vh;
     background-color: var(--admin-traz-bg-main);
-    font-family: "Poppins", sans-serif;
     position: fixed;
     top: 0;
     left: 0;

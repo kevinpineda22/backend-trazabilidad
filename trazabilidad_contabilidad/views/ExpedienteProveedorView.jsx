@@ -10,9 +10,11 @@ import {
   FaInfoCircle,
   FaDownload,
 } from "react-icons/fa";
+import { FaExchangeAlt } from "react-icons/fa";
 import { format, parseISO } from "date-fns";
 import { toast } from "react-toastify";
 import Loader from "../components/Loader";
+import ReemplazarDocumentoModal from "../components/ReemplazarDocumentoModal";
 
 // Importa los estilos del expediente de empleado (reutilizamos)
 import "./ExpedienteEmpleadoView.css";
@@ -34,6 +36,7 @@ const ExpedienteProveedorView = ({
   const [proveedor, setProveedor] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [docReemplazar, setDocReemplazar] = useState(null);
 
   useEffect(() => {
     if (!proveedorId) {
@@ -74,6 +77,17 @@ const ExpedienteProveedorView = ({
     return <FaFileAlt className="file-icon other" />;
   };
 
+  const refetchExpediente = async () => {
+    try {
+      const { data } = await api.get(
+        `/trazabilidad/admin/expediente-proveedor/${proveedorId}`,
+      );
+      setProveedor(data.proveedor);
+    } catch (err) {
+      console.error("Error refetching expediente proveedor:", err);
+    }
+  };
+
   const formatFechaCorta = (fecha) => {
     if (!fecha) return "N/A";
     try {
@@ -91,31 +105,41 @@ const ExpedienteProveedorView = ({
         {
           label: "Certificación Bancaria",
           url: proveedor.url_certificacion_bancaria,
+          campo: "url_certificacion_bancaria",
         },
         {
           label: "Documento Identidad Rep. Legal",
           url: proveedor.url_doc_identidad_rep_legal,
+          campo: "url_doc_identidad_rep_legal",
         },
       ];
     } else {
       documentosDefinidos = [
-        { label: "RUT", url: proveedor.url_rut },
-        { label: "Cámara de Comercio", url: proveedor.url_camara_comercio },
+        { label: "RUT", url: proveedor.url_rut, campo: "url_rut" },
+        {
+          label: "Cámara de Comercio",
+          url: proveedor.url_camara_comercio,
+          campo: "url_camara_comercio",
+        },
         {
           label: "Certificación Bancaria",
           url: proveedor.url_certificacion_bancaria,
+          campo: "url_certificacion_bancaria",
         },
         {
           label: "Documento Identidad Rep. Legal",
           url: proveedor.url_doc_identidad_rep_legal,
+          campo: "url_doc_identidad_rep_legal",
         },
         {
           label: "Composición Accionaria",
           url: proveedor.url_composicion_accionaria,
+          campo: "url_composicion_accionaria",
         },
         {
           label: "Certificado SAGRILAFT",
           url: proveedor.url_certificado_sagrilaft,
+          campo: "url_certificado_sagrilaft",
         },
       ];
 
@@ -126,22 +150,26 @@ const ExpedienteProveedorView = ({
         documentosDefinidos.push({
           label: "Certificado Bolsa",
           url: proveedor.url_certificado_bolsa,
+          campo: "url_certificado_bolsa",
         });
       }
       if (proveedor.url_certificado_fenalce)
         documentosDefinidos.push({
           label: "Certificado FENALCE",
           url: proveedor.url_certificado_fenalce,
+          campo: "url_certificado_fenalce",
         });
       if (proveedor.url_certificado_asohofrucol)
         documentosDefinidos.push({
           label: "Certificado ASOHOFRUCOL",
           url: proveedor.url_certificado_asohofrucol,
+          campo: "url_certificado_asohofrucol",
         });
       if (proveedor.url_certificado_fedepapa)
         documentosDefinidos.push({
           label: "Certificado FEDEPAPA",
           url: proveedor.url_certificado_fedepapa,
+          campo: "url_certificado_fedepapa",
         });
     }
   }
@@ -434,6 +462,12 @@ const ExpedienteProveedorView = ({
                       >
                         <FaDownload /> Descargar
                       </a>
+                      <button
+                        className="file-action-btn replace"
+                        onClick={() => setDocReemplazar(doc)}
+                      >
+                        <FaExchangeAlt /> Reemplazar
+                      </button>
                     </div>
                   </li>
                 ))}
@@ -452,6 +486,18 @@ const ExpedienteProveedorView = ({
           )}
         </div>
       </div>
+
+      {/* Modal de Reemplazo */}
+      <ReemplazarDocumentoModal
+        isOpen={!!docReemplazar}
+        onClose={() => setDocReemplazar(null)}
+        docLabel={docReemplazar?.label || ""}
+        docCampo={docReemplazar?.campo || ""}
+        expedienteTipo="proveedor"
+        expedienteId={proveedorId}
+        currentUrl={docReemplazar?.url || ""}
+        onDocReemplazado={refetchExpediente}
+      />
     </>
   );
 };

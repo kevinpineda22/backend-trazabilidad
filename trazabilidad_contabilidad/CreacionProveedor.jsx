@@ -2555,7 +2555,7 @@ const CreacionProveedor = () => {
               isRequired={true}
             />
             <FileInput
-              label="Formato SAGRILAFT firmado por el oficial de cumplimiento (Opcional)"
+              label="Formato SAGRILAFT firmado por el oficial de cumplimiento"
               name="certificado_sagrilaft"
               file={certificadoSagrilaft}
               setFile={setCertificadoSagrilaft}

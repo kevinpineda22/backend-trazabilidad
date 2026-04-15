@@ -10,9 +10,11 @@ import {
   FaInfoCircle,
   FaDownload,
 } from "react-icons/fa";
+import { FaExchangeAlt } from "react-icons/fa";
 import { format, parseISO } from "date-fns";
 import { toast } from "react-toastify";
 import Loader from "../components/Loader";
+import ReemplazarDocumentoModal from "../components/ReemplazarDocumentoModal";
 
 // Importa los estilos
 import "./ExpedienteEmpleadoView.css";
@@ -36,6 +38,7 @@ const ExpedienteEmpleadoView = ({
   // const [documentos, setDocumentos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [docReemplazar, setDocReemplazar] = useState(null);
 
   useEffect(() => {
     if (!empleadoId) {
@@ -78,6 +81,17 @@ const ExpedienteEmpleadoView = ({
     return <FaFileAlt className="file-icon other" />;
   };
 
+  const refetchExpediente = async () => {
+    try {
+      const { data } = await api.get(
+        `/trazabilidad/admin/expediente-empleado/${empleadoId}`,
+      );
+      setEmpleado(data.empleado);
+    } catch (err) {
+      console.error("Error refetching expediente empleado:", err);
+    }
+  };
+
   // --- ¡NUEVA LÓGICA DE DOCUMENTOS! ---
   // Creamos un array de documentos definidos a partir del objeto 'empleado'
   let documentosDefinidos = [];
@@ -88,19 +102,41 @@ const ExpedienteEmpleadoView = ({
         {
           label: "Certificado Bancario",
           url: empleado.url_certificado_bancario,
+          campo: "url_certificado_bancario",
         },
-        { label: "Documento de Identidad", url: empleado.url_cedula },
+        {
+          label: "Documento de Identidad",
+          url: empleado.url_cedula,
+          campo: "url_cedula",
+        },
       ];
     } else {
       documentosDefinidos = [
-        { label: "Hoja de Vida", url: empleado.url_hoja_de_vida },
-        { label: "Documento de Identidad", url: empleado.url_cedula },
+        {
+          label: "Hoja de Vida",
+          url: empleado.url_hoja_de_vida,
+          campo: "url_hoja_de_vida",
+        },
+        {
+          label: "Documento de Identidad",
+          url: empleado.url_cedula,
+          campo: "url_cedula",
+        },
         {
           label: "Certificado Bancario",
           url: empleado.url_certificado_bancario,
+          campo: "url_certificado_bancario",
         },
-        { label: "Habeas Data", url: empleado.url_habeas_data },
-        { label: "Autorización Firma", url: empleado.url_autorizacion_firma },
+        {
+          label: "Habeas Data",
+          url: empleado.url_habeas_data,
+          campo: "url_habeas_data",
+        },
+        {
+          label: "Autorización Firma",
+          url: empleado.url_autorizacion_firma,
+          campo: "url_autorizacion_firma",
+        },
       ];
     }
   }
@@ -220,6 +256,12 @@ const ExpedienteEmpleadoView = ({
                       >
                         <FaDownload /> Descargar
                       </a>
+                      <button
+                        className="file-action-btn replace"
+                        onClick={() => setDocReemplazar(doc)}
+                      >
+                        <FaExchangeAlt /> Reemplazar
+                      </button>
                     </div>
                   </li>
                 ))}
@@ -238,6 +280,18 @@ const ExpedienteEmpleadoView = ({
           )}
         </div>
       </div>
+
+      {/* Modal de Reemplazo */}
+      <ReemplazarDocumentoModal
+        isOpen={!!docReemplazar}
+        onClose={() => setDocReemplazar(null)}
+        docLabel={docReemplazar?.label || ""}
+        docCampo={docReemplazar?.campo || ""}
+        expedienteTipo="empleado"
+        expedienteId={empleadoId}
+        currentUrl={docReemplazar?.url || ""}
+        onDocReemplazado={refetchExpediente}
+      />
     </>
   );
 };
