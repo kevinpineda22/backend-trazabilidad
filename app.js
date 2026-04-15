@@ -20,6 +20,9 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Confiar en el proxy de Vercel para obtener la IP real del cliente
+app.set("trust proxy", 1);
+
 // Aplicar CORS middleware global
 app.use(corsMiddleware);
 
@@ -29,7 +32,11 @@ const globalLimiter = rateLimit({
   max: 100,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { success: false, message: "Demasiadas solicitudes, intenta más tarde." },
+  message: {
+    success: false,
+    message: "Demasiadas solicitudes, intenta más tarde.",
+  },
+  validate: { xForwardedForHeader: false },
 });
 app.use(globalLimiter);
 
