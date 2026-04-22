@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
+import { supabaseAxios } from '../services/supabaseClient.js';
 
 dotenv.config();
 
@@ -10,43 +11,50 @@ if (!SUPABASE_JWT_SECRET) {
 }
 
 /**
- * Middleware para verificar el token JWT de Supabase, terminando la petición
- * OPTIONS si es el caso.
+ * Middleware para verificar el token JWT de Supabase y cargar el perfil del usuario.
  */
-export const authMiddleware = (req, res, next) => {
-    // === Solución de CORS/Vercel: Responder 204 a OPTIONS ===
+export const authMiddleware = async (req, res, next) => {
     if (req.method === 'OPTIONS') {
-        // Asumiendo que el corsMiddleware global (en app.js) ya añadió los headers, 
-        // terminamos la petición de preflight con 204.
         return res.sendStatus(204); 
     }
 
-    // 1. Obtener el header de autorización
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
         return res.status(401).json({ message: "Acceso denegado. No se proporcionó token válido." });
     }
 
-    // 2. Extraer el token (formato: "Bearer TOKEN...")
     const token = authHeader.split(' ')[1];
 
     try {
-        // 3. Verificar el token con el secreto de Supabase
         const decoded = jwt.verify(token, SUPABASE_JWT_SECRET);
+        const userId = decoded.sub;
+
+        // Intentar obtener el rol desde la tabla profiles
+        let userRole = decoded.role; // Fallback al rol del JWT
+        let userData = {};
+
+        try {
+            const { data: profile } = await supabaseAxios.get(`/profiles?user_id=eq.${userId}&select=role,nombre,area`);
+            if (profile && profile.length > 0) {
+                userRole = profile[0].role;
+                userData = profile[0];
+            }
+        } catch (dbError) {
+            console.warn("No se pudo obtener el perfil del usuario desde la DB, usando rol del JWT:", dbError.message);
+        }
         
-        // 4. Adjuntar la información del usuario a la solicitud (req)
         req.user = {
-            id: decoded.sub, // CRÍTICO: El sub es el user_id
+            id: userId,
             email: decoded.email,
-            role: decoded.role,
+            role: userRole,
+            nombre: userData.nombre,
+            area: userData.area
         };
 
-        // 5. Continuar con el siguiente middleware o controlador
         next();
 
     } catch (error) {
-        // Manejar errores de token (inválido, expirado, etc.)
         if (error.name === 'TokenExpiredError') {
             return res.status(401).json({ message: "Token expirado. Por favor, inicia sesión de nuevo." });
         }
@@ -57,4 +65,24 @@ export const authMiddleware = (req, res, next) => {
         console.error("Error en middleware de autenticación:", error);
         return res.status(401).json({ message: "Error de autenticación: Token inválido o no reconocido." });
     }
+};
+
+/**
+ * Middleware para autorizar roles específicos.
+ * @param {...string} allowedRoles - Roles permitidos para acceder a la ruta.
+ */
+export const authorizeRoles = (...allowedRoles) => {
+    return (req, res, next) => {
+        if (!req.user || !req.user.role) {
+            return res.status(401).json({ message: "No autenticado o rol no encontrado." });
+        }
+
+        if (allowedRoles.includes(req.user.role) || req.user.role === 'super_admin') {
+            return next();
+        }
+
+        return res.status(403).json({ 
+            message: `Acceso denegado. Se requiere uno de los siguientes roles: ${allowedRoles.join(', ')}` 
+        });
+    };
 };

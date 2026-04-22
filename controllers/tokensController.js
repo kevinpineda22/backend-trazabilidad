@@ -27,9 +27,31 @@ export const generarToken = async (req, res) => {
   try {
     const { tipo } = req.body; // 'empleado', 'cliente', 'proveedor'
     const user_id = req.user?.id;
+    const user_role = req.user?.role;
 
     if (!user_id) {
       return res.status(401).json({ message: "Usuario no autenticado." });
+    }
+
+    // --- LÓGICA DE PERMISOS ESTRICTA POR ROL ---
+    const isSuperAdmin = user_role === "super_admin" || user_role === "admin";
+    
+    let hasPermission = false;
+
+    if (isSuperAdmin) {
+      hasPermission = true;
+    } else if (tipo === "empleado" && user_role === "admin_empleado") {
+      hasPermission = true;
+    } else if (tipo === "cliente" && (user_role === "admin_cliente" || user_role === "admin_tesoreria")) {
+      hasPermission = true;
+    } else if (tipo === "proveedor" && (user_role === "admin_proveedor" || user_role === "admin_tesoreria")) {
+      hasPermission = true;
+    }
+
+    if (!hasPermission) {
+      return res.status(403).json({ 
+        message: `No tienes permiso para generar tokens de tipo: ${tipo}.` 
+      });
     }
 
     if (!tipo || !["empleado", "cliente", "proveedor"].includes(tipo)) {
@@ -146,13 +168,38 @@ export const validarToken = async (req, res) => {
  */
 export const listarTokens = async (req, res) => {
   try {
-    if (!req.user?.id) {
+    const user_id = req.user?.id;
+    const user_role = req.user?.role;
+
+    if (!user_id) {
       return res.status(401).json({ message: "Usuario no autenticado." });
     }
 
-    const { data: tokens } = await supabaseAxios.get(
-      `/tokens_registro?select=*&order=created_at.desc`,
-    );
+    // --- FILTRO DE SEGURIDAD POR ROL ---
+    const isSuperAdmin = user_role === "super_admin" || user_role === "admin";
+    const canSeeEmployees = isSuperAdmin || user_role === "admin_empleado";
+    const canSeeClientsProviders = isSuperAdmin || ["admin_cliente", "admin_proveedor", "admin_tesoreria"].includes(user_role);
+
+    let queryPath = `/tokens_registro?select=*&order=created_at.desc`;
+
+    // Si no es SuperAdmin, filtramos lo que puede ver
+    if (!isSuperAdmin) {
+      const allowedTypes = [];
+      if (canSeeEmployees) allowedTypes.push("empleado");
+      if (canSeeClientsProviders) {
+        allowedTypes.push("cliente");
+        allowedTypes.push("proveedor");
+      }
+
+      if (allowedTypes.length > 0) {
+        queryPath += `&tipo=in.(${allowedTypes.join(",")})`;
+      } else {
+        // Si por alguna razón no tiene ningún permiso, devolvemos vacío
+        return res.status(200).json([]);
+      }
+    }
+
+    const { data: tokens } = await supabaseAxios.get(queryPath);
 
     if (!tokens?.length) {
       return res.status(200).json([]);

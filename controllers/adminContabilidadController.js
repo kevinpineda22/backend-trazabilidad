@@ -345,38 +345,50 @@ export const getExpedienteEmpleadoAdmin = async (req, res) => {
 export const getDashboardStats = async (req, res) => {
   try {
     const user_id = req.user?.id;
+    const user_role = req.user?.role;
+
     if (!user_id) {
       return res.status(401).json({ message: "Usuario no autenticado." });
     }
 
-    // ¡CORREGIDO! Se eliminó el filtro user_id para la vista de admin
-    const [empleadosResponse, proveedoresResponse, clientesResponse] =
-      await Promise.all([
-        supabaseAxios.get(
-          `/empleados_contabilidad?select=count`, // Filtro user_id eliminado
-          { headers: { Prefer: "count=exact" } },
-        ),
-        supabaseAxios.get(
-          `/proveedores_contabilidad?select=count`, // Filtro user_id eliminado
-          { headers: { Prefer: "count=exact" } },
-        ),
-        supabaseAxios.get(
-          `/clientes_contabilidad?select=count`, // Filtro user_id eliminado
-          { headers: { Prefer: "count=exact" } },
-        ),
-      ]);
+    const isSuperAdmin = user_role === "super_admin" || user_role === "admin";
+    
+    // --- LÓGICA DE VISIBILIDAD GRANULAR ---
+    const canSeeEmployees = isSuperAdmin || user_role === "admin_empleado";
+    const canSeeClients = isSuperAdmin || user_role === "admin_cliente" || user_role === "admin_tesoreria";
+    const canSeeProviders = isSuperAdmin || user_role === "admin_proveedor" || user_role === "admin_tesoreria";
+
+    const promises = [];
+
+    // Empleados
+    if (canSeeEmployees) {
+      promises.push(supabaseAxios.get(`/empleados_contabilidad?select=count`, { headers: { Prefer: "count=exact" } }));
+    } else {
+      promises.push(Promise.resolve({ headers: { "content-range": "0-0/0" } }));
+    }
+
+    // Proveedores
+    if (canSeeProviders) {
+      promises.push(supabaseAxios.get(`/proveedores_contabilidad?select=count`, { headers: { Prefer: "count=exact" } }));
+    } else {
+      promises.push(Promise.resolve({ headers: { "content-range": "0-0/0" } }));
+    }
+
+    // Clientes
+    if (canSeeClients) {
+      promises.push(supabaseAxios.get(`/clientes_contabilidad?select=count`, { headers: { Prefer: "count=exact" } }));
+    } else {
+      promises.push(Promise.resolve({ headers: { "content-range": "0-0/0" } }));
+    }
+
+    const [empleadosRes, proveedoresRes, clientesRes] = await Promise.all(promises);
 
     const stats = {
-      totalEmpleados: empleadosResponse.headers["content-range"]
-        ? parseInt(empleadosResponse.headers["content-range"].split("/")[1])
-        : 0,
-      totalProveedores: proveedoresResponse.headers["content-range"]
-        ? parseInt(proveedoresResponse.headers["content-range"].split("/")[1])
-        : 0,
-      totalClientes: clientesResponse.headers["content-range"]
-        ? parseInt(clientesResponse.headers["content-range"].split("/")[1])
-        : 0,
+      totalEmpleados: empleadosRes.headers["content-range"] ? parseInt(empleadosRes.headers["content-range"].split("/")[1]) : 0,
+      totalProveedores: proveedoresRes.headers["content-range"] ? parseInt(proveedoresRes.headers["content-range"].split("/")[1]) : 0,
+      totalClientes: clientesRes.headers["content-range"] ? parseInt(clientesRes.headers["content-range"].split("/")[1]) : 0,
     };
+
     res.status(200).json(stats);
   } catch (error) {
     console.error("Error en getDashboardStats:", error);
