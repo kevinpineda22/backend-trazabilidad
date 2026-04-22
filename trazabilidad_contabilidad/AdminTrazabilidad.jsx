@@ -269,7 +269,7 @@ const AdminTrazabilidad = () => {
             onClick={() => setVista(VISTAS.APROBACIONES)}
           />
 
-          {checkPermission(["admin_empleado"]) && (
+          {checkPermission(["admin_empleado", "admin_empleados"]) && (
             <BotonSidebar
               icono={FaUsers}
               texto="Archivador Empleados"
@@ -278,7 +278,7 @@ const AdminTrazabilidad = () => {
             />
           )}
 
-          {checkPermission(["admin_cliente", "admin_clientes"]) && (
+          {checkPermission(["admin_cliente", "admin_clientes", "admin_tesoreria"]) && (
             <BotonSidebar
               icono={FaUsers}
               texto="Archivador Clientes"
@@ -287,7 +287,7 @@ const AdminTrazabilidad = () => {
             />
           )}
 
-          {checkPermission(["admin_proveedor", "admin_proveedores"]) && (
+          {checkPermission(["admin_proveedor", "admin_proveedores", "admin_tesoreria"]) && (
             <BotonSidebar
               icono={FaUsers}
               texto="Archivador Proveedores"

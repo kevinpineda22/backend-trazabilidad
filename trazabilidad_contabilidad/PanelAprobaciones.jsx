@@ -501,26 +501,44 @@ const PanelAprobaciones = ({ userRole }) => {
   }, [selectedDepartment]);
 
   const tiposPermitidos = useMemo(() => {
-    if (!userRole || userRole === "admin" || userRole === "super_admin")
+    if (!userRole) return [];
+    
+    const role = userRole.toLowerCase().trim();
+    
+    if (role === "admin" || role === "super_admin")
       return ["empleado", "cliente", "proveedor"];
-    if (["admin_cliente", "admin_clientes"].includes(userRole))
+    
+    if (role === "admin_cliente" || role === "admin_clientes")
       return ["cliente"];
-    if (["admin_proveedor", "admin_proveedores"].includes(userRole))
+    
+    if (role === "admin_proveedor" || role === "admin_proveedores")
       return ["proveedor"];
-    const tipo = userRole.replace("admin_", "");
+      
+    if (role === "admin_tesoreria")
+      return ["cliente", "proveedor"];
+      
+    if (role === "admin_empleado" || role === "admin_empleados")
+      return ["empleado"];
+      
+    const tipo = role.replace("admin_", "");
     return [tipo];
   }, [userRole]);
 
   useEffect(() => {
-    const isAdmin =
-      !userRole || ["admin", "super_admin", "authenticated"].includes(userRole);
+    if (!userRole) return;
+    
+    const role = userRole.toLowerCase().trim();
+    const isAdmin = ["admin", "super_admin", "authenticated"].includes(role);
+    
     if (!isAdmin) {
-      if (["admin_cliente", "admin_clientes"].includes(userRole))
+      if (role === "admin_cliente" || role === "admin_clientes")
         setFiltroTipo("cliente");
-      else if (["admin_proveedor", "admin_proveedores"].includes(userRole))
+      else if (role === "admin_proveedor" || role === "admin_proveedores")
         setFiltroTipo("proveedor");
+      else if (role === "admin_tesoreria")
+        setFiltroTipo("todos"); // Tesorería ve ambos por defecto
       else {
-        const tipo = userRole.replace("admin_", "");
+        const tipo = role.replace("admin_", "");
         setFiltroTipo(tipo);
       }
     }
