@@ -27,6 +27,7 @@ import {
 } from "chart.js";
 import { Bar, Doughnut } from "react-chartjs-2";
 import "./DashboardView.css";
+import SharedPagination from "../components/SharedPagination";
 
 ChartJS.register(
   CategoryScale,
@@ -35,7 +36,7 @@ ChartJS.register(
   Title,
   Tooltip,
   Legend,
-  ArcElement
+  ArcElement,
 );
 
 const DashboardView = ({ onNavigate, userRole }) => {
@@ -43,6 +44,8 @@ const DashboardView = ({ onNavigate, userRole }) => {
   const [pendientes, setPendientes] = useState([]);
   const [historial, setHistorial] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [paginaActual, setPaginaActual] = useState(1);
+  const itemsPorPagina = 5;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -60,17 +63,24 @@ const DashboardView = ({ onNavigate, userRole }) => {
         // Función de filtrado según rol
         const filterByRole = (items) => {
           if (!Array.isArray(items)) return [];
-          if (!userRole || userRole === "admin" || userRole === "super_admin")
-            return items;
+          if (!userRole) return [];
 
-          if (userRole === "admin_empleado")
+          const role = userRole.toLowerCase().trim();
+          if (role === "admin" || role === "super_admin") return items;
+
+          if (role === "admin_empleado" || role === "admin_empleados")
             return items.filter((i) => i.tipo === "empleado");
 
-          if (["admin_cliente", "admin_clientes"].includes(userRole))
+          if (role === "admin_cliente" || role === "admin_clientes")
             return items.filter((i) => i.tipo === "cliente");
 
-          if (["admin_proveedor", "admin_proveedores"].includes(userRole))
+          if (role === "admin_proveedor" || role === "admin_proveedores")
             return items.filter((i) => i.tipo === "proveedor");
+
+          if (role === "admin_tesoreria")
+            return items.filter(
+              (i) => i.tipo === "cliente" || i.tipo === "proveedor",
+            );
 
           return [];
         };
@@ -106,18 +116,40 @@ const DashboardView = ({ onNavigate, userRole }) => {
   }, [userRole]);
 
   // Permisos de visualización
-  const showEmpleados =
-    !userRole || ["admin", "super_admin", "admin_empleado"].includes(userRole);
-  const showClientes =
-    !userRole ||
-    ["admin", "super_admin", "admin_cliente", "admin_clientes"].includes(
-      userRole
-    );
-  const showProveedores =
-    !userRole ||
-    ["admin", "super_admin", "admin_proveedor", "admin_proveedores"].includes(
-      userRole
-    );
+  const showEmpleados = useMemo(() => {
+    if (!userRole) return false;
+    const role = userRole.toLowerCase().trim();
+    return [
+      "admin",
+      "super_admin",
+      "admin_empleado",
+      "admin_empleados",
+    ].includes(role);
+  }, [userRole]);
+
+  const showClientes = useMemo(() => {
+    if (!userRole) return false;
+    const role = userRole.toLowerCase().trim();
+    return [
+      "admin",
+      "super_admin",
+      "admin_cliente",
+      "admin_clientes",
+      "admin_tesoreria",
+    ].includes(role);
+  }, [userRole]);
+
+  const showProveedores = useMemo(() => {
+    if (!userRole) return false;
+    const role = userRole.toLowerCase().trim();
+    return [
+      "admin",
+      "super_admin",
+      "admin_proveedor",
+      "admin_proveedores",
+      "admin_tesoreria",
+    ].includes(role);
+  }, [userRole]);
 
   // Cálculos para Gráficos
   const pendientesPorTipo = useMemo(() => {
@@ -143,22 +175,40 @@ const DashboardView = ({ onNavigate, userRole }) => {
       .slice(0, 5);
   }, [historial]);
 
-  // Configuración de Gráficos
-  const doughnutData = {
-    labels: ["Empleados", "Clientes", "Proveedores"],
-    datasets: [
-      {
-        data: [
-          pendientesPorTipo.empleado,
-          pendientesPorTipo.cliente,
-          pendientesPorTipo.proveedor,
-        ],
-        backgroundColor: ["#3b82f6", "#10b981", "#f59e0b"],
-        borderColor: ["#ffffff", "#ffffff", "#ffffff"],
-        borderWidth: 2,
-      },
-    ],
-  };
+  // Configuración de Gráficos (Dinámica según permisos)
+  const doughnutData = useMemo(() => {
+    const labels = [];
+    const data = [];
+    const colors = [];
+
+    if (showEmpleados) {
+      labels.push("Empleados");
+      data.push(pendientesPorTipo.empleado);
+      colors.push("#3b82f6");
+    }
+    if (showClientes) {
+      labels.push("Clientes");
+      data.push(pendientesPorTipo.cliente);
+      colors.push("#10b981");
+    }
+    if (showProveedores) {
+      labels.push("Proveedores");
+      data.push(pendientesPorTipo.proveedor);
+      colors.push("#f59e0b");
+    }
+
+    return {
+      labels,
+      datasets: [
+        {
+          data,
+          backgroundColor: colors,
+          borderColor: "#ffffff",
+          borderWidth: 2,
+        },
+      ],
+    };
+  }, [showEmpleados, showClientes, showProveedores, pendientesPorTipo]);
 
   const barData = {
     labels: ["Aprobados", "Rechazados"],
@@ -260,42 +310,56 @@ const DashboardView = ({ onNavigate, userRole }) => {
       <div className="dashboard-recent-activity">
         <h3>Actividad Reciente</h3>
         {actividadReciente.length > 0 ? (
-          <table className="activity-table">
-            <thead>
-              <tr>
-                <th>Tipo</th>
-                <th>Fecha</th>
-                <th>Estado</th>
-                <th>Detalle</th>
-              </tr>
-            </thead>
-            <tbody>
-              {actividadReciente.map((item) => (
-                <tr key={item.id}>
-                  <td style={{ textTransform: "capitalize" }}>{item.tipo}</td>
-                  <td>
-                    {new Date(item.created_at).toLocaleDateString("es-CO")}
-                  </td>
-                  <td>
-                    <span className={`status-badge ${item.estado}`}>
-                      {item.estado}
-                    </span>
-                  </td>
-                  <td>
-                    {item.motivo_rechazo ? (
-                      <span title={item.motivo_rechazo}>
-                        Rechazado: {item.motivo_rechazo.substring(0, 30)}...
-                      </span>
-                    ) : item.estado === "aprobado" ? (
-                      "Aprobado exitosamente"
-                    ) : (
-                      "En revisión"
-                    )}
-                  </td>
+          <>
+            <table className="activity-table">
+              <thead>
+                <tr>
+                  <th>Tipo</th>
+                  <th>Fecha</th>
+                  <th>Estado</th>
+                  <th>Detalle</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {actividadReciente
+                  .slice(
+                    (paginaActual - 1) * itemsPorPagina,
+                    paginaActual * itemsPorPagina,
+                  )
+                  .map((item) => (
+                    <tr key={item.id}>
+                      <td style={{ textTransform: "capitalize" }}>
+                        {item.tipo}
+                      </td>
+                      <td>
+                        {new Date(item.created_at).toLocaleDateString("es-CO")}
+                      </td>
+                      <td>
+                        <span className={`status-badge ${item.estado}`}>
+                          {item.estado}
+                        </span>
+                      </td>
+                      <td>
+                        {item.motivo_rechazo ? (
+                          <span title={item.motivo_rechazo}>
+                            Rechazado: {item.motivo_rechazo.substring(0, 30)}...
+                          </span>
+                        ) : item.estado === "aprobado" ? (
+                          "Aprobado exitosamente"
+                        ) : (
+                          "En revisión"
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+            <SharedPagination
+              currentPage={paginaActual}
+              totalPages={Math.ceil(actividadReciente.length / itemsPorPagina)}
+              onPageChange={setPaginaActual}
+            />
+          </>
         ) : (
           <p style={{ color: "#6b7280", textAlign: "center", padding: "1rem" }}>
             No hay actividad reciente para mostrar.

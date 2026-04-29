@@ -18,6 +18,7 @@ import {
 } from "react-icons/fa";
 import "./GestionTokens.css";
 import { apiTrazabilidad } from "../../services/apiTrazabilidad";
+import SharedPagination from "./components/SharedPagination";
 
 const GestionTokens = ({ userRole }) => {
   const [tokens, setTokens] = useState([]);
@@ -28,24 +29,46 @@ const GestionTokens = ({ userRole }) => {
   const [nuevoTokenId, setNuevoTokenId] = useState(null);
   const [copiadoId, setCopiadoId] = useState(null);
   const [seccionExpandida, setSeccionExpandida] = useState(null);
+  const [paginaActual, setPaginaActual] = useState(1);
+  const itemsPorPagina = 10;
+
+  useEffect(() => {
+    setPaginaActual(1);
+  }, [filtroEstado]);
 
   // Definir permisos basados en el rol
   const puedeGestionar = (tipo) => {
     if (!userRole) return false;
-    
+
     // Roles de Poder Total
     if (userRole === "admin" || userRole === "super_admin") return true;
-    
+
     // Normalizar rol (quitar plurales y espacios si existen)
     const role = userRole.toLowerCase().trim();
 
     // Roles Granulares
-    if ((role === "admin_empleado" || role === "admin_empleados") && tipo === "empleado") return true;
-    
-    if ((role === "admin_cliente" || role === "admin_clientes" || role === "admin_tesoreria") && tipo === "cliente") return true;
-    
-    if ((role === "admin_proveedor" || role === "admin_proveedores" || role === "admin_tesoreria") && tipo === "proveedor") return true;
-    
+    if (
+      (role === "admin_empleado" || role === "admin_empleados") &&
+      tipo === "empleado"
+    )
+      return true;
+
+    if (
+      (role === "admin_cliente" ||
+        role === "admin_clientes" ||
+        role === "admin_tesoreria") &&
+      tipo === "cliente"
+    )
+      return true;
+
+    if (
+      (role === "admin_proveedor" ||
+        role === "admin_proveedores" ||
+        role === "admin_tesoreria") &&
+      tipo === "proveedor"
+    )
+      return true;
+
     return false;
   };
 
@@ -234,104 +257,127 @@ const GestionTokens = ({ userRole }) => {
     todos: tokensPermitidos.length,
   };
 
-  const TablaTokens = ({ listaTokens }) => (
-    <table className="tokens-tabla">
-      <thead>
-        <tr>
-          <th>Tipo</th>
-          <th>Generado por</th>
-          <th>Creación / Expiración</th>
-          <th>Estado</th>
-          <th>Link de Registro</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        {listaTokens.map((token) => {
-          const estado = calcularEstado(token);
-          const esNuevo =
-            token.id === nuevoTokenId ||
-            (tokens.length > 0 &&
-              tokens[0].id === token.id &&
-              new Date() - new Date(token.created_at) < 60000);
+  const TablaTokens = ({ listaTokens }) => {
+    const totalPaginas = Math.ceil(listaTokens.length / itemsPorPagina);
+    const inicio = (paginaActual - 1) * itemsPorPagina;
+    const fin = inicio + itemsPorPagina;
+    const itemsAMostrar = listaTokens.slice(inicio, fin);
 
-          return (
-            <tr key={token.id} className={esNuevo ? "token-fila-nueva" : ""}>
-              <td>
-                <span
-                  className={`tokens-badge-tipo tokens-badge-${token.tipo}`}
-                >
-                  {token.tipo === "empleado" && <FaUserTie />}
-                  {token.tipo === "cliente" && <FaUser />}
-                  {token.tipo === "proveedor" && <FaTruck />}
-                  {token.tipo.charAt(0).toUpperCase() + token.tipo.slice(1)}
-                </span>
-                {esNuevo && <span className="badge-nuevo">NUEVO</span>}
-              </td>
-              <td>
-                <div className="token-info-usuario">
-                  <span className="token-usuario-nombre">
-                    {token.profiles?.nombre || "Sistema"}
-                  </span>
-                </div>
-              </td>
-              <td>
-                <div className="token-fechas">
-                  <span title="Fecha Creación" className="fecha-creacion">
-                    <FaPlus size={10} /> {formatearFecha(token.created_at)}
-                  </span>
-                  <span title="Fecha Expiración" className="fecha-expiracion">
-                    <FaClock size={10} /> {formatearFecha(token.expiracion)}
-                  </span>
-                </div>
-              </td>
-              <td>
-                <span
-                  className={`tokens-badge-estado ${obtenerClaseEstado(estado)}`}
-                >
-                  {obtenerIconoEstado(estado)}
-                  {estado.charAt(0).toUpperCase() + estado.slice(1)}
-                </span>
-              </td>
-              <td className="tokens-celda-link">
-                <div className="token-link-container">
-                  <code className="tokens-link-code">
-                    {generarUrlRegistro(token.tipo, token.token)}
-                  </code>
-                </div>
-              </td>
-              <td>
-                <div className="tokens-acciones">
-                  <button
-                    className={`tokens-btn-copiar ${copiadoId === token.id ? "copiado" : ""}`}
-                    onClick={() =>
-                      copiarAlPortapapeles(
-                        generarUrlRegistro(token.tipo, token.token),
-                        token.id,
-                      )
-                    }
-                    disabled={estado !== "activo"}
-                    title={
-                      estado === "activo" ? "Copiar link" : "Link no disponible"
-                    }
-                  >
-                    {copiadoId === token.id ? <FaCheck /> : <FaCopy />}
-                  </button>
-                  <button
-                    className="tokens-btn-eliminar"
-                    onClick={() => eliminarToken(token.id)}
-                    title="Eliminar token"
-                  >
-                    <FaTrash />
-                  </button>
-                </div>
-              </td>
+    return (
+      <>
+        <table className="tokens-tabla">
+          <thead>
+            <tr>
+              <th>Tipo</th>
+              <th>Generado por</th>
+              <th>Creación / Expiración</th>
+              <th>Estado</th>
+              <th>Link de Registro</th>
+              <th>Acciones</th>
             </tr>
-          );
-        })}
-      </tbody>
-    </table>
-  );
+          </thead>
+          <tbody>
+            {itemsAMostrar.map((token) => {
+              const estado = calcularEstado(token);
+              const esNuevo =
+                token.id === nuevoTokenId ||
+                (tokens.length > 0 &&
+                  tokens[0].id === token.id &&
+                  new Date() - new Date(token.created_at) < 60000);
+
+              return (
+                <tr
+                  key={token.id}
+                  className={esNuevo ? "token-fila-nueva" : ""}
+                >
+                  <td>
+                    <span
+                      className={`tokens-badge-tipo tokens-badge-${token.tipo}`}
+                    >
+                      {token.tipo === "empleado" && <FaUserTie />}
+                      {token.tipo === "cliente" && <FaUser />}
+                      {token.tipo === "proveedor" && <FaTruck />}
+                      {token.tipo.charAt(0).toUpperCase() + token.tipo.slice(1)}
+                    </span>
+                    {esNuevo && <span className="badge-nuevo">NUEVO</span>}
+                  </td>
+                  <td>
+                    <div className="token-info-usuario">
+                      <span className="token-usuario-nombre">
+                        {token.profiles?.nombre || "Sistema"}
+                      </span>
+                    </div>
+                  </td>
+                  <td>
+                    <div className="token-fechas">
+                      <span title="Fecha Creación" className="fecha-creacion">
+                        <FaPlus size={10} /> {formatearFecha(token.created_at)}
+                      </span>
+                      <span
+                        title="Fecha Expiración"
+                        className="fecha-expiracion"
+                      >
+                        <FaClock size={10} /> {formatearFecha(token.expiracion)}
+                      </span>
+                    </div>
+                  </td>
+                  <td>
+                    <span
+                      className={`tokens-badge-estado ${obtenerClaseEstado(estado)}`}
+                    >
+                      {obtenerIconoEstado(estado)}
+                      {estado.charAt(0).toUpperCase() + estado.slice(1)}
+                    </span>
+                  </td>
+                  <td className="tokens-celda-link">
+                    <div className="token-link-container">
+                      <code className="tokens-link-code">
+                        {generarUrlRegistro(token.tipo, token.token)}
+                      </code>
+                    </div>
+                  </td>
+                  <td>
+                    <div className="tokens-acciones">
+                      <button
+                        className={`tokens-btn-copiar ${copiadoId === token.id ? "copiado" : ""}`}
+                        onClick={() =>
+                          copiarAlPortapapeles(
+                            generarUrlRegistro(token.tipo, token.token),
+                            token.id,
+                          )
+                        }
+                        disabled={estado !== "activo"}
+                        title={
+                          estado === "activo"
+                            ? "Copiar link"
+                            : "Link no disponible"
+                        }
+                      >
+                        {copiadoId === token.id ? <FaCheck /> : <FaCopy />}
+                      </button>
+                      <button
+                        className="tokens-btn-eliminar"
+                        onClick={() => eliminarToken(token.id)}
+                        title="Eliminar token"
+                      >
+                        <FaTrash />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+
+        <SharedPagination
+          currentPage={paginaActual}
+          totalPages={totalPaginas}
+          onPageChange={setPaginaActual}
+        />
+      </>
+    );
+  };
 
   return (
     <div className="tokens-container">

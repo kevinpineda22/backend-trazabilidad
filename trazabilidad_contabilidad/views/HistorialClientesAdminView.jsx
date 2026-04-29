@@ -20,12 +20,16 @@ import {
   FaCheckCircle,
   FaClipboardCheck,
   FaSpinner,
+  FaChevronLeft,
+  FaChevronRight,
 } from "react-icons/fa";
 
 // Importación de componentes reutilizables
 import Loader from "../components/Loader";
 import MensajeVacio from "../components/MensajeVacio";
 import HistorialTabla from "../components/HistorialTabla";
+import SharedPagination from "../components/SharedPagination";
+import "../components/SharedPagination.css"; // Importación de estilos compartidos
 
 const HistorialClientesAdminView = ({
   onPreview,
@@ -36,6 +40,12 @@ const HistorialClientesAdminView = ({
   const [loading, setLoading] = useState(true);
   const [mostrarArchivados, setMostrarArchivados] = useState(false);
   const [processingIds, setProcessingIds] = useState([]);
+  const [paginaActual, setPaginaActual] = useState(1);
+  const itemsPorPagina = 10;
+
+  useEffect(() => {
+    setPaginaActual(1);
+  }, [mostrarArchivados]);
 
   // Solo Super Admin y Admin Contabilidad pueden dar el check final
   const canValidate = ["super_admin", "admin"].includes(userRole);
@@ -183,13 +193,17 @@ const HistorialClientesAdminView = ({
     (item) => !!item.is_archivado === mostrarArchivados,
   );
 
+  const totalPaginas = Math.ceil(registrosFiltrados.length / itemsPorPagina);
+  const inicio = (paginaActual - 1) * itemsPorPagina;
+  const fin = inicio + itemsPorPagina;
+  const itemsAMostrar = registrosFiltrados.slice(inicio, fin);
+
   if (loading) return <Loader />;
   if (historial.length === 0)
     return <MensajeVacio mensaje="No hay clientes registrados." />;
 
   return (
     <>
-      {/* Toolbar Superior (Solo botón, sin título) */}
       <div
         className="admin-cont-toolbar"
         style={{
@@ -213,6 +227,7 @@ const HistorialClientesAdminView = ({
             cursor: "pointer",
             fontWeight: 600,
             color: "#64748b",
+            transition: "all 0.2s ease",
           }}
         >
           {mostrarArchivados ? <FaEyeSlash /> : <FaEye />}
@@ -234,359 +249,305 @@ const HistorialClientesAdminView = ({
             }
           />
         ) : (
-          <HistorialTabla>
-            <thead>
-              <tr className="admin-cont-table-header-left">
-                <th style={{ width: "35%" }}>Cliente / Razón Social</th>
-                <th style={{ width: "20%" }}>Contacto</th>
-                <th style={{ width: "20%" }}>Ubicación</th>
-                <th style={{ width: "15%" }}>Datos Comerciales</th>
-                <th style={{ width: "10%", textAlign: "center" }}>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {registrosFiltrados.map((cli) => {
-                const nombrePrincipal = getNombreCliente(cli);
-                // Lógica de documento corregida
-                const labelDoc = formatDocType(cli.tipo_documento);
-                const numeroDoc = cli.nit
-                  ? `${cli.nit}${cli.dv ? "-" + cli.dv : ""}`
-                  : cli.cedula || "N/A";
+          <>
+            <HistorialTabla>
+              <thead>
+                <tr className="admin-cont-table-header-left">
+                  <th style={{ width: "35%" }}>Cliente / Razón Social</th>
+                  <th style={{ width: "20%" }}>Contacto</th>
+                  <th style={{ width: "20%" }}>Ubicación</th>
+                  <th style={{ width: "15%" }}>Datos Comerciales</th>
+                  <th style={{ width: "10%", textAlign: "center" }}>
+                    Acciones
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {itemsAMostrar.map((cli) => {
+                  const nombrePrincipal = getNombreCliente(cli);
+                  const labelDoc = formatDocType(cli.tipo_documento);
+                  const numeroDoc = cli.nit
+                    ? `${cli.nit}${cli.dv ? "-" + cli.dv : ""}`
+                    : cli.cedula || "N/A";
+                  const isCompany = !!cli.razon_social;
 
-                const isCompany = !!cli.razon_social;
-
-                return (
-                  <tr
-                    key={cli.id}
-                    style={{ borderBottom: "1px solid #f1f5f9" }}
-                  >
-                    {/* COLUMNA 1: INFO PRINCIPAL */}
-                    <td>
-                      <div
-                        style={{
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: "4px",
-                        }}
-                      >
+                  return (
+                    <tr
+                      key={cli.id}
+                      style={{ borderBottom: "1px solid #f1f5f9" }}
+                    >
+                      <td>
                         <div
                           style={{
                             display: "flex",
-                            alignItems: "center",
-                            gap: "8px",
+                            flexDirection: "column",
+                            gap: "4px",
                           }}
                         >
-                          <span
+                          <div
                             style={{
-                              color: isCompany ? "#2563eb" : "#059669",
-                              fontSize: "1.1rem",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "8px",
                             }}
                           >
-                            {isCompany ? <FaBuilding /> : <FaUserTie />}
-                          </span>
+                            <span
+                              style={{
+                                color: isCompany ? "#2563eb" : "#059669",
+                                fontSize: "1.1rem",
+                              }}
+                            >
+                              {isCompany ? <FaBuilding /> : <FaUserTie />}
+                            </span>
+                            <span
+                              style={{
+                                fontWeight: 700,
+                                fontSize: "1rem",
+                                color: "#0f172a",
+                              }}
+                            >
+                              {nombrePrincipal}
+                            </span>
+                          </div>
                           <span
                             style={{
-                              fontWeight: 700,
-                              fontSize: "1rem",
-                              color: "#0f172a",
+                              fontSize: "0.85rem",
+                              color: "#475569",
+                              marginLeft: "24px",
+                              fontWeight: 500,
                             }}
                           >
-                            {nombrePrincipal}
+                            {labelDoc}: {numeroDoc}
                           </span>
+                          <div
+                            style={{
+                              fontSize: "0.7rem",
+                              color: "#94a3b8",
+                              marginTop: "4px",
+                              marginLeft: "24px",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "6px",
+                            }}
+                          >
+                            <FaClock size={10} />
+                            Reg:{" "}
+                            {format(parseISO(cli.created_at), "d MMM yyyy", {
+                              locale: es,
+                            })}{" "}
+                            por {cli.profiles?.nombre || "Sistema"}
+                          </div>
                         </div>
-                        <span
+                      </td>
+                      <td>
+                        <div
                           style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: "6px",
+                            fontSize: "0.85rem",
+                          }}
+                        >
+                          {cli.email_factura_electronica && (
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "6px",
+                                color: "#475569",
+                              }}
+                              title="Email Facturación"
+                            >
+                              <FaEnvelope style={{ color: "#64748b" }} />{" "}
+                              {cli.email_factura_electronica}
+                            </div>
+                          )}
+                          {cli.telefono_contacto && (
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "6px",
+                                color: "#475569",
+                              }}
+                              title="Teléfono"
+                            >
+                              <FaPhone style={{ color: "#64748b" }} />{" "}
+                              {cli.telefono_contacto}
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "flex-start",
+                            gap: "6px",
                             fontSize: "0.85rem",
                             color: "#475569",
-                            marginLeft: "24px",
-                            fontWeight: 500,
                           }}
                         >
-                          {labelDoc}: {numeroDoc}
-                        </span>
-                        {/* Auditoría Sutil */}
+                          <FaMapMarkerAlt
+                            style={{ marginTop: "3px", color: "#ef4444" }}
+                          />
+                          <div
+                            style={{ display: "flex", flexDirection: "column" }}
+                          >
+                            <span>{cli.ciudad || "Ciudad N/A"}</span>
+                            <span
+                              style={{ fontSize: "0.75rem", color: "#94a3b8" }}
+                            >
+                              {cli.departamento}
+                            </span>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
                         <div
                           style={{
-                            fontSize: "0.7rem",
-                            color: "#94a3b8",
-                            marginTop: "4px",
-                            marginLeft: "24px",
                             display: "flex",
-                            alignItems: "center",
+                            flexDirection: "column",
                             gap: "6px",
                           }}
                         >
-                          <FaClock size={10} />
-                          Reg:{" "}
-                          {format(parseISO(cli.created_at), "d MMM yyyy", {
-                            locale: es,
-                          })}{" "}
-                          por {cli.profiles?.nombre || "Sistema"}
-                        </div>
-                      </div>
-                    </td>
-
-                    {/* COLUMNA 2: CONTACTO */}
-                    <td>
-                      <div
-                        style={{
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: "6px",
-                          fontSize: "0.85rem",
-                        }}
-                      >
-                        {cli.email_factura_electronica && (
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "6px",
-                              color: "#475569",
-                            }}
-                            title="Email Facturación"
-                          >
-                            <FaEnvelope style={{ color: "#64748b" }} />{" "}
-                            {cli.email_factura_electronica}
-                          </div>
-                        )}
-                        {cli.telefono_contacto && (
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "6px",
-                              color: "#475569",
-                            }}
-                            title="Teléfono"
-                          >
-                            <FaPhone style={{ color: "#64748b" }} />{" "}
-                            {cli.telefono_contacto}
-                          </div>
-                        )}
-                        {cli.nombre_contacto && (
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "6px",
-                              fontSize: "0.75rem",
-                              color: "#64748b",
-                              fontStyle: "italic",
-                            }}
-                          >
-                            <FaUserTie size={10} /> {cli.nombre_contacto}
-                          </div>
-                        )}
-                      </div>
-                    </td>
-
-                    {/* COLUMNA 3: UBICACIÓN */}
-                    <td>
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "flex-start",
-                          gap: "6px",
-                          fontSize: "0.85rem",
-                          color: "#475569",
-                        }}
-                      >
-                        <FaMapMarkerAlt
-                          style={{ marginTop: "3px", color: "#ef4444" }}
-                        />
-                        <div
-                          style={{ display: "flex", flexDirection: "column" }}
-                        >
-                          <span>{cli.ciudad || "Ciudad N/A"}</span>
-                          <span
-                            style={{ fontSize: "0.75rem", color: "#94a3b8" }}
-                          >
-                            {cli.departamento || "Dpto N/A"}
-                          </span>
-                          <span
-                            style={{ fontSize: "0.75rem", color: "#94a3b8" }}
-                          >
-                            {cli.direccion_domicilio}
-                          </span>
-                        </div>
-                      </div>
-                    </td>
-
-                    {/* COLUMNA 4: DATOS COMERCIALES */}
-                    <td>
-                      <div
-                        style={{
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: "6px",
-                        }}
-                      >
-                        {cli.cupo && (
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "6px",
-                              fontSize: "0.85rem",
-                              color: "#059669",
-                              fontWeight: 600,
-                            }}
-                          >
-                            <FaMoneyBillWave /> Cupo: {cli.cupo}
-                          </div>
-                        )}
-                        {cli.plazo && (
-                          <span
-                            style={{
-                              fontSize: "0.75rem",
-                              padding: "2px 8px",
-                              background: "#f1f5f9",
-                              borderRadius: "12px",
-                              color: "#475569",
-                              width: "fit-content",
-                            }}
-                          >
-                            Plazo: {cli.plazo}
-                          </span>
-                        )}
-                        {cli.tipo_regimen && (
-                          <span
-                            style={{ fontSize: "0.75rem", color: "#64748b" }}
-                          >
-                            {cli.tipo_regimen.replace(/_/g, " ")}
-                          </span>
-                        )}
-                      </div>
-                    </td>
-
-                    {/* COLUMNA 5: ACCIONES */}
-                    <td style={{ textAlign: "center" }}>
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "center",
-                          gap: "8px",
-                        }}
-                      >
-                        <button
-                          onClick={() => onOpenExpediente(cli.id)}
-                          className="admin-cont-action-btn view"
-                          title="Ver Expediente Digital"
-                          style={{
-                            background: "#eff6ff",
-                            color: "#2563eb",
-                            border: "none",
-                            width: "32px",
-                            height: "32px",
-                            borderRadius: "6px",
-                            cursor: "pointer",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                          }}
-                        >
-                          <FaFolderOpen />
-                        </button>
-
-                        {!mostrarArchivados &&
-                          (cli.is_creado ? (
+                          {cli.cupo && (
                             <div
-                              title="Creado por Contabilidad"
                               style={{
-                                color: "#10b981",
-                                fontSize: "1.2rem",
                                 display: "flex",
                                 alignItems: "center",
-                                justifyContent: "center",
-                                width: "32px",
+                                gap: "6px",
+                                fontSize: "0.85rem",
+                                color: "#059669",
+                                fontWeight: 600,
                               }}
                             >
-                              <FaCheckCircle />
+                              <FaMoneyBillWave /> {cli.cupo}
                             </div>
-                          ) : (
-                            canValidate && (
-                              <button
-                                onClick={() =>
-                                  handleMarcarCreado(cli.id, nombrePrincipal)
-                                }
-                                disabled={processingIds.includes(cli.id)}
-                                title="Marcar como Creado (Enviar Feedback)"
+                          )}
+                          {cli.plazo && (
+                            <span
+                              style={{ fontSize: "0.75rem", color: "#64748b" }}
+                            >
+                              Plazo: {cli.plazo}
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td style={{ textAlign: "center" }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "center",
+                            gap: "8px",
+                          }}
+                        >
+                          <button
+                            onClick={() => onOpenExpediente(cli.id)}
+                            className="admin-cont-action-btn view"
+                            style={{
+                              background: "#eff6ff",
+                              color: "#2563eb",
+                              border: "none",
+                              width: "32px",
+                              height: "32px",
+                              borderRadius: "6px",
+                              cursor: "pointer",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                            }}
+                          >
+                            <FaFolderOpen />
+                          </button>
+                          {!mostrarArchivados &&
+                            (cli.is_creado ? (
+                              <div
                                 style={{
-                                  background: processingIds.includes(cli.id)
-                                    ? "#e2e8f0"
-                                    : "#ecfdf5",
-                                  color: processingIds.includes(cli.id)
-                                    ? "#64748b"
-                                    : "#059669",
-                                  border: "none",
-                                  width: "32px",
-                                  height: "32px",
-                                  borderRadius: "6px",
-                                  cursor: processingIds.includes(cli.id)
-                                    ? "wait"
-                                    : "pointer",
+                                  color: "#10b981",
+                                  fontSize: "1.2rem",
                                   display: "flex",
                                   alignItems: "center",
                                   justifyContent: "center",
+                                  width: "32px",
                                 }}
                               >
-                                {processingIds.includes(cli.id) ? (
-                                  <FaSpinner className="icon-spin" />
-                                ) : (
-                                  <FaClipboardCheck />
-                                )}
-                              </button>
-                            )
-                          ))}
+                                <FaCheckCircle />
+                              </div>
+                            ) : (
+                              canValidate && (
+                                <button
+                                  onClick={() =>
+                                    handleMarcarCreado(cli.id, nombrePrincipal)
+                                  }
+                                  disabled={processingIds.includes(cli.id)}
+                                  style={{
+                                    background: processingIds.includes(cli.id)
+                                      ? "#e2e8f0"
+                                      : "#ecfdf5",
+                                    color: "#059669",
+                                    border: "none",
+                                    width: "32px",
+                                    height: "32px",
+                                    borderRadius: "6px",
+                                    cursor: "pointer",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                  }}
+                                >
+                                  {processingIds.includes(cli.id) ? (
+                                    <FaSpinner className="icon-spin" />
+                                  ) : (
+                                    <FaClipboardCheck />
+                                  )}
+                                </button>
+                              )
+                            ))}
+                          <button
+                            onClick={() =>
+                              mostrarArchivados
+                                ? handleRestaurar(cli.id)
+                                : handleArchivar(cli.id)
+                            }
+                            disabled={processingIds.includes(cli.id)}
+                            style={{
+                              background: mostrarArchivados
+                                ? "#f0fdf4"
+                                : "#fef2f2",
+                              color: mostrarArchivados ? "#16a34a" : "#dc2626",
+                              border: "none",
+                              width: "32px",
+                              height: "32px",
+                              borderRadius: "6px",
+                              cursor: "pointer",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                            }}
+                          >
+                            {processingIds.includes(cli.id) ? (
+                              <FaSpinner className="icon-spin" />
+                            ) : mostrarArchivados ? (
+                              <FaUndo />
+                            ) : (
+                              <FaArchive />
+                            )}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </HistorialTabla>
 
-                        {/* Botón Archivar disponible para todos */}
-                        <button
-                          onClick={() =>
-                            mostrarArchivados
-                              ? handleRestaurar(cli.id)
-                              : handleArchivar(cli.id)
-                          }
-                          disabled={processingIds.includes(cli.id)}
-                          title={
-                            mostrarArchivados
-                              ? "Restaurar"
-                              : "Archivar (Solo para mí)"
-                          }
-                          className={`admin-cont-action-btn ${mostrarArchivados ? "restore" : "archive"}`}
-                          style={{
-                            background: mostrarArchivados
-                              ? "#f0fdf4"
-                              : "#fef2f2",
-                            color: mostrarArchivados ? "#16a34a" : "#dc2626",
-                            border: "none",
-                            width: "32px",
-                            height: "32px",
-                            borderRadius: "6px",
-                            cursor: processingIds.includes(cli.id)
-                              ? "wait"
-                              : "pointer",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            opacity: processingIds.includes(cli.id) ? 0.6 : 1,
-                          }}
-                        >
-                          {processingIds.includes(cli.id) ? (
-                            <FaSpinner className="icon-spin" />
-                          ) : mostrarArchivados ? (
-                            <FaUndo />
-                          ) : (
-                            <FaArchive />
-                          )}
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </HistorialTabla>
+            <SharedPagination
+              currentPage={paginaActual}
+              totalPages={totalPaginas}
+              onPageChange={setPaginaActual}
+            />
+          </>
         )}
       </div>
     </>

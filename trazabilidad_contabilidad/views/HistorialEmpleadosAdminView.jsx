@@ -19,11 +19,15 @@ import {
   FaCheckCircle,
   FaClipboardCheck,
   FaSpinner,
+  FaChevronLeft,
+  FaChevronRight,
 } from "react-icons/fa";
 
 import Loader from "../components/Loader";
 import MensajeVacio from "../components/MensajeVacio";
 import HistorialTabla from "../components/HistorialTabla";
+import SharedPagination from "../components/SharedPagination";
+import "../components/SharedPagination.css";
 
 const HistorialEmpleadosAdminView = ({
   onPreview,
@@ -33,7 +37,13 @@ const HistorialEmpleadosAdminView = ({
   const [historial, setHistorial] = useState([]);
   const [loading, setLoading] = useState(true);
   const [mostrarArchivados, setMostrarArchivados] = useState(false);
-  const [processingIds, setProcessingIds] = useState([]); // State para loading de acciones
+  const [processingIds, setProcessingIds] = useState([]);
+  const [paginaActual, setPaginaActual] = useState(1);
+  const itemsPorPagina = 10;
+
+  useEffect(() => {
+    setPaginaActual(1);
+  }, [mostrarArchivados]);
 
   // Solo Super Admin y Admin Contabilidad pueden dar el check final (Contabilidad)
   const canValidate = ["super_admin", "admin"].includes(userRole);
@@ -168,13 +178,17 @@ const HistorialEmpleadosAdminView = ({
     (item) => !!item.is_archivado === mostrarArchivados,
   );
 
+  const totalPaginas = Math.ceil(registrosFiltrados.length / itemsPorPagina);
+  const inicio = (paginaActual - 1) * itemsPorPagina;
+  const fin = inicio + itemsPorPagina;
+  const itemsAMostrar = registrosFiltrados.slice(inicio, fin);
+
   if (loading) return <Loader />;
   if (historial.length === 0)
     return <MensajeVacio mensaje="No hay empleados registrados." />;
 
   return (
     <>
-      {/* Toolbar Superior (Solo botón) */}
       <div
         className="admin-cont-toolbar"
         style={{
@@ -198,6 +212,7 @@ const HistorialEmpleadosAdminView = ({
             cursor: "pointer",
             fontWeight: 600,
             color: "#64748b",
+            transition: "all 0.2s ease",
           }}
         >
           {mostrarArchivados ? <FaEyeSlash /> : <FaEye />}
@@ -219,331 +234,313 @@ const HistorialEmpleadosAdminView = ({
             }
           />
         ) : (
-          <HistorialTabla>
-            <thead>
-              <tr className="admin-cont-table-header-left">
-                <th style={{ width: "35%" }}>Colaborador</th>
-                <th style={{ width: "25%" }}>Cargo y Sede</th>
-                <th style={{ width: "20%" }}>Contacto</th>
-                <th style={{ width: "10%" }}>Contratación</th>
-                <th style={{ width: "10%", textAlign: "center" }}>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {registrosFiltrados.map((emp) => {
-                // Lógica de documento corregida
-                const labelDoc = formatDocType(emp.tipo_documento);
-                const numeroDoc = emp.cedula || "N/A";
+          <>
+            <HistorialTabla>
+              <thead>
+                <tr className="admin-cont-table-header-left">
+                  <th style={{ width: "35%" }}>Colaborador</th>
+                  <th style={{ width: "25%" }}>Cargo y Sede</th>
+                  <th style={{ width: "20%" }}>Contacto</th>
+                  <th style={{ width: "10%" }}>Contratación</th>
+                  <th style={{ width: "10%", textAlign: "center" }}>
+                    Acciones
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {itemsAMostrar.map((emp) => {
+                  const labelDoc = formatDocType(emp.tipo_documento);
+                  const numeroDoc = emp.cedula || "N/A";
 
-                return (
-                  <tr
-                    key={emp.id}
-                    style={{ borderBottom: "1px solid #f1f5f9" }}
-                  >
-                    {/* INFO PRINCIPAL */}
-                    <td>
-                      <div
-                        style={{
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: "4px",
-                        }}
-                      >
+                  return (
+                    <tr
+                      key={emp.id}
+                      style={{ borderBottom: "1px solid #f1f5f9" }}
+                    >
+                      <td>
                         <div
                           style={{
                             display: "flex",
-                            alignItems: "center",
+                            flexDirection: "column",
+                            gap: "4px",
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "8px",
+                            }}
+                          >
+                            <div
+                              style={{
+                                width: "32px",
+                                height: "32px",
+                                background: "#e0e7ff",
+                                borderRadius: "50%",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContext: "center",
+                                color: "#4338ca",
+                                fontSize: "0.9rem",
+                              }}
+                            >
+                              <FaUser style={{ margin: "auto" }} />
+                            </div>
+                            <span
+                              style={{
+                                fontWeight: 700,
+                                fontSize: "1rem",
+                                color: "#0f172a",
+                              }}
+                            >
+                              {emp.nombre} {emp.apellidos}
+                            </span>
+                          </div>
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "6px",
+                              fontSize: "0.85rem",
+                              color: "#475569",
+                              marginLeft: "40px",
+                            }}
+                          >
+                            <FaIdCard style={{ color: "#94a3b8" }} />
+                            {labelDoc}: {numeroDoc}
+                          </div>
+                          <div
+                            style={{
+                              fontSize: "0.7rem",
+                              color: "#94a3b8",
+                              marginTop: "4px",
+                              marginLeft: "40px",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "6px",
+                            }}
+                          >
+                            <FaClock size={10} />
+                            Creado por {emp.profiles?.nombre || "Sistema"}
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <div
+                          style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: "6px",
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "6px",
+                              fontSize: "0.9rem",
+                              fontWeight: 600,
+                              color: "#1e293b",
+                            }}
+                          >
+                            <FaBriefcase style={{ color: "#64748b" }} />{" "}
+                            {emp.nombre_cargo || "Cargo sin definir"}
+                          </div>
+                          {emp.sede && (
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "6px",
+                                fontSize: "0.8rem",
+                                color: "#64748b",
+                              }}
+                            >
+                              <FaMapMarkerAlt /> Sede: {emp.sede}
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td>
+                        <div
+                          style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: "6px",
+                            fontSize: "0.85rem",
+                          }}
+                        >
+                          {emp.correo_electronico && (
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "6px",
+                                color: "#475569",
+                              }}
+                              title="Email"
+                            >
+                              <FaEnvelope style={{ color: "#94a3b8" }} />{" "}
+                              {emp.correo_electronico}
+                            </div>
+                          )}
+                          {emp.contacto && (
+                            <span
+                              style={{
+                                fontSize: "0.8rem",
+                                color: "#64748b",
+                                marginLeft: "20px",
+                              }}
+                            >
+                              Tel: {emp.contacto}
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td>
+                        {emp.fecha_contratacion ? (
+                          <span
+                            style={{
+                              fontSize: "0.85rem",
+                              fontWeight: 600,
+                              color: "#0f172a",
+                              background: "#f1f5f9",
+                              padding: "4px 8px",
+                              borderRadius: "6px",
+                            }}
+                          >
+                            {format(
+                              parseISO(emp.fecha_contratacion),
+                              "d MMM yy",
+                              { locale: es },
+                            )}
+                          </span>
+                        ) : (
+                          <span
+                            style={{ fontSize: "0.8rem", color: "#cbd5e1" }}
+                          >
+                            -
+                          </span>
+                        )}
+                      </td>
+                      <td style={{ textAlign: "center" }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "center",
                             gap: "8px",
                           }}
                         >
-                          <div
+                          <button
+                            onClick={() => onOpenExpediente(emp.id)}
+                            className="admin-cont-action-btn view"
                             style={{
+                              background: "#eff6ff",
+                              color: "#2563eb",
+                              border: "none",
                               width: "32px",
                               height: "32px",
-                              background: "#e0e7ff",
-                              borderRadius: "50%",
+                              borderRadius: "6px",
+                              cursor: "pointer",
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "center",
-                              color: "#4338ca",
-                              fontSize: "0.9rem",
                             }}
                           >
-                            <FaUser />
-                          </div>
-                          <span
-                            style={{
-                              fontWeight: 700,
-                              fontSize: "1rem",
-                              color: "#0f172a",
-                            }}
-                          >
-                            {emp.nombre} {emp.apellidos}
-                          </span>
-                        </div>
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "6px",
-                            fontSize: "0.85rem",
-                            color: "#475569",
-                            marginLeft: "40px",
-                          }}
-                        >
-                          <FaIdCard style={{ color: "#94a3b8" }} />
-                          {labelDoc}: {numeroDoc}
-                        </div>
-                        {/* META SUTIL */}
-                        <div
-                          style={{
-                            fontSize: "0.7rem",
-                            color: "#94a3b8",
-                            marginTop: "4px",
-                            marginLeft: "40px",
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "6px",
-                          }}
-                        >
-                          <FaClock size={10} />
-                          Creado por {emp.profiles?.nombre || "Sistema"}
-                        </div>
-                      </div>
-                    </td>
-
-                    {/* CARGO Y SEDE */}
-                    <td>
-                      <div
-                        style={{
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: "6px",
-                        }}
-                      >
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "6px",
-                            fontSize: "0.9rem",
-                            fontWeight: 600,
-                            color: "#1e293b",
-                          }}
-                        >
-                          <FaBriefcase style={{ color: "#64748b" }} />{" "}
-                          {emp.nombre_cargo || "Cargo sin definir"}
-                        </div>
-                        {emp.sede && (
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "6px",
-                              fontSize: "0.8rem",
-                              color: "#64748b",
-                            }}
-                          >
-                            <FaMapMarkerAlt /> Sede: {emp.sede}
-                          </div>
-                        )}
-                      </div>
-                    </td>
-
-                    {/* CONTACTO */}
-                    <td>
-                      <div
-                        style={{
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: "6px",
-                          fontSize: "0.85rem",
-                        }}
-                      >
-                        {emp.correo_electronico && (
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "6px",
-                              color: "#475569",
-                            }}
-                            title="Email"
-                          >
-                            <FaEnvelope style={{ color: "#94a3b8" }} />{" "}
-                            {emp.correo_electronico}
-                          </div>
-                        )}
-                        {emp.contacto && (
-                          <span
-                            style={{
-                              fontSize: "0.8rem",
-                              color: "#64748b",
-                              marginLeft: "20px",
-                            }}
-                          >
-                            Tel: {emp.contacto}
-                          </span>
-                        )}
-                      </div>
-                    </td>
-
-                    {/* FECHA CONTRATACIÓN */}
-                    <td>
-                      {emp.fecha_contratacion ? (
-                        <span
-                          style={{
-                            fontSize: "0.85rem",
-                            fontWeight: 600,
-                            color: "#0f172a",
-                            background: "#f1f5f9",
-                            padding: "4px 8px",
-                            borderRadius: "6px",
-                          }}
-                        >
-                          {format(
-                            parseISO(emp.fecha_contratacion),
-                            "d MMM yy",
-                            { locale: es },
-                          )}
-                        </span>
-                      ) : (
-                        <span style={{ fontSize: "0.8rem", color: "#cbd5e1" }}>
-                          -
-                        </span>
-                      )}
-                    </td>
-
-                    {/* ACCIONES */}
-                    <td style={{ textAlign: "center" }}>
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "center",
-                          gap: "8px",
-                        }}
-                      >
-                        <button
-                          onClick={() => onOpenExpediente(emp.id)}
-                          className="admin-cont-action-btn view"
-                          title="Ver Expediente"
-                          style={{
-                            background: "#eff6ff",
-                            color: "#2563eb",
-                            border: "none",
-                            width: "32px",
-                            height: "32px",
-                            borderRadius: "6px",
-                            cursor: "pointer",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                          }}
-                        >
-                          <FaFolderOpen />
-                        </button>
-
-                        {!mostrarArchivados &&
-                          (emp.is_creado ? (
-                            <div
-                              title="Creado por Contabilidad"
-                              style={{
-                                color: "#10b981",
-                                fontSize: "1.2rem",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                width: "32px",
-                              }}
-                            >
-                              <FaCheckCircle />
-                            </div>
-                          ) : (
-                            canValidate && (
-                              <button
-                                onClick={() =>
-                                  handleMarcarCreado(
-                                    emp.id,
-                                    `${emp.nombre} ${emp.apellidos}`,
-                                  )
-                                }
-                                disabled={processingIds.includes(emp.id)}
-                                title="Marcar como Creado (Enviar Feedback)"
+                            <FaFolderOpen />
+                          </button>
+                          {!mostrarArchivados &&
+                            (emp.is_creado ? (
+                              <div
                                 style={{
-                                  background: processingIds.includes(emp.id)
-                                    ? "#e2e8f0"
-                                    : "#ecfdf5",
-                                  color: processingIds.includes(emp.id)
-                                    ? "#64748b"
-                                    : "#059669",
-                                  border: "none",
-                                  width: "32px",
-                                  height: "32px",
-                                  borderRadius: "6px",
-                                  cursor: processingIds.includes(emp.id)
-                                    ? "wait"
-                                    : "pointer",
+                                  color: "#10b981",
+                                  fontSize: "1.2rem",
                                   display: "flex",
                                   alignItems: "center",
                                   justifyContent: "center",
+                                  width: "32px",
                                 }}
                               >
-                                {processingIds.includes(emp.id) ? (
-                                  <FaSpinner className="icon-spin" />
-                                ) : (
-                                  <FaClipboardCheck />
-                                )}
-                              </button>
-                            )
-                          ))}
+                                <FaCheckCircle />
+                              </div>
+                            ) : (
+                              canValidate && (
+                                <button
+                                  onClick={() =>
+                                    handleMarcarCreado(
+                                      emp.id,
+                                      `${emp.nombre} ${emp.apellidos}`,
+                                    )
+                                  }
+                                  disabled={processingIds.includes(emp.id)}
+                                  style={{
+                                    background: processingIds.includes(emp.id)
+                                      ? "#e2e8f0"
+                                      : "#ecfdf5",
+                                    color: "#059669",
+                                    border: "none",
+                                    width: "32px",
+                                    height: "32px",
+                                    borderRadius: "6px",
+                                    cursor: "pointer",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                  }}
+                                >
+                                  {processingIds.includes(emp.id) ? (
+                                    <FaSpinner className="icon-spin" />
+                                  ) : (
+                                    <FaClipboardCheck />
+                                  )}
+                                </button>
+                              )
+                            ))}
+                          <button
+                            onClick={() =>
+                              mostrarArchivados
+                                ? handleRestaurar(emp.id)
+                                : handleArchivar(emp.id)
+                            }
+                            disabled={processingIds.includes(emp.id)}
+                            style={{
+                              background: mostrarArchivados
+                                ? "#f0fdf4"
+                                : "#fef2f2",
+                              color: mostrarArchivados ? "#16a34a" : "#dc2626",
+                              border: "none",
+                              width: "32px",
+                              height: "32px",
+                              borderRadius: "6px",
+                              cursor: "pointer",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                            }}
+                          >
+                            {processingIds.includes(emp.id) ? (
+                              <FaSpinner className="icon-spin" />
+                            ) : mostrarArchivados ? (
+                              <FaUndo />
+                            ) : (
+                              <FaArchive />
+                            )}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </HistorialTabla>
 
-                        {/* Botón de archivar disponible para todos (personal) */}
-                        <button
-                          onClick={() =>
-                            mostrarArchivados
-                              ? handleRestaurar(emp.id)
-                              : handleArchivar(emp.id)
-                          }
-                          disabled={processingIds.includes(emp.id)}
-                          title={
-                            mostrarArchivados
-                              ? "Restaurar"
-                              : "Archivar (Solo para mí)"
-                          }
-                          className={`admin-cont-action-btn ${mostrarArchivados ? "restore" : "archive"}`}
-                          style={{
-                            background: mostrarArchivados
-                              ? "#f0fdf4"
-                              : "#fef2f2",
-                            color: mostrarArchivados ? "#16a34a" : "#dc2626",
-                            border: "none",
-                            width: "32px",
-                            height: "32px",
-                            borderRadius: "6px",
-                            cursor: processingIds.includes(emp.id)
-                              ? "wait"
-                              : "pointer",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            opacity: processingIds.includes(emp.id) ? 0.6 : 1,
-                          }}
-                        >
-                          {processingIds.includes(emp.id) ? (
-                            <FaSpinner className="icon-spin" />
-                          ) : mostrarArchivados ? (
-                            <FaUndo />
-                          ) : (
-                            <FaArchive />
-                          )}
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </HistorialTabla>
+            <SharedPagination
+              currentPage={paginaActual}
+              totalPages={totalPaginas}
+              onPageChange={setPaginaActual}
+            />
+          </>
         )}
       </div>
     </>

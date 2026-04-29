@@ -17,7 +17,7 @@ const router = express.Router();
 
 // --- Roles Permitidos ---
 const ADMIN_ROLES = ["super_admin", "admin"];
-const EMPLEADO_ROLES = [...ADMIN_ROLES, "admin_empleado"];
+const EMPLEADO_ROLES = [...ADMIN_ROLES, "admin_empleado", "admin_tesoreria"];
 const CLIENTE_PROVEEDOR_ROLES = [...ADMIN_ROLES, "admin_cliente", "admin_proveedor", "admin_tesoreria"];
 
 // Rutas de Historial (Solo lectura con roles específicos)

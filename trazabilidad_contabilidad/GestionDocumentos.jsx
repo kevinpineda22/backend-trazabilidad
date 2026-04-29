@@ -13,12 +13,15 @@ import {
 import { toast } from "react-toastify";
 import { uploadFileToBucket } from "../../supabaseClient";
 import { apiTrazabilidad } from "../../services/apiTrazabilidad";
+import SharedPagination from "./components/SharedPagination";
 import "./GestionDocumentos.css";
 
 const GestionDocumentos = ({ userRole }) => {
   const [documentos, setDocumentos] = useState([]);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [paginaActual, setPaginaActual] = useState(1);
+  const itemsPorPagina = 5;
   const [nuevoDoc, setNuevoDoc] = useState({
     file: null,
     tipo_destino: "",
@@ -26,34 +29,61 @@ const GestionDocumentos = ({ userRole }) => {
 
   // Determinar tipos permitidos según rol
   const tiposPermitidos = React.useMemo(() => {
-    if (!userRole || ["admin", "super_admin"].includes(userRole)) {
+    if (!userRole) return [];
+
+    const role = userRole.toLowerCase().trim();
+
+    if (role === "admin" || role === "super_admin") {
       return ["ambos", "cliente", "proveedor", "empleado"];
     }
-    if (["admin_cliente", "admin_clientes"].includes(userRole)) {
+
+    if (role === "admin_tesoreria") {
+      return ["ambos", "cliente", "proveedor"];
+    }
+
+    if (role === "admin_cliente" || role === "admin_clientes") {
       return ["cliente"];
     }
-    if (["admin_proveedor", "admin_proveedores"].includes(userRole)) {
+
+    if (role === "admin_proveedor" || role === "admin_proveedores") {
       return ["proveedor"];
     }
-    if (userRole === "admin_empleado") {
+
+    if (role === "admin_empleado" || role === "admin_empleados") {
       return ["empleado"];
     }
+
     return [];
   }, [userRole]);
 
   const documentosFiltrados = React.useMemo(() => {
-    return documentos.filter((doc) => {
-      if (!userRole || ["admin", "super_admin"].includes(userRole)) return true;
+    if (!userRole) return documentos;
 
-      if (["admin_cliente", "admin_clientes"].includes(userRole)) {
+    const role = userRole.toLowerCase().trim();
+
+    return documentos.filter((doc) => {
+      if (role === "admin" || role === "super_admin") return true;
+
+      if (role === "admin_tesoreria") {
+        return (
+          doc.tipo_destino === "cliente" ||
+          doc.tipo_destino === "proveedor" ||
+          doc.tipo_destino === "ambos"
+        );
+      }
+
+      if (role === "admin_cliente" || role === "admin_clientes") {
         return doc.tipo_destino === "cliente" || doc.tipo_destino === "ambos";
       }
-      if (["admin_proveedor", "admin_proveedores"].includes(userRole)) {
+
+      if (role === "admin_proveedor" || role === "admin_proveedores") {
         return doc.tipo_destino === "proveedor" || doc.tipo_destino === "ambos";
       }
-      if (userRole === "admin_empleado") {
+
+      if (role === "admin_empleado" || role === "admin_empleados") {
         return doc.tipo_destino === "empleado";
       }
+
       return false;
     });
   }, [documentos, userRole]);
@@ -266,43 +296,57 @@ const GestionDocumentos = ({ userRole }) => {
                       </td>
                     </tr>
                   ) : (
-                    documentosFiltrados.map((doc) => (
-                      <tr key={doc.id}>
-                        <td className="doc-name-cell">
-                          {getIcon(doc.nombre_archivo)}
-                          <span>{doc.nombre_archivo}</span>
-                        </td>
-                        <td>
-                          <span className={`badge badge-${doc.tipo_destino}`}>
-                            {doc.tipo_destino === "ambos"
-                              ? "Todos"
-                              : doc.tipo_destino}
-                          </span>
-                        </td>
-                        <td>{new Date(doc.created_at).toLocaleDateString()}</td>
-                        <td className="actions-cell">
-                          <a
-                            href={doc.url_archivo}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="btn-icon btn-view"
-                            title="Ver/Descargar"
-                          >
-                            <FaDownload />
-                          </a>
-                          <button
-                            onClick={() => handleDelete(doc.id)}
-                            className="btn-icon btn-delete"
-                            title="Eliminar"
-                          >
-                            <FaTrash />
-                          </button>
-                        </td>
-                      </tr>
-                    ))
+                    documentosFiltrados
+                      .slice(
+                        (paginaActual - 1) * itemsPorPagina,
+                        paginaActual * itemsPorPagina,
+                      )
+                      .map((doc) => (
+                        <tr key={doc.id}>
+                          <td className="doc-name-cell">
+                            {getIcon(doc.nombre_archivo)}
+                            <span>{doc.nombre_archivo}</span>
+                          </td>
+                          <td>
+                            <span className={`badge badge-${doc.tipo_destino}`}>
+                              {doc.tipo_destino === "ambos"
+                                ? "Todos"
+                                : doc.tipo_destino}
+                            </span>
+                          </td>
+                          <td>
+                            {new Date(doc.created_at).toLocaleDateString()}
+                          </td>
+                          <td className="actions-cell">
+                            <a
+                              href={doc.url_archivo}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="btn-icon btn-view"
+                              title="Ver/Descargar"
+                            >
+                              <FaDownload />
+                            </a>
+                            <button
+                              onClick={() => handleDelete(doc.id)}
+                              className="btn-icon btn-delete"
+                              title="Eliminar"
+                            >
+                              <FaTrash />
+                            </button>
+                          </td>
+                        </tr>
+                      ))
                   )}
                 </tbody>
               </table>
+              <SharedPagination
+                currentPage={paginaActual}
+                totalPages={Math.ceil(
+                  documentosFiltrados.length / itemsPorPagina,
+                )}
+                onPageChange={setPaginaActual}
+              />
             </div>
           )}
         </div>

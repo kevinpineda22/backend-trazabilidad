@@ -66,12 +66,8 @@ const SuperAdminContabilidad = () => {
   });
 
   const getAllowedViews = (role) => {
-    // Admin Tesorería: Solo Empleados y Proveedores (clientes oculto)
-    if (role === "admin_tesoreria") {
-      return [VISTAS.EMPLEADOS, VISTAS.PROVEEDORES];
-    }
     // En este módulo (Gestión Documental / Archivadores), se deben mostrar todas las carpetas
-    // independientemente del rol del usuario (admin_proveedor, admin_cliente, etc.)
+    // independientemente del rol del usuario (admin_proveedor, admin_cliente, admin_tesoreria, etc.)
     return [VISTAS.EMPLEADOS, VISTAS.PROVEEDORES, VISTAS.CLIENTES];
   };
 
