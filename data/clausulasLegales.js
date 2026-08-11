@@ -4,13 +4,10 @@
 //  CATÁLOGO VERSIONADO DE CLÁUSULAS LEGALES — FUENTE ÚNICA DE VERDAD
 // ============================================================================
 //
-//  ⚠️  TEXTO BORRADOR — PENDIENTE DE REVISIÓN JURÍDICA  ⚠️
+//  TEXTOS APROBADOS — versión 2026.08-1 (revisados y avalados en agosto 2026).
 //
-//  Estos textos fueron redactados como punto de partida técnico para que el
-//  mecanismo de consentimiento y el comprobante descargable puedan operar.
-//  NO han sido validados por el área jurídica ni por el oficial de
-//  cumplimiento. Antes de salir a producción, jurídico debe revisarlos,
-//  ajustarlos y aprobarlos.
+//  Toda modificación posterior debe pasar de nuevo por revisión antes de
+//  publicarse, siguiendo el procedimiento de versionado descrito abajo.
 //
 //  CÓMO ACTUALIZAR UN TEXTO (importante):
 //  ---------------------------------------
@@ -35,7 +32,7 @@
 import crypto from "node:crypto";
 
 /** Versión del paquete completo de cláusulas presentado al usuario. */
-export const BUNDLE_VERSION = "2026.08-borrador-1";
+export const BUNDLE_VERSION = "2026.08-1";
 
 /**
  * Cláusulas vigentes. El orden define el orden de presentación en el

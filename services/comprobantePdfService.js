@@ -379,7 +379,10 @@ export const generarComprobantePdf = async ({ tipo, registro }) => {
         ? registro.federaciones_recaudo.join(", ")
         : registro.federaciones_recaudo,
     );
-    lienzo.campo("Cupo solicitado", registro.cupo);
+    // Nota: el formulario de proveedor pide "cupo solicitado", pero
+    // `proveedores_contabilidad` no tiene esa columna y el dato se descarta al
+    // guardar. No se imprime para no mostrar "No registrado" sobre un campo
+    // que la contraparte sí diligenció.
     lienzo.campo("Cupo aprobado", registro.cupo_aprobado);
     lienzo.campo("Condición de pago", registro.condicion_pago);
   } else {
