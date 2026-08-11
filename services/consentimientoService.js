@@ -16,6 +16,7 @@ import {
   BUNDLE_VERSION,
   CLAUSULAS,
   CLAVES_OBLIGATORIAS,
+  FECHA_CASILLA_OBLIGATORIA,
   serializarClausulas,
   sha256,
 } from "../data/clausulasLegales.js";
@@ -203,6 +204,45 @@ export const verificarIntegridad = (registro) => {
     integro: recalculado === registro.consentimiento_hash,
     hashAlmacenado: registro.consentimiento_hash,
     hashRecalculado: recalculado,
+  };
+};
+
+/**
+ * Clasifica el estado de consentimiento de un registro.
+ *
+ * Distingue tres situaciones que antes se mostraban todas como una sola
+ * alerta, lo que era inexacto: un registro de diciembre de 2025 SÍ pasó por
+ * una casilla obligatoria, y decir "sin evidencia de aceptación" a secas lo
+ * equipara con uno que nunca vio un mecanismo de aceptación.
+ *
+ * @returns {{ estado: string, integro: boolean|null }}
+ *   - "sellado"        : tiene evidencia completa y verificable
+ *   - "alterado"       : tiene evidencia pero el hash no coincide
+ *   - "legado_casilla" : sin evidencia, pero el formulario ya exigía la casilla
+ *   - "legado_previo"  : sin evidencia y sin mecanismo de aceptación vigente
+ *   - "legado_incierto": sin evidencia y sin fecha para ubicarlo
+ */
+export const clasificarConsentimiento = (registro) => {
+  const clausulas = registro?.consentimiento_clausulas;
+  const tieneEvidencia =
+    Boolean(registro?.consentimiento_hash) && Array.isArray(clausulas);
+
+  if (tieneEvidencia) {
+    const { integro } = verificarIntegridad(registro);
+    return { estado: integro ? "sellado" : "alterado", integro };
+  }
+
+  const creado = registro?.created_at ? new Date(registro.created_at) : null;
+  if (!creado || Number.isNaN(creado.getTime())) {
+    return { estado: "legado_incierto", integro: null };
+  }
+
+  return {
+    estado:
+      creado >= new Date(FECHA_CASILLA_OBLIGATORIA)
+        ? "legado_casilla"
+        : "legado_previo",
+    integro: null,
   };
 };
 

@@ -86,6 +86,30 @@ export const CLAUSULAS = [
   },
 ];
 
+// ============================================================================
+//  REGISTRO HISTÓRICO — periodo anterior al mecanismo de consentimiento
+// ============================================================================
+//
+//  Antes de agosto de 2026 la aceptación no se persistía. No significa que no
+//  ocurriera: desde el 19/11/2025 el formulario BLOQUEABA el envío si no se
+//  marcaba la casilla de aceptación (verificable en el historial del
+//  repositorio del frontend, commit 84d70847). Lo que no se conservó fue la
+//  evidencia: fecha, origen y versión del texto.
+//
+//  Esta constante permite que el comprobante de esos registros diga la verdad
+//  exacta —ni afirmar una aceptación sellada que no existe, ni negar un hecho
+//  que sí ocurrió— en lugar de marcarlos con una alerta indiferenciada.
+// ============================================================================
+
+/** Fecha desde la cual marcar la casilla fue requisito obligatorio de envío. */
+export const FECHA_CASILLA_OBLIGATORIA = "2025-11-19T00:00:00.000Z";
+
+/** Texto exacto que se aceptaba en el formulario anterior. */
+export const TEXTO_ACEPTACION_HISTORICO =
+  "He leido y estoy de acuerdo con las politicas y lineamientos generales de " +
+  "proteccion de datos personales, SAGRILAFT y las declaraciones de origen de " +
+  "fondos, transparencia y gestion de riesgos de SUPERMERCADOS MERKAHORRO S.A.S.";
+
 /** Claves de las cláusulas que deben estar aceptadas para admitir el envío. */
 export const CLAVES_OBLIGATORIAS = CLAUSULAS.filter((c) => c.obligatoria).map(
   (c) => c.clave,

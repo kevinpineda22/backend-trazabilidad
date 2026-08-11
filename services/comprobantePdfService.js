@@ -11,8 +11,11 @@
 // manda el navegador. Es reproducible: mismo registro, mismo documento.
 
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
-import { getClausula } from "../data/clausulasLegales.js";
-import { verificarIntegridad } from "./consentimientoService.js";
+import {
+  getClausula,
+  TEXTO_ACEPTACION_HISTORICO,
+} from "../data/clausulasLegales.js";
+import { clasificarConsentimiento } from "./consentimientoService.js";
 
 // --- Geometría de página (A4 en puntos) ---
 const ANCHO = 595.28;
@@ -26,6 +29,7 @@ const GRIS_CLARO = rgb(0.88, 0.91, 0.94);
 const AZUL = rgb(0.15, 0.39, 0.92);
 const VERDE = rgb(0.02, 0.47, 0.34);
 const ROJO = rgb(0.73, 0.11, 0.11);
+const AMBAR = rgb(0.57, 0.25, 0.05);
 
 /**
  * pdf-lib codifica en WinAnsi con las fuentes estándar. Los acentos y la ñ
@@ -268,7 +272,7 @@ export const generarComprobantePdf = async ({ tipo, registro }) => {
   const documento = documentoContraparte(registro);
   const esProveedor = tipo === "proveedor";
 
-  const integridad = verificarIntegridad(registro);
+  const clasificacion = clasificarConsentimiento(registro);
 
   // ---------- Encabezado ----------
   lienzo.pagina.drawRectangle({
@@ -439,11 +443,58 @@ export const generarComprobantePdf = async ({ tipo, registro }) => {
     : [];
 
   if (clausulas.length === 0) {
+    // Registro anterior al mecanismo de consentimiento. Se describe con
+    // precisión qué se sabe y qué no, en vez de una alerta indiferenciada:
+    // un registro posterior al 19/11/2025 SÍ pasó por una casilla obligatoria,
+    // y equipararlo con uno que nunca tuvo mecanismo sería inexacto.
     lienzo.espacio(4);
-    lienzo.texto(
-      "ADVERTENCIA: este registro no cuenta con evidencia de aceptacion de clausulas. Fue creado antes de la implementacion del mecanismo de consentimiento, o mediante un canal que no lo captura. No debe considerarse soporte de aceptacion.",
-      { tamano: 9, fuente: fuentes.negrita, color: ROJO },
-    );
+
+    if (clasificacion.estado === "legado_casilla") {
+      lienzo.texto("SOPORTE PARCIAL DE ACEPTACION", {
+        tamano: 9.5,
+        fuente: fuentes.negrita,
+        color: AMBAR,
+      });
+      lienzo.espacio(4);
+      lienzo.texto(
+        "Este registro es anterior a la implementacion del registro detallado de consentimiento. El formulario vigente en la fecha de diligenciamiento SI exigia, como requisito obligatorio para poder enviarlo, la aceptacion expresa de la siguiente declaracion:",
+        { tamano: 8.5 },
+      );
+      lienzo.espacio(5);
+      lienzo.texto(`"${TEXTO_ACEPTACION_HISTORICO}"`, {
+        tamano: 8.5,
+        fuente: fuentes.italica,
+        x: MARGEN + 14,
+        ancho: ANCHO_UTIL - 14,
+      });
+      lienzo.espacio(5);
+      lienzo.texto(
+        "El envio del formulario no era posible sin marcarla. No obstante, no se conservo evidencia de la fecha, el origen ni la version del texto aceptado, por lo que este comprobante NO acredita firma electronica en los terminos de la Ley 527 de 1999. Para obtener soporte pleno debe solicitarse el rediligenciamiento del formulario.",
+        { tamano: 8.5 },
+      );
+    } else if (clasificacion.estado === "legado_previo") {
+      lienzo.texto("SIN SOPORTE DE ACEPTACION", {
+        tamano: 9.5,
+        fuente: fuentes.negrita,
+        color: AMBAR,
+      });
+      lienzo.espacio(4);
+      lienzo.texto(
+        "Este registro es anterior al 19 de noviembre de 2025, fecha desde la cual el formulario incorporo la aceptacion expresa de declaraciones como requisito de envio. El formulario vigente al momento del diligenciamiento no contaba con mecanismo de aceptacion, por lo que no existe soporte alguno. Debe solicitarse el rediligenciamiento del formulario.",
+        { tamano: 8.5 },
+      );
+    } else {
+      lienzo.texto("SOPORTE DE ACEPTACION NO DETERMINABLE", {
+        tamano: 9.5,
+        fuente: fuentes.negrita,
+        color: AMBAR,
+      });
+      lienzo.espacio(4);
+      lienzo.texto(
+        "Este registro no cuenta con evidencia de aceptacion y no conserva fecha de creacion que permita ubicarlo respecto de los mecanismos de aceptacion vigentes. Debe solicitarse el rediligenciamiento del formulario.",
+        { tamano: 8.5 },
+      );
+    }
   } else {
     lienzo.espacio(4);
     // El canal determina a QUIÉN pertenece la IP registrada. Decirlo mal
@@ -513,12 +564,12 @@ export const generarComprobantePdf = async ({ tipo, registro }) => {
   lienzo.campo("Código de verificación (SHA-256)", registro.consentimiento_hash);
 
   lienzo.espacio(6);
-  if (!integridad.verificable) {
+  if (clasificacion.estado.startsWith("legado")) {
     lienzo.texto(
-      "Estado de integridad: NO VERIFICABLE - el registro no tiene sello de consentimiento.",
-      { tamano: 9, fuente: fuentes.negrita, color: ROJO },
+      "Estado de integridad: NO APLICA - registro anterior al sello de consentimiento. Ver la seccion de clausulas para el alcance de este comprobante.",
+      { tamano: 9, fuente: fuentes.negrita, color: AMBAR },
     );
-  } else if (integridad.integro) {
+  } else if (clasificacion.integro) {
     lienzo.texto(
       "Estado de integridad: VERIFICADO - el codigo de verificacion coincide con la informacion almacenada. La aceptacion no ha sido alterada desde su registro.",
       { tamano: 9, fuente: fuentes.negrita, color: VERDE },
