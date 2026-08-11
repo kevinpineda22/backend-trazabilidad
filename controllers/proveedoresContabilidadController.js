@@ -1,13 +1,73 @@
 // src/controllers/proveedoresContabilidadController.js
 import { supabaseAxios } from "../services/supabaseClient.js";
+import {
+  construirConsentimiento,
+  mensajeFaltantes,
+} from "../services/consentimientoService.js";
+
+// Helper para normalizar valores vacíos a null
+const normalizar = (valor) => {
+  if (valor === undefined || valor === null) return null;
+  if (typeof valor === "string") {
+    const trimmed = valor.trim();
+    return trimmed.length > 0 ? trimmed : null;
+  }
+  return valor;
+};
 
 /**
  * @route POST /api/trazabilidad/proveedores
- * (Esta función no se modifica)
+ * Crea un proveedor con todos los campos del formulario.
+ *
+ * Antes solo se persistían las URLs de documentos: el resto del formulario
+ * (identificación, CIIU, ubicación, contactos, declaraciones) se descartaba
+ * silenciosamente. La ruta pública sí los guardaba, así que los proveedores
+ * creados desde el panel interno quedaban sin actividad económica ni
+ * departamento. El listado de columnas es el mismo que usa la aprobación de
+ * registros pendientes sobre `proveedores_contabilidad`.
  */
 export const createProveedorContabilidad = async (req, res) => {
   try {
     const {
+      // Identificación
+      fecha_diligenciamiento,
+      tipo_regimen,
+      tipo_documento,
+      nit,
+      dv,
+      razon_social,
+      nombre_establecimiento,
+      // CIIU
+      codigo_ciiu,
+      descripcion_ciiu,
+      // Ubicación
+      direccion_domicilio,
+      departamento,
+      ciudad,
+      // Contacto
+      email_factura_electronica,
+      contacto_cartera_nombre,
+      contacto_cartera_email,
+      contacto_cartera_telefono,
+      contacto_compras_nombre,
+      contacto_compras_email,
+      contacto_compras_telefono,
+      contacto_tesoreria_nombre,
+      contacto_tesoreria_email,
+      contacto_tesoreria_telefono,
+      // Representante legal
+      rep_legal_nombre,
+      rep_legal_apellidos,
+      rep_legal_tipo_doc,
+      rep_legal_num_doc,
+      // Declaraciones
+      declara_pep,
+      declara_recursos_publicos,
+      declara_obligaciones_tributarias,
+      // Condiciones comerciales
+      cupo_aprobado,
+      condicion_pago,
+      // Documentos
       url_rut,
       url_camara_comercio,
       url_certificacion_bancaria,
@@ -43,8 +103,67 @@ export const createProveedorContabilidad = async (req, res) => {
       });
     }
 
+    // Sella la aceptación de cláusulas también en el alta interna: si solo se
+    // capturara en el formulario público, los registros creados desde el panel
+    // quedarían sin soporte descargable.
+    const consentimientoResultado = construirConsentimiento({
+      req,
+      aceptaciones: req.body.consentimiento_clausulas ?? req.body.aceptaciones,
+      fuente: req.body,
+    });
+
+    if (!consentimientoResultado.ok) {
+      return res.status(400).json({
+        message: mensajeFaltantes(consentimientoResultado.faltantes),
+        faltantes: consentimientoResultado.faltantes,
+      });
+    }
+
     const payload = {
       user_id,
+      // Evidencia de aceptación de cláusulas
+      ...consentimientoResultado.consentimiento,
+      // Identificación
+      fecha_diligenciamiento: normalizar(fecha_diligenciamiento),
+      tipo_regimen: normalizar(tipo_regimen),
+      tipo_documento: normalizar(tipo_documento),
+      nit: normalizar(nit),
+      dv: normalizar(dv),
+      razon_social: normalizar(razon_social),
+      nombre_establecimiento: normalizar(nombre_establecimiento),
+      // CIIU
+      codigo_ciiu: normalizar(codigo_ciiu),
+      descripcion_ciiu: normalizar(descripcion_ciiu),
+      // Ubicación
+      direccion_domicilio: normalizar(direccion_domicilio),
+      departamento: normalizar(departamento),
+      ciudad: normalizar(ciudad),
+      // Contacto
+      email_factura_electronica: normalizar(email_factura_electronica),
+      contacto_cartera_nombre: normalizar(contacto_cartera_nombre),
+      contacto_cartera_email: normalizar(contacto_cartera_email),
+      contacto_cartera_telefono: normalizar(contacto_cartera_telefono),
+      contacto_compras_nombre: normalizar(contacto_compras_nombre),
+      contacto_compras_email: normalizar(contacto_compras_email),
+      contacto_compras_telefono: normalizar(contacto_compras_telefono),
+      contacto_tesoreria_nombre: normalizar(contacto_tesoreria_nombre),
+      contacto_tesoreria_email: normalizar(contacto_tesoreria_email),
+      contacto_tesoreria_telefono: normalizar(contacto_tesoreria_telefono),
+      // Representante legal
+      rep_legal_nombre: normalizar(rep_legal_nombre),
+      rep_legal_apellidos: normalizar(rep_legal_apellidos),
+      rep_legal_tipo_doc: normalizar(rep_legal_tipo_doc),
+      rep_legal_num_doc: normalizar(rep_legal_num_doc),
+      // Declaraciones
+      declara_pep: normalizar(declara_pep),
+      declara_recursos_publicos: normalizar(declara_recursos_publicos),
+      declara_obligaciones_tributarias: normalizar(
+        declara_obligaciones_tributarias,
+      ),
+      // Condiciones comerciales
+      cupo_aprobado: normalizar(cupo_aprobado),
+      condicion_pago: normalizar(condicion_pago),
+      // Documentos
       url_rut,
       url_camara_comercio: url_camara_comercio || null,
       url_certificacion_bancaria,

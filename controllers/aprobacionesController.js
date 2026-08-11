@@ -3,6 +3,28 @@ import { supabaseAxios } from "../services/supabaseClient.js";
 import { sendEmail } from "../services/emailService.js";
 
 /**
+ * Traslada la evidencia de consentimiento del registro pendiente a la tabla
+ * definitiva. Si no se copia aquí, la aceptación de cláusulas se pierde justo
+ * al aprobar y el comprobante quedaría sin respaldo.
+ *
+ * Se copia tal cual, SIN recalcular el hash: el sello debe seguir
+ * correspondiendo al momento en que la contraparte aceptó, no al momento de
+ * la aprobación.
+ */
+const mapearConsentimiento = (datos = {}) => ({
+  acepta_habeas_data: datos.acepta_habeas_data ?? null,
+  acepta_firma_digital: datos.acepta_firma_digital ?? null,
+  acepta_origen_fondos: datos.acepta_origen_fondos ?? null,
+  consentimiento_clausulas: datos.consentimiento_clausulas ?? null,
+  consentimiento_bundle_version: datos.consentimiento_bundle_version ?? null,
+  consentimiento_fecha: datos.consentimiento_fecha ?? null,
+  consentimiento_ip: datos.consentimiento_ip ?? null,
+  consentimiento_user_agent: datos.consentimiento_user_agent ?? null,
+  consentimiento_token: datos.consentimiento_token ?? null,
+  consentimiento_hash: datos.consentimiento_hash ?? null,
+});
+
+/**
  * @route GET /api/trazabilidad/aprobaciones/pendientes
  * Obtiene todos los registros pendientes de aprobación
  */
@@ -189,6 +211,8 @@ export const aprobarRegistro = async (req, res) => {
               url_composicion_accionaria: normalizar(
                 datos.url_composicion_accionaria,
               ),
+              // Evidencia de aceptación de cláusulas
+              ...mapearConsentimiento(datos),
             },
           };
         }
@@ -285,6 +309,8 @@ export const aprobarRegistro = async (req, res) => {
               url_certificado_fedepapa: normalizar(
                 datos.url_certificado_fedepapa,
               ),
+              // Evidencia de aceptación de cláusulas
+              ...mapearConsentimiento(datos),
             },
           };
         }

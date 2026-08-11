@@ -6,6 +6,10 @@ import {
   TOKEN_DISABLED_MESSAGES,
   TOKEN_NOT_FOUND_MESSAGE,
 } from "./tokensController.js";
+import {
+  construirConsentimiento,
+  mensajeFaltantes,
+} from "../services/consentimientoService.js";
 
 const sendTokenDisabled = (res, motivo) =>
   res.status(410).json({
@@ -336,6 +340,21 @@ export const registrarClientePublico = async (req, res) => {
       }
     }
 
+    // Sella la aceptación de cláusulas. Sin esto el comprobante descargable
+    // no tendría respaldo: afirmaría una aceptación que no está registrada.
+    const consentimientoResultado = construirConsentimiento({
+      req,
+      aceptaciones: req.body.consentimiento_clausulas ?? req.body.aceptaciones,
+      fuente: req.body,
+    });
+
+    if (!consentimientoResultado.ok) {
+      return res.status(400).json({
+        message: mensajeFaltantes(consentimientoResultado.faltantes),
+        faltantes: consentimientoResultado.faltantes,
+      });
+    }
+
     const payload = {
       tipo: "cliente",
       estado: "pendiente",
@@ -394,6 +413,9 @@ export const registrarClientePublico = async (req, res) => {
         url_cedula,
         url_certificacion_bancaria,
         url_composicion_accionaria,
+        // Evidencia de aceptación de cláusulas (habeas data, firma
+        // electrónica, origen de fondos)
+        ...consentimientoResultado.consentimiento,
       },
       created_at: new Date().toISOString(),
     };
@@ -573,8 +595,26 @@ export const registrarProveedorPublico = async (req, res) => {
 
     const {
       estado, // se ignora en el payload del registro pendiente
+      consentimiento_clausulas: _clausulasRecibidas,
+      aceptaciones: _aceptacionesRecibidas,
       ...restoDatos
     } = datosProveedorBrutos;
+
+    // Sella la aceptación de cláusulas. Se construye desde el servicio y no
+    // desde lo que manda el navegador: la versión del texto la fija el
+    // servidor, igual que la fecha, la IP y el hash.
+    const consentimientoResultado = construirConsentimiento({
+      req,
+      aceptaciones: _clausulasRecibidas ?? _aceptacionesRecibidas,
+      fuente: restoDatos,
+    });
+
+    if (!consentimientoResultado.ok) {
+      return res.status(400).json({
+        message: mensajeFaltantes(consentimientoResultado.faltantes),
+        faltantes: consentimientoResultado.faltantes,
+      });
+    }
 
     const datosProveedor = Object.fromEntries(
       Object.entries(restoDatos).map(([clave, valor]) => [
@@ -585,6 +625,9 @@ export const registrarProveedorPublico = async (req, res) => {
 
     const datosConDocumentos = {
       ...datosProveedor,
+      // Evidencia de aceptación de cláusulas (habeas data, firma
+      // electrónica, origen de fondos)
+      ...consentimientoResultado.consentimiento,
       url_rut,
       url_camara_comercio: normalizarValor(url_camara_comercio),
       url_certificacion_bancaria,

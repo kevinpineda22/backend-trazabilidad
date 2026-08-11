@@ -1,5 +1,9 @@
 // src/controllers/clientesContabilidadController.js
 import { supabaseAxios } from "../services/supabaseClient.js";
+import {
+  construirConsentimiento,
+  mensajeFaltantes,
+} from "../services/consentimientoService.js";
 
 // Helper para normalizar valores vacíos a null
 const normalizar = (valor) => {
@@ -79,8 +83,26 @@ export const createClienteContabilidad = async (req, res) => {
       });
     }
 
+    // Sella la aceptación de cláusulas también en el alta interna: si solo se
+    // capturara en el formulario público, los registros creados desde el panel
+    // quedarían sin soporte descargable.
+    const consentimientoResultado = construirConsentimiento({
+      req,
+      aceptaciones: req.body.consentimiento_clausulas ?? req.body.aceptaciones,
+      fuente: req.body,
+    });
+
+    if (!consentimientoResultado.ok) {
+      return res.status(400).json({
+        message: mensajeFaltantes(consentimientoResultado.faltantes),
+        faltantes: consentimientoResultado.faltantes,
+      });
+    }
+
     const payload = {
       user_id,
+      // Evidencia de aceptación de cláusulas
+      ...consentimientoResultado.consentimiento,
       // Campos generales
       fecha_diligenciamiento: normalizar(fecha_diligenciamiento),
       tipo_regimen: normalizar(tipo_regimen),
