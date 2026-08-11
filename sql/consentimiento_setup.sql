@@ -23,6 +23,7 @@ ALTER TABLE public.clientes_contabilidad
   ADD COLUMN IF NOT EXISTS consentimiento_ip               text,
   ADD COLUMN IF NOT EXISTS consentimiento_user_agent       text,
   ADD COLUMN IF NOT EXISTS consentimiento_token            text,
+  ADD COLUMN IF NOT EXISTS consentimiento_canal            text,
   ADD COLUMN IF NOT EXISTS consentimiento_hash             text;
 
 -- ---------------------------------------------------------------------------
@@ -38,17 +39,18 @@ ALTER TABLE public.proveedores_contabilidad
   ADD COLUMN IF NOT EXISTS consentimiento_ip               text,
   ADD COLUMN IF NOT EXISTS consentimiento_user_agent       text,
   ADD COLUMN IF NOT EXISTS consentimiento_token            text,
+  ADD COLUMN IF NOT EXISTS consentimiento_canal            text,
   ADD COLUMN IF NOT EXISTS consentimiento_hash             text;
 
 -- ---------------------------------------------------------------------------
 -- 3. Comentarios de documentación
 -- ---------------------------------------------------------------------------
 COMMENT ON COLUMN public.clientes_contabilidad.consentimiento_hash IS
-  'SHA-256 que sella cláusulas + textos + identidad + fecha + IP + token. Si no coincide al recalcularlo, el registro fue alterado después de la aceptación.';
+  'SHA-256 que sella cláusulas + textos + identidad + fecha + IP + token + canal. Si no coincide al recalcularlo, el registro fue alterado después de la aceptación.';
 COMMENT ON COLUMN public.clientes_contabilidad.consentimiento_clausulas IS
   'Arreglo [{clave, version, aceptada}]. La versión permite reconstruir el texto exacto que la contraparte aceptó.';
 COMMENT ON COLUMN public.proveedores_contabilidad.consentimiento_hash IS
-  'SHA-256 que sella cláusulas + textos + identidad + fecha + IP + token. Si no coincide al recalcularlo, el registro fue alterado después de la aceptación.';
+  'SHA-256 que sella cláusulas + textos + identidad + fecha + IP + token + canal. Si no coincide al recalcularlo, el registro fue alterado después de la aceptación.';
 COMMENT ON COLUMN public.proveedores_contabilidad.consentimiento_clausulas IS
   'Arreglo [{clave, version, aceptada}]. La versión permite reconstruir el texto exacto que la contraparte aceptó.';
 
@@ -61,6 +63,11 @@ CREATE INDEX IF NOT EXISTS idx_clientes_consentimiento_fecha
   ON public.clientes_contabilidad (consentimiento_fecha);
 CREATE INDEX IF NOT EXISTS idx_proveedores_consentimiento_fecha
   ON public.proveedores_contabilidad (consentimiento_fecha);
+
+COMMENT ON COLUMN public.clientes_contabilidad.consentimiento_canal IS
+  'enlace_publico = diligenciado por la contraparte con su enlace único (la IP es suya). panel_interno = registrado por personal de la empresa (la IP es del funcionario, NO acredita firma electrónica de la contraparte).';
+COMMENT ON COLUMN public.proveedores_contabilidad.consentimiento_canal IS
+  'enlace_publico = diligenciado por la contraparte con su enlace único (la IP es suya). panel_interno = registrado por personal de la empresa (la IP es del funcionario, NO acredita firma electrónica de la contraparte).';
 
 -- ---------------------------------------------------------------------------
 -- 5. Verificación posterior a la ejecución

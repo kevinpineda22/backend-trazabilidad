@@ -21,6 +21,7 @@ const mapearConsentimiento = (datos = {}) => ({
   consentimiento_ip: datos.consentimiento_ip ?? null,
   consentimiento_user_agent: datos.consentimiento_user_agent ?? null,
   consentimiento_token: datos.consentimiento_token ?? null,
+  consentimiento_canal: datos.consentimiento_canal ?? null,
   consentimiento_hash: datos.consentimiento_hash ?? null,
 });
 

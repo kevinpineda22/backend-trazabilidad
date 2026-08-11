@@ -124,7 +124,16 @@ export const construirConsentimiento = ({ req, aceptaciones, fuente = {} }) => {
   const userAgent = req.headers["user-agent"] || null;
   const token = req.params?.token || null;
 
-  // El hash sella: cláusulas + textos + identidad + momento + origen.
+  // Canal por el que se recogió la aceptación. Es determinante para el valor
+  // probatorio y NO puede quedar implícito:
+  //   - enlace_publico: la contraparte diligenció con su enlace único. La IP
+  //     y el navegador son suyos -> firma electrónica atribuible a ella.
+  //   - panel_interno: lo registró personal de la empresa. La IP y el
+  //     navegador son del EMPLEADO, no de la contraparte. Afirmar lo
+  //     contrario en el comprobante sería una misatribución.
+  const canal = token ? "enlace_publico" : "panel_interno";
+
+  // El hash sella: cláusulas + textos + identidad + momento + origen + canal.
   const materialFirmado = [
     BUNDLE_VERSION,
     serializarClausulas(normalizadas),
@@ -133,6 +142,7 @@ export const construirConsentimiento = ({ req, aceptaciones, fuente = {} }) => {
     fecha,
     ip ?? "",
     token ?? "",
+    canal,
   ].join("");
 
   return {
@@ -144,6 +154,7 @@ export const construirConsentimiento = ({ req, aceptaciones, fuente = {} }) => {
       consentimiento_ip: ip,
       consentimiento_user_agent: userAgent,
       consentimiento_token: token,
+      consentimiento_canal: canal,
       consentimiento_hash: sha256(materialFirmado),
       // Banderas planas: permiten filtrar y auditar en SQL sin abrir el JSON.
       acepta_habeas_data: normalizadas.find((a) => a.clave === "habeas_data")
@@ -183,6 +194,7 @@ export const verificarIntegridad = (registro) => {
     registro.consentimiento_fecha ?? "",
     registro.consentimiento_ip ?? "",
     registro.consentimiento_token ?? "",
+    registro.consentimiento_canal ?? "",
   ].join("");
 
   const recalculado = sha256(material);

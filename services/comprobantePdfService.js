@@ -443,10 +443,27 @@ export const generarComprobantePdf = async ({ tipo, registro }) => {
     );
   } else {
     lienzo.espacio(4);
+    // El canal determina a QUIÉN pertenece la IP registrada. Decirlo mal
+    // convertiría el comprobante en una misatribución.
+    const esPanelInterno = registro.consentimiento_canal === "panel_interno";
+
     lienzo.texto(
-      `Aceptadas el ${formatearFecha(registro.consentimiento_fecha, false)} ${ETIQUETA_ZONA}, desde la direccion IP ${registro.consentimiento_ip || "no registrada"}.`,
+      `Aceptadas el ${formatearFecha(registro.consentimiento_fecha, false)} ${ETIQUETA_ZONA}.`,
       { tamano: 9, fuente: fuentes.negrita },
     );
+    lienzo.espacio(3);
+
+    if (esPanelInterno) {
+      lienzo.texto(
+        "ORIGEN: registrado por personal de SUPERMERCADOS MERKAHORRO S.A.S. desde el panel interno. La direccion IP y el navegador que constan mas abajo corresponden al funcionario que efectuo el registro, NO a la contraparte. Por tanto este comprobante NO acredita firma electronica directa de la contraparte: debe respaldarse con el soporte fisico o el canal por el que ella manifesto su aceptacion.",
+        { tamano: 8.5, fuente: fuentes.negrita, color: ROJO },
+      );
+    } else {
+      lienzo.texto(
+        `ORIGEN: diligenciado directamente por la contraparte mediante su enlace unico de acceso, desde la direccion IP ${registro.consentimiento_ip || "no registrada"}.`,
+        { tamano: 8.5, fuente: fuentes.negrita, color: VERDE },
+      );
+    }
     lienzo.espacio(6);
 
     for (const aceptada of clausulas) {
@@ -473,7 +490,20 @@ export const generarComprobantePdf = async ({ tipo, registro }) => {
   // ---------- Evidencia técnica ----------
   lienzo.tituloSeccion("Evidencia técnica del consentimiento");
   lienzo.campo("Fecha y hora de aceptación", formatearFecha(registro.consentimiento_fecha));
-  lienzo.campo("Dirección IP de origen", registro.consentimiento_ip);
+  lienzo.campo(
+    "Canal de registro",
+    registro.consentimiento_canal === "panel_interno"
+      ? "Panel interno (registrado por personal de la empresa)"
+      : registro.consentimiento_canal === "enlace_publico"
+        ? "Enlace único enviado a la contraparte"
+        : null,
+  );
+  lienzo.campo(
+    registro.consentimiento_canal === "panel_interno"
+      ? "IP del funcionario"
+      : "IP de la contraparte",
+    registro.consentimiento_ip,
+  );
   lienzo.campo("Navegador (user agent)", registro.consentimiento_user_agent);
   lienzo.campo("Versión del texto legal", registro.consentimiento_bundle_version);
   lienzo.campo("Enlace único utilizado", registro.consentimiento_token);
