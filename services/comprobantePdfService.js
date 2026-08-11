@@ -191,17 +191,44 @@ class Lienzo {
   }
 }
 
-/** Formatea una fecha ISO a texto legible en español. */
-const formatearFecha = (iso) => {
+// Zona horaria legal del documento. Se ancla explícitamente porque el
+// servidor corre en UTC (Vercel) y `getHours()` devolvería la hora del
+// servidor, no la de Colombia: el comprobante mostraba 5 horas de más.
+const ZONA_HORARIA = "America/Bogota";
+const ETIQUETA_ZONA = "hora de Colombia, UTC-5";
+
+const formateadorBogota = new Intl.DateTimeFormat("es-CO", {
+  timeZone: ZONA_HORARIA,
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  second: "2-digit",
+  hourCycle: "h23",
+});
+
+/**
+ * Formatea una fecha ISO en hora de Colombia.
+ *
+ * Se usa `formatToParts` en vez de `format` para armar el orden dd/mm/aaaa a
+ * mano: el separador y el orden que entrega el locale cambian entre versiones
+ * de ICU, y en un soporte legal la fecha no puede quedar a merced de eso.
+ *
+ * @param {string} iso Fecha ISO.
+ * @param {boolean} conZona Si añade la etiqueta de zona horaria.
+ */
+const formatearFecha = (iso, conZona = true) => {
   if (!iso) return "No registrada";
   const fecha = new Date(iso);
   if (Number.isNaN(fecha.getTime())) return String(iso);
-  const dd = String(fecha.getDate()).padStart(2, "0");
-  const mm = String(fecha.getMonth() + 1).padStart(2, "0");
-  const hh = String(fecha.getHours()).padStart(2, "0");
-  const mi = String(fecha.getMinutes()).padStart(2, "0");
-  const ss = String(fecha.getSeconds()).padStart(2, "0");
-  return `${dd}/${mm}/${fecha.getFullYear()} ${hh}:${mi}:${ss}`;
+
+  const p = Object.fromEntries(
+    formateadorBogota.formatToParts(fecha).map((parte) => [parte.type, parte.value]),
+  );
+
+  const texto = `${p.day}/${p.month}/${p.year} ${p.hour}:${p.minute}:${p.second}`;
+  return conZona ? `${texto} (${ETIQUETA_ZONA})` : texto;
 };
 
 const nombreContraparte = (registro) => {
@@ -281,6 +308,21 @@ export const generarComprobantePdf = async ({ tipo, registro }) => {
   lienzo.campo("Tipo de régimen", registro.tipo_regimen);
   if (registro.nombre_establecimiento)
     lienzo.campo("Establecimiento", registro.nombre_establecimiento);
+
+  // Los nombres de persona natural se imprimen desglosados y no solo dentro
+  // de "Nombre / Razón social": si el registro trae ambas cosas, el nombre
+  // compuesto se perdería y el comprobante dejaría de reflejar el formulario.
+  const partesNombre = [
+    ["Primer nombre", registro.primer_nombre],
+    ["Segundo nombre", registro.segundo_nombre],
+    ["Primer apellido", registro.primer_apellido],
+    ["Segundo apellido", registro.segundo_apellido],
+  ].filter(([, valor]) => Boolean(valor));
+
+  for (const [etiqueta, valor] of partesNombre) {
+    lienzo.campo(etiqueta, valor);
+  }
+
   lienzo.campo("Fecha de diligenciamiento", registro.fecha_diligenciamiento);
 
   // ---------- Actividad económica ----------
@@ -288,21 +330,31 @@ export const generarComprobantePdf = async ({ tipo, registro }) => {
   lienzo.campo("Código CIIU", registro.codigo_ciiu);
   lienzo.campo("Descripción", registro.descripcion_ciiu);
 
-  // ---------- Ubicación y contacto ----------
-  lienzo.tituloSeccion("Ubicación y contacto");
-  lienzo.campo("Dirección", registro.direccion_domicilio);
+  // ---------- Ubicación ----------
+  lienzo.tituloSeccion("Ubicación");
+  lienzo.campo("Dirección de domicilio", registro.direccion_domicilio);
   lienzo.campo("Departamento", registro.departamento);
   lienzo.campo("Ciudad", registro.ciudad);
-  lienzo.campo("Email facturación", registro.email_factura_electronica);
+
+  // ---------- Contacto ----------
+  lienzo.tituloSeccion("Contacto");
+  lienzo.campo("Email facturación electrónica", registro.email_factura_electronica);
   if (esProveedor) {
-    lienzo.campo("Contacto cartera", registro.contacto_cartera_nombre);
-    lienzo.campo("Email cartera", registro.contacto_cartera_email);
-    lienzo.campo("Contacto compras", registro.contacto_compras_nombre);
-    lienzo.campo("Email compras", registro.contacto_compras_email);
+    // Los tres frentes de contacto van completos: el formulario los pide por
+    // separado y la verificación necesita poder cotejarlos uno a uno.
+    lienzo.campo("Cartera - nombre", registro.contacto_cartera_nombre);
+    lienzo.campo("Cartera - email", registro.contacto_cartera_email);
+    lienzo.campo("Cartera - teléfono", registro.contacto_cartera_telefono);
+    lienzo.campo("Compras - nombre", registro.contacto_compras_nombre);
+    lienzo.campo("Compras - email", registro.contacto_compras_email);
+    lienzo.campo("Compras - teléfono", registro.contacto_compras_telefono);
+    lienzo.campo("Tesorería - nombre", registro.contacto_tesoreria_nombre);
+    lienzo.campo("Tesorería - email", registro.contacto_tesoreria_email);
+    lienzo.campo("Tesorería - teléfono", registro.contacto_tesoreria_telefono);
   } else {
     lienzo.campo("Nombre de contacto", registro.nombre_contacto);
     lienzo.campo("Email de contacto", registro.email_contacto);
-    lienzo.campo("Teléfono", registro.telefono_contacto);
+    lienzo.campo("Teléfono de contacto", registro.telefono_contacto);
   }
 
   // ---------- Representante legal ----------
@@ -316,6 +368,26 @@ export const generarComprobantePdf = async ({ tipo, registro }) => {
   lienzo.campo("Tipo de documento", registro.rep_legal_tipo_doc);
   lienzo.campo("Número de documento", registro.rep_legal_num_doc);
 
+  // ---------- Condiciones comerciales ----------
+  lienzo.tituloSeccion("Información comercial");
+  if (esProveedor) {
+    lienzo.campo("Tipo de proveedor", registro.tipo_proveedor);
+    lienzo.campo("¿Registra en bolsa?", registro.registra_en_bolsa);
+    lienzo.campo(
+      "Federaciones de recaudo",
+      Array.isArray(registro.federaciones_recaudo)
+        ? registro.federaciones_recaudo.join(", ")
+        : registro.federaciones_recaudo,
+    );
+    lienzo.campo("Cupo solicitado", registro.cupo);
+    lienzo.campo("Cupo aprobado", registro.cupo_aprobado);
+    lienzo.campo("Condición de pago", registro.condicion_pago);
+  } else {
+    lienzo.campo("Tipo de cliente", registro.tipo_cliente);
+    lienzo.campo("Cupo solicitado", registro.cupo);
+    lienzo.campo("Plazo", registro.plazo);
+  }
+
   // ---------- Declaraciones ----------
   lienzo.tituloSeccion("Declaraciones de debida diligencia");
   lienzo.campo("¿Es PEP?", registro.declara_pep);
@@ -324,6 +396,37 @@ export const generarComprobantePdf = async ({ tipo, registro }) => {
     "¿Cumple obligaciones tributarias?",
     registro.declara_obligaciones_tributarias,
   );
+
+  // ---------- Documentos adjuntos ----------
+  // Se indica presencia, no la URL: los enlaces de Storage son larguísimos y
+  // caducan, así que impresos no sirven para verificar nada. Lo que la
+  // verificación necesita saber es qué soporte entregó y cuál falta.
+  lienzo.tituloSeccion("Documentos adjuntos al formulario");
+  const documentos = esProveedor
+    ? [
+        ["RUT", registro.url_rut],
+        ["Cámara de Comercio", registro.url_camara_comercio],
+        ["Certificación bancaria", registro.url_certificacion_bancaria],
+        ["Documento de identidad del rep. legal", registro.url_doc_identidad_rep_legal],
+        ["Composición accionaria", registro.url_composicion_accionaria],
+        ["Certificado SAGRILAFT", registro.url_certificado_sagrilaft],
+        ["Certificado de bolsa", registro.url_certificado_bolsa],
+        ["Certificado FENALCE", registro.url_certificado_fenalce],
+        ["Certificado ASOHOFRUCOL", registro.url_certificado_asohofrucol],
+        ["Certificado FEDEPAPA", registro.url_certificado_fedepapa],
+      ]
+    : [
+        ["RUT", registro.url_rut],
+        ["Cámara de Comercio", registro.url_camara_comercio],
+        ["Certificado SAGRILAFT", registro.url_certificado_sagrilaft],
+        ["Documento de identidad", registro.url_cedula],
+        ["Certificación bancaria", registro.url_certificacion_bancaria],
+        ["Composición accionaria", registro.url_composicion_accionaria],
+      ];
+
+  for (const [etiqueta, url] of documentos) {
+    lienzo.campo(etiqueta, url ? "Adjunto" : "No adjunto");
+  }
 
   // ---------- Cláusulas aceptadas (el corazón del comprobante) ----------
   lienzo.tituloSeccion("Cláusulas aceptadas por la contraparte");
@@ -341,7 +444,7 @@ export const generarComprobantePdf = async ({ tipo, registro }) => {
   } else {
     lienzo.espacio(4);
     lienzo.texto(
-      `Aceptadas el ${formatearFecha(registro.consentimiento_fecha)} desde la direccion IP ${registro.consentimiento_ip || "no registrada"}.`,
+      `Aceptadas el ${formatearFecha(registro.consentimiento_fecha, false)} ${ETIQUETA_ZONA}, desde la direccion IP ${registro.consentimiento_ip || "no registrada"}.`,
       { tamano: 9, fuente: fuentes.negrita },
     );
     lienzo.espacio(6);
