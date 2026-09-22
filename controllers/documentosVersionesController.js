@@ -29,6 +29,7 @@ const CAMPOS_PERMITIDOS = new Set([
   "url_examen_medico",
   "url_antecedentes",
   "url_documento_identidad",
+  "url_foto_perfil",
   // Proveedor
   "url_doc_identidad_rep_legal",
   "url_certificado_bolsa",

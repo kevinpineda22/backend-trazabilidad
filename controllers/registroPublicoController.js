@@ -44,6 +44,11 @@ export const registrarEmpleadoPublico = async (req, res) => {
       url_certificado_bancario,
       url_habeas_data,
       url_autorizacion_firma,
+      // Foto de autogestión (desde 2026-09-17). El formulario la mandaba y
+      // acá se descartaba: quedaba en el bucket sin que ningún registro la
+      // referenciara. Opcional para no romper envíos de formularios viejos.
+      url_foto_perfil,
+      autoriza_uso_imagen,
     } = req.body;
 
     const { data: tokenData } = await supabaseAxios.get(
@@ -110,6 +115,11 @@ export const registrarEmpleadoPublico = async (req, res) => {
         url_certificado_bancario,
         url_habeas_data,
         url_autorizacion_firma,
+        url_foto_perfil: url_foto_perfil || null,
+        // Solo booleano real: `"false"` es truthy y registraría un "sí" que
+        // el empleado no dio.
+        autoriza_uso_imagen:
+          typeof autoriza_uso_imagen === "boolean" ? autoriza_uso_imagen : null,
       },
       created_at: new Date().toISOString(),
     };

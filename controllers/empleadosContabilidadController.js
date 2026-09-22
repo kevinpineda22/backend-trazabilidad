@@ -198,6 +198,7 @@ export const updateEmpleadoContabilidad = async (req, res) => {
       url_certificado_bancario,
       url_habeas_data,
       url_autorizacion_firma,
+      url_foto_perfil,
     } = req.body;
 
     const payload = {};
@@ -220,6 +221,8 @@ export const updateEmpleadoContabilidad = async (req, res) => {
       payload.url_habeas_data = url_habeas_data;
     if (url_autorizacion_firma !== undefined)
       payload.url_autorizacion_firma = url_autorizacion_firma;
+    if (url_foto_perfil !== undefined)
+      payload.url_foto_perfil = url_foto_perfil;
 
     if (Object.keys(payload).length === 0) {
       return res

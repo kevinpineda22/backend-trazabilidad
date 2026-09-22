@@ -143,6 +143,14 @@ export const aprobarRegistro = async (req, res) => {
               ),
               url_habeas_data: normalizar(datos.url_habeas_data),
               url_autorizacion_firma: normalizar(datos.url_autorizacion_firma),
+              // ⚠️ Requieren las columnas de sql/foto_perfil_empleados.sql.
+              // Sin ellas, el upsert falla y NINGÚN empleado se puede aprobar:
+              // correr ese SQL ANTES de desplegar este cambio.
+              url_foto_perfil: normalizar(datos.url_foto_perfil),
+              autoriza_uso_imagen:
+                typeof datos.autoriza_uso_imagen === "boolean"
+                  ? datos.autoriza_uso_imagen
+                  : null,
 
               // Campos enriquecidos
               fecha_contratacion: normalizar(fechaContratacion),
