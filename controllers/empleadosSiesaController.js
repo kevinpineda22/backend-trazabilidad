@@ -44,6 +44,16 @@ export const listarEmpleadosActivos = async (req, res) => {
     return res.json(resultado);
   } catch (error) {
     console.error("Error consultando la nómina en SIESA:", error?.message || error);
+
+    // Configuración incompleta: se dice cuál falta. Sin esto, un despliegue sin
+    // una variable se ve exactamente igual que SIESA caído, y se busca el
+    // problema donde no está.
+    if (error?.faltantes?.length) {
+      return res.status(500).json({
+        message: `El servidor no tiene configurado el acceso a SIESA. Faltan: ${error.faltantes.join(", ")}.`,
+        motivo: "configuracion",
+      });
+    }
     // El panel funciona sin estos datos (muestra las fotos igual), así que el
     // mensaje explica que es un extra que falló, no que se cayó el panel.
     return res.status(502).json({

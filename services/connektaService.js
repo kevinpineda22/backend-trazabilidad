@@ -54,10 +54,21 @@ export const ejecutarConsulta = async (descripcion, { pagina = 1, tamPag = 100 }
   const conniKey = process.env.CONNI_KEY;
   const conniToken = process.env.CONNI_TOKEN;
 
-  if (!baseUrl || !idCompania || !conniKey || !conniToken) {
-    throw new Error(
-      "Faltan CONNEKTA_BASE_URL, CONNEKTA_ID_COMPANIA, CONNI_KEY o CONNI_TOKEN en el entorno.",
-    );
+  // Se nombra CUÁL falta: el nombre de la variable no es secreto, y sin esto un
+  // despliegue al que le falta una variable se ve igual que SIESA caído.
+  const faltantes = Object.entries({
+    CONNEKTA_BASE_URL: baseUrl,
+    CONNEKTA_ID_COMPANIA: idCompania,
+    CONNI_KEY: conniKey,
+    CONNI_TOKEN: conniToken,
+  })
+    .filter(([, valor]) => !valor)
+    .map(([nombre]) => nombre);
+
+  if (faltantes.length) {
+    const err = new Error(`Faltan variables de entorno: ${faltantes.join(", ")}.`);
+    err.faltantes = faltantes;
+    throw err;
   }
 
   let ultimoError;
