@@ -14,6 +14,7 @@ import registroPublicoRoutes from "./routes/registroPublicoRoutes.js";
 import adminDocumentosRoutes from "./routes/adminDocumentosRoutes.js";
 import documentosVersionesRoutes from "./routes/documentosVersionesRoutes.js";
 import archivadorRoutes from "./routes/archivadorRoutes.js";
+import empleadosSiesaRoutes from "./routes/empleadosSiesaRoutes.js";
 
 // Cargar variables de entorno
 dotenv.config();
@@ -57,6 +58,9 @@ app.use(`${apiBase}/registro-publico`, registroPublicoRoutes);
 app.use(`${apiBase}/admin-documentos`, adminDocumentosRoutes);
 app.use(`${apiBase}/documentos-versiones`, documentosVersionesRoutes);
 app.use(`${apiBase}/archivador`, archivadorRoutes);
+// Nómina activa desde SIESA: la usa el panel de fotos para ponerle nombre a
+// cada cédula. Solo lectura.
+app.use(`${apiBase}/empleados-siesa`, empleadosSiesaRoutes);
 
 // --- Rutas de Bienvenida y Salud ---
 app.get("/", (req, res) => {
