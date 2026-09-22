@@ -56,9 +56,19 @@ export const listarEmpleadosActivos = async (req, res) => {
     }
     // El panel funciona sin estos datos (muestra las fotos igual), así que el
     // mensaje explica que es un extra que falló, no que se cayó el panel.
+    //
+    // `detalle` lleva lo que respondió Connekta (su código y su mensaje) o el
+    // estado HTTP. No hay secretos ahí, y sin eso un "no se pudo consultar"
+    // obliga a adivinar entre una consulta no asignada a la conniKey, SIESA
+    // caído o la red. Ese fue justo el caso del 2026-09-22.
+    const httpSiesa = error?.response?.status;
     return res.status(502).json({
       message:
         "No se pudo consultar la nómina en SIESA. Las fotos se siguen viendo, pero sin los datos del empleado.",
+      motivo: error?.esDeConnekta ? "connekta" : "red",
+      detalle: error?.esDeConnekta
+        ? error.message
+        : `${error?.code || "fallo"}${httpSiesa ? ` (HTTP ${httpSiesa})` : ""}: ${error?.message || ""}`.trim(),
     });
   }
 };
