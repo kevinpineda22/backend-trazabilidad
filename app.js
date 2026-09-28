@@ -28,6 +28,14 @@ app.set("trust proxy", 1);
 // Aplicar CORS middleware global
 app.use(corsMiddleware);
 
+// Respuestas con datos de usuario: ninguna caché compartida (proxy, CDN) las
+// guarda. Con `public`, una respuesta guardada para merkahorro.com le llegaba a
+// www.merkahorro.com con el Allow-Origin equivocado y el navegador la bloqueaba.
+app.use((req, res, next) => {
+  res.setHeader("Cache-Control", "private, no-store");
+  next();
+});
+
 // Rate limiting global
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
