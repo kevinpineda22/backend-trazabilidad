@@ -90,6 +90,17 @@ export const registrarEmpleadoPublico = async (req, res) => {
       });
     }
 
+    // Con foto, la respuesta sobre su uso es obligatoria (2026-09-30): el
+    // formulario ofrece "Sí, autorizo" / "No autorizo" y exige elegir. Se
+    // valida también acá porque el navegador se puede saltar. Sin respuesta
+    // no se puede distinguir un "no" de un olvido, que era el problema.
+    if (url_foto_perfil && typeof autoriza_uso_imagen !== "boolean") {
+      return res.status(400).json({
+        message:
+          "Indique si autoriza o no el uso de su fotografía. Cualquiera de las dos respuestas le permite completar el registro.",
+      });
+    }
+
     const payload = {
       tipo: "empleado",
       estado: "pendiente",

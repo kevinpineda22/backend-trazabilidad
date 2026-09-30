@@ -19,11 +19,19 @@
 //
 //   node tools/enviarFotosAutogestionAlBanco.js            # simulación: no envía nada
 //   node tools/enviarFotosAutogestionAlBanco.js --aplicar  # envía
+//   node tools/enviarFotosAutogestionAlBanco.js --aplicar --cedulas=123,456
 
 import { supabaseAxios } from "../services/supabaseClient.js";
 import { enviarFotoAlBanco } from "../services/bancoFotosService.js";
 
 const APLICAR = process.argv.includes("--aplicar");
+// `--cedulas=1,2,3` limita el envío a esas personas (p. ej. las que Gestión
+// Humana autorizó después). Sin la opción, van todas las autorizadas.
+const SOLO_CEDULAS = (() => {
+  const arg = process.argv.find((a) => a.startsWith("--cedulas="));
+  if (!arg) return null;
+  return new Set(arg.slice("--cedulas=".length).split(",").map((c) => c.trim()).filter(Boolean));
+})();
 // Una a la vez y con pausa: el proyecto B es plan free, y esto no tiene apuro.
 const PAUSA_MS = 300;
 
@@ -35,12 +43,25 @@ const main = async () => {
       "&url_foto_perfil=not.is.null&order=cedula.asc",
   );
 
-  const autorizados = conFoto.filter((e) => e.autoriza_uso_imagen === true);
+  const autorizados = conFoto.filter(
+    (e) =>
+      e.autoriza_uso_imagen === true &&
+      (!SOLO_CEDULAS || SOLO_CEDULAS.has(String(e.cedula))),
+  );
+  if (SOLO_CEDULAS) {
+    const faltan = [...SOLO_CEDULAS].filter(
+      (c) => !autorizados.some((e) => String(e.cedula) === c),
+    );
+    // Una cédula pedida que no está autorizada NO se envía: se avisa.
+    if (faltan.length) console.warn(`Cédulas pedidas sin foto o sin autorización: ${faltan.join(", ")}`);
+  }
   const noAutorizaron = conFoto.filter((e) => e.autoriza_uso_imagen === false);
   const sinDato = conFoto.filter((e) => e.autoriza_uso_imagen === null);
 
   console.log(`Empleados con foto de autogestión: ${conFoto.length}`);
-  console.log(`  autorizaron el uso ........ ${autorizados.length}  → se envían`);
+  console.log(
+    `  autorizaron el uso ........ ${autorizados.length}  → se envían${SOLO_CEDULAS ? " (filtrado por --cedulas)" : ""}`,
+  );
   console.log(`  NO autorizaron ............ ${noAutorizaron.length}  → se omiten`);
   console.log(`  sin dato de autorización .. ${sinDato.length}  → se omiten (no consta un "sí")`);
 
