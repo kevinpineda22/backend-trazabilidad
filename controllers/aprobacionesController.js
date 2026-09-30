@@ -1,6 +1,7 @@
 // controllers/aprobacionesController.js
 import { supabaseAxios } from "../services/supabaseClient.js";
 import { sendEmail } from "../services/emailService.js";
+import { enviarFotoAlBanco } from "../services/bancoFotosService.js";
 
 /**
  * Traslada la evidencia de consentimiento del registro pendiente a la tabla
@@ -356,6 +357,19 @@ export const aprobarRegistro = async (req, res) => {
       registro_aprobado_id: nuevoRegistro[0]?.id,
     });
 
+    // Foto de autogestión → banco de fotos (cumpleaños). Después de aprobar y
+    // sin frenar: si falla, el empleado ya quedó aprobado y la foto sigue en
+    // el expediente. Se espera (con tope) porque en Vercel lo que corre
+    // después de responder puede morir.
+    const fotoBanco =
+      registro.tipo === "empleado"
+        ? await enviarFotoAlBanco({
+            cedula: infoInsercion.payload.cedula,
+            urlFoto: infoInsercion.payload.url_foto_perfil,
+            autorizaUso: infoInsercion.payload.autoriza_uso_imagen,
+          })
+        : null;
+
     // -------------------------------------------------------------------------
     // CORRECCIÓN: ENVÍO CORREO SIESA (CON CARGO INCLUIDO) - MOVIDO A adminContabilidadController.js
     // -------------------------------------------------------------------------
@@ -450,6 +464,7 @@ export const aprobarRegistro = async (req, res) => {
     res.status(200).json({
       message: "Registro aprobado exitosamente.",
       data: nuevoRegistro[0],
+      foto_banco: fotoBanco,
     });
   } catch (error) {
     console.error(
