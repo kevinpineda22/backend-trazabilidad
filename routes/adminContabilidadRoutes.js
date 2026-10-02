@@ -16,6 +16,7 @@ import { descargarComprobanteAdmin } from "../controllers/comprobantesController
 import {
   listarContratosEmpleados,
   obtenerContratoEmpleado,
+  obtenerContratoPorCedula,
 } from "../controllers/contratosSiesaController.js";
 
 const router = express.Router();
@@ -39,9 +40,11 @@ router.get("/expediente-cliente/:id", authMiddleware, authorizeRoles(...CLIENTE_
 router.get("/expediente-empleado/:id", authMiddleware, authorizeRoles(...EMPLEADO_ROLES), getExpedienteEmpleadoAdmin);
 
 // Contrato en SIESA (estado, cargo, sede). Mismos roles que el historial de
-// empleados: no se devuelve la nómina entera, solo la de los registrados.
+// empleados. La lista trae la nómina completa (activos y retirados), sin el
+// motivo de retiro; el motivo solo va en el detalle.
 router.get("/contratos-empleados", authMiddleware, authorizeRoles(...EMPLEADO_ROLES), listarContratosEmpleados);
 router.get("/contrato-empleado/:id", authMiddleware, authorizeRoles(...EMPLEADO_ROLES), obtenerContratoEmpleado);
+router.get("/contrato-cedula/:cedula", authMiddleware, authorizeRoles(...EMPLEADO_ROLES), obtenerContratoPorCedula);
 
 // Comprobante SAGRILAFT descargable (soporte de aceptación de cláusulas)
 router.get("/comprobante/:tipo/:id", authMiddleware, authorizeRoles(...CLIENTE_PROVEEDOR_ROLES), descargarComprobanteAdmin);

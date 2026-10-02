@@ -89,6 +89,31 @@ export const paraLista = (contrato) => {
   return resto;
 };
 
+/**
+ * Cruza la nómina con los registros de autogestión.
+ * - `porRegistro[idRegistro]`: el contrato de ese registro, o `null` si su
+ *   cédula no está en SIESA.
+ * - `sinRegistro`: quienes están en SIESA y nunca llenaron autogestión. Llevan
+ *   el nombre (no hay otro lado de dónde sacarlo) pero no el motivo de retiro.
+ * Una cédula registrada dos veces cuenta como registrada: no se repite abajo.
+ */
+export const cruzarConRegistros = (contratos, registros = []) => {
+  const porRegistro = {};
+  const registradas = new Set();
+  for (const reg of registros) {
+    const contrato = contratoDe(contratos, reg.cedula);
+    porRegistro[reg.id] = paraLista(contrato);
+    if (contrato) registradas.add(normalizarCedula(contrato.cedula));
+  }
+  const sinRegistro = Object.entries(contratos)
+    .filter(([llave]) => !registradas.has(llave))
+    .map(([, contrato]) => {
+      const { motivoRetiro, ...resto } = contrato;
+      return resto;
+    });
+  return { porRegistro, sinRegistro };
+};
+
 let cache = { datos: null, expira: 0 };
 
 export const limpiarCache = () => {

@@ -4,6 +4,7 @@ import {
   indexarContratos,
   paraLista,
   contratoDe,
+  cruzarConRegistros,
 } from "../services/contratosSiesaService.js";
 
 const fila = (extra = {}) => ({
@@ -107,5 +108,44 @@ describe("contratoDe", () => {
   it("null cuando SIESA no tiene esa cédula", () => {
     expect(contratoDe(contratos, "999")).toBeNull();
     expect(contratoDe(contratos, "")).toBeNull();
+  });
+});
+
+describe("cruzarConRegistros", () => {
+  const contratos = indexarContratos([
+    fila({ nit: "111", estado: "ACTIVO" }),
+    fila({ nit: "222", estado: "RETIRADO", motivo_retiro: "Renuncia" }),
+    fila({ nit: "333", estado: "ACTIVO", motivo_retiro: null }),
+  ]);
+
+  it("el registrado recibe su contrato por id; el que no está en SIESA, null", () => {
+    const { porRegistro } = cruzarConRegistros(contratos, [
+      { id: "r1", cedula: "1.11" },
+      { id: "r2", cedula: "999" },
+    ]);
+    expect(porRegistro.r1.cedula).toBe("111");
+    expect(porRegistro.r2).toBeNull();
+  });
+
+  it("sinRegistro trae al resto de la nómina, con nombre y sin motivo de retiro", () => {
+    const { sinRegistro } = cruzarConRegistros(contratos, [{ id: "r1", cedula: "111" }]);
+    expect(sinRegistro.map((c) => c.cedula).sort()).toEqual(["222", "333"]);
+    const retirado = sinRegistro.find((c) => c.cedula === "222");
+    expect(retirado.nombre).toBe("JUAN PEREZ");
+    expect(retirado).not.toHaveProperty("motivoRetiro");
+  });
+
+  it("una cédula registrada dos veces no se repite en sinRegistro", () => {
+    const { porRegistro, sinRegistro } = cruzarConRegistros(contratos, [
+      { id: "a", cedula: "111" },
+      { id: "b", cedula: "0111" },
+    ]);
+    expect(porRegistro.a.cedula).toBe("111");
+    expect(porRegistro.b.cedula).toBe("111");
+    expect(sinRegistro.some((c) => c.cedula === "111")).toBe(false);
+  });
+
+  it("sin registros, toda la nómina queda en sinRegistro", () => {
+    expect(cruzarConRegistros(contratos, []).sinRegistro).toHaveLength(3);
   });
 });
