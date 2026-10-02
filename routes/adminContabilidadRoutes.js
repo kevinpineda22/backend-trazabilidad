@@ -13,6 +13,10 @@ import {
   marcarEntidadCreada, // Nuevo controlador
 } from "../controllers/adminContabilidadController.js";
 import { descargarComprobanteAdmin } from "../controllers/comprobantesController.js";
+import {
+  listarContratosEmpleados,
+  obtenerContratoEmpleado,
+} from "../controllers/contratosSiesaController.js";
 
 const router = express.Router();
 
@@ -33,6 +37,11 @@ router.get("/dashboard-stats", authMiddleware, getDashboardStats);
 router.get("/expediente-proveedor/:id", authMiddleware, authorizeRoles(...CLIENTE_PROVEEDOR_ROLES), getExpedienteProveedorAdmin);
 router.get("/expediente-cliente/:id", authMiddleware, authorizeRoles(...CLIENTE_PROVEEDOR_ROLES), getExpedienteClienteAdmin);
 router.get("/expediente-empleado/:id", authMiddleware, authorizeRoles(...EMPLEADO_ROLES), getExpedienteEmpleadoAdmin);
+
+// Contrato en SIESA (estado, cargo, sede). Mismos roles que el historial de
+// empleados: no se devuelve la nómina entera, solo la de los registrados.
+router.get("/contratos-empleados", authMiddleware, authorizeRoles(...EMPLEADO_ROLES), listarContratosEmpleados);
+router.get("/contrato-empleado/:id", authMiddleware, authorizeRoles(...EMPLEADO_ROLES), obtenerContratoEmpleado);
 
 // Comprobante SAGRILAFT descargable (soporte de aceptación de cláusulas)
 router.get("/comprobante/:tipo/:id", authMiddleware, authorizeRoles(...CLIENTE_PROVEEDOR_ROLES), descargarComprobanteAdmin);

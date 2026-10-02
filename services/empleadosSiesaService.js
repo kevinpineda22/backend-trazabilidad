@@ -34,12 +34,12 @@ export const normalizarCedula = (valor) => {
 };
 
 // Los nombres llegan con espacios dobles según cómo se digitaron en SIESA.
-const limpiarNombre = (valor) => String(valor ?? "").replace(/\s+/g, " ").trim();
+export const limpiarNombre = (valor) => String(valor ?? "").replace(/\s+/g, " ").trim();
 
 // Las fechas llegan como "2026-02-27T00:00:00" o similar; al panel le sirve el
 // día. Si viniera algo que no es fecha, se devuelve null antes que una fecha
 // inventada.
-const soloFecha = (valor) => {
+export const soloFecha = (valor) => {
   if (!valor) return null;
   const texto = String(valor).trim();
   const m = /^(\d{4}-\d{2}-\d{2})/.exec(texto);
