@@ -23,6 +23,12 @@ const fila = (extra = {}) => ({
   fecha_fin_contrato_vigente: "2026-11-26T00:00:00",
   ultima_prorroga_nro: 2,
   contratos_total: 1,
+  correo: " juan@correo.com ",
+  celular: "3001234567",
+  telefono: null,
+  direccion: "CR 50  # 10-20",
+  barrio: null,
+  municipio: "Copacabana",
   ...extra,
 });
 
@@ -43,6 +49,14 @@ describe("mapearContrato", () => {
       prorroga: 2,
       contratosTotal: 1,
       motivoRetiro: null,
+      contacto: {
+        correo: "juan@correo.com",
+        celular: "3001234567",
+        telefono: null,
+        direccion: "CR 50 # 10-20",
+        barrio: null,
+        municipio: "Copacabana",
+      },
     });
   });
 
@@ -92,6 +106,7 @@ describe("paraLista", () => {
     const lista = paraLista(c);
     expect(lista).not.toHaveProperty("motivoRetiro");
     expect(lista).not.toHaveProperty("nombre");
+    expect(lista).not.toHaveProperty("contacto");
     expect(lista.estado).toBe("retirado");
   });
 
@@ -135,6 +150,7 @@ describe("cruzarConRegistros", () => {
     const retirado = sinRegistro.find((c) => c.cedula === "222");
     expect(retirado.nombre).toBe("JUAN PEREZ");
     expect(retirado).not.toHaveProperty("motivoRetiro");
+    expect(retirado).not.toHaveProperty("contacto");
   });
 
   it("una cédula registrada dos veces no se repite en sinRegistro", () => {
@@ -182,7 +198,17 @@ describe("expedienteDesdeContrato", () => {
       nombre_cargo: "CAJERO",
       sede: "PRINCIPAL COPACABANA",
       fecha_contratacion: "2024-02-01",
+      correo_electronico: "juan@correo.com",
+      contacto: "3001234567",
+      direccion: "CR 50 # 10-20",
+      barrio: null,
+      municipio: "Copacabana",
     });
     expect(Object.keys(exp).some((k) => k.startsWith("url_"))).toBe(false);
+  });
+
+  it("sin celular usa el teléfono fijo", () => {
+    const contrato = mapearContrato(fila({ celular: null, telefono: "6045551234" }));
+    expect(expedienteDesdeContrato(contrato, "u").contacto).toBe("6045551234");
   });
 });

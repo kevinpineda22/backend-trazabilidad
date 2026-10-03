@@ -54,6 +54,16 @@ export const mapearContrato = (fila) => {
     prorroga: Number(fila?.ultima_prorroga_nro) || null,
     contratosTotal: Number(fila?.contratos_total) || 1,
     motivoRetiro: texto(fila?.motivo_retiro),
+    // Contacto del tercero en SIESA (t015_mm_contactos). Dato personal: solo
+    // viaja en el detalle de la Hoja de Vida, nunca en la lista.
+    contacto: {
+      correo: texto(fila?.correo),
+      celular: texto(fila?.celular),
+      telefono: texto(fila?.telefono),
+      direccion: texto(fila?.direccion),
+      barrio: texto(fila?.barrio),
+      municipio: texto(fila?.municipio),
+    },
   };
 };
 
@@ -81,11 +91,12 @@ export const indexarContratos = (filas = []) => {
 
 /**
  * Lo que va a la LISTA del archivador. El motivo de retiro ("con justa causa")
- * insinúa una falta disciplinaria: solo se muestra en la Hoja de Vida Digital.
+ * insinúa una falta disciplinaria, y el contacto (correo, celular, dirección)
+ * es dato personal: los dos solo se muestran en la Hoja de Vida Digital.
  */
 export const paraLista = (contrato) => {
   if (!contrato) return contrato;
-  const { motivoRetiro, nombre, ...resto } = contrato;
+  const { motivoRetiro, nombre, contacto, ...resto } = contrato;
   return resto;
 };
 
@@ -94,7 +105,8 @@ export const paraLista = (contrato) => {
  * - `porRegistro[idRegistro]`: el contrato de ese registro, o `null` si su
  *   cédula no está en SIESA.
  * - `sinRegistro`: quienes están en SIESA y nunca llenaron autogestión. Llevan
- *   el nombre (no hay otro lado de dónde sacarlo) pero no el motivo de retiro.
+ *   el nombre (no hay otro lado de dónde sacarlo) pero no el motivo de retiro
+ *   ni el contacto.
  * Una cédula registrada dos veces cuenta como registrada: no se repite abajo.
  */
 export const cruzarConRegistros = (contratos, registros = []) => {
@@ -108,7 +120,7 @@ export const cruzarConRegistros = (contratos, registros = []) => {
   const sinRegistro = Object.entries(contratos)
     .filter(([llave]) => !registradas.has(llave))
     .map(([, contrato]) => {
-      const { motivoRetiro, ...resto } = contrato;
+      const { motivoRetiro, contacto, ...resto } = contrato;
       return resto;
     });
   return { porRegistro, sinRegistro };
@@ -178,4 +190,9 @@ export const expedienteDesdeContrato = (contrato, userId) => ({
   nombre_cargo: contrato.cargo || null,
   sede: contrato.sede || null,
   fecha_contratacion: contrato.fechaIngreso || null,
+  correo_electronico: contrato.contacto?.correo || null,
+  contacto: contrato.contacto?.celular || contrato.contacto?.telefono || null,
+  direccion: contrato.contacto?.direccion || null,
+  barrio: contrato.contacto?.barrio || null,
+  municipio: contrato.contacto?.municipio || null,
 });
