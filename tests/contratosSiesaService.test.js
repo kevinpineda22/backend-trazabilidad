@@ -5,6 +5,8 @@ import {
   paraLista,
   contratoDe,
   cruzarConRegistros,
+  registroDeCedula,
+  expedienteDesdeContrato,
 } from "../services/contratosSiesaService.js";
 
 const fila = (extra = {}) => ({
@@ -147,5 +149,40 @@ describe("cruzarConRegistros", () => {
 
   it("sin registros, toda la nómina queda en sinRegistro", () => {
     expect(cruzarConRegistros(contratos, []).sinRegistro).toHaveLength(3);
+  });
+});
+
+describe("registroDeCedula", () => {
+  const registros = [
+    { id: "a", cedula: "1.017.924.321" },
+    { id: "b", cedula: "43000111" },
+  ];
+
+  it("encuentra el registro aunque la cédula se haya digitado con puntos", () => {
+    expect(registroDeCedula(registros, "1017924321")?.id).toBe("a");
+  });
+
+  it("devuelve null si la cédula no tiene registro", () => {
+    expect(registroDeCedula(registros, "999")).toBeNull();
+    expect(registroDeCedula(registros, "")).toBeNull();
+  });
+});
+
+describe("expedienteDesdeContrato", () => {
+  it("arma el registro con los datos de SIESA y sin documentos", () => {
+    const contrato = mapearContrato(fila());
+    const exp = expedienteDesdeContrato(contrato, "user-1");
+    expect(exp).toEqual({
+      user_id: "user-1",
+      empresa: "Merkahorro",
+      nombre: "JUAN PEREZ",
+      apellidos: "",
+      tipo_documento: "Cedula de ciudadanía",
+      cedula: "1017924321",
+      nombre_cargo: "CAJERO",
+      sede: "PRINCIPAL COPACABANA",
+      fecha_contratacion: "2024-02-01",
+    });
+    expect(Object.keys(exp).some((k) => k.startsWith("url_"))).toBe(false);
   });
 });

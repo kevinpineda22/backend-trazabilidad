@@ -18,10 +18,10 @@ const responderError = (res, error, accion) => {
   console.error(`Error al ${accion} restricciones:`, error?.response?.data || error?.message);
   if (faltaTabla(error)) {
     return res.status(503).json({
-      message: "Las restricciones todavía no están habilitadas (falta correr sql/restricciones_empleados.sql).",
+      message: "Las observaciones todavía no están habilitadas (falta correr sql/restricciones_empleados.sql).",
     });
   }
-  return res.status(500).json({ message: `No se pudieron ${accion} las restricciones.` });
+  return res.status(500).json({ message: `No se pudieron ${accion} las observaciones.` });
 };
 
 /** @route GET /api/trazabilidad/admin/restricciones/:cedula */

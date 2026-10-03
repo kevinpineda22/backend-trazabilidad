@@ -80,11 +80,13 @@ describe("documentosVersionesRoutes", () => {
     expect(middlewareCount).toBeGreaterThanOrEqual(1);
   });
 
-  it("should have exactly 2 route handlers", () => {
+  it("should have exactly 3 route handlers", () => {
     const routeCount = documentosVersionesRoutes.stack.filter(
       (layer) => layer.route,
     ).length;
-    expect(routeCount).toBe(2);
+    expect(routeCount).toBe(3);
+    const cargar = documentosVersionesRoutes.stack.find((l) => l.route?.path === "/cargar");
+    expect(cargar?.route.methods.post).toBe(true);
   });
 });
 

@@ -26,7 +26,7 @@ export class ConflictoVersion extends Error {
  * @returns {{ ok: true, texto: string } | { ok: false, mensaje: string }}
  */
 export const validarTexto = (valor) => {
-  if (typeof valor !== "string") return { ok: false, mensaje: "Las restricciones deben ser texto." };
+  if (typeof valor !== "string") return { ok: false, mensaje: "Las observaciones deben ser texto." };
   // Se respetan los saltos de línea (suelen ser una lista); solo se recortan
   // los bordes y los espacios al final de cada línea.
   const texto = valor.replace(/[ \t]+$/gm, "").trim();

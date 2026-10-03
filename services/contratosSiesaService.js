@@ -149,3 +149,33 @@ export const contratoDe = (contratos, cedula) => {
   if (!llave) return null;
   return contratos[llave] || null;
 };
+
+/**
+ * El registro de autogestión de una cédula, comparando normalizado: alguien
+ * pudo digitar "1.017.924.321" y SIESA guarda 1017924321. Si se comparara
+ * literal, abrir a esa persona le crearía un segundo expediente.
+ */
+export const registroDeCedula = (registros = [], cedula) => {
+  const llave = normalizarCedula(cedula);
+  if (!llave) return null;
+  return registros.find((reg) => normalizarCedula(reg.cedula) === llave) || null;
+};
+
+/**
+ * Expediente vacío para quien está en SIESA y nunca llenó autogestión: así se
+ * abre la misma Hoja de Vida que a cualquier empleado y se le cargan los
+ * documentos ahí. SIESA trae el nombre completo en un solo campo; no se parte
+ * en nombre y apellidos porque el orden no es confiable. Si después llena
+ * autogestión, la aprobación hace upsert por cédula y completa este registro.
+ */
+export const expedienteDesdeContrato = (contrato, userId) => ({
+  user_id: userId,
+  empresa: contrato.empresa || null,
+  nombre: contrato.nombre || contrato.cedula,
+  apellidos: "",
+  tipo_documento: "Cedula de ciudadanía",
+  cedula: contrato.cedula,
+  nombre_cargo: contrato.cargo || null,
+  sede: contrato.sede || null,
+  fecha_contratacion: contrato.fechaIngreso || null,
+});

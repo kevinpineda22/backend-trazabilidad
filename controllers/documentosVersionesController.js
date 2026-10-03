@@ -209,3 +209,82 @@ export const getHistorialDocumento = async (req, res) => {
     });
   }
 };
+
+/**
+ * @route POST /api/trazabilidad/documentos-versiones/cargar
+ * Carga un documento en una casilla VACÍA del expediente (reemplazar exige que
+ * ya haya uno). Sirve para completar a quien entró desde SIESA sin
+ * autogestión, o a un registrado al que le falta un documento.
+ * body: { expediente_tipo, expediente_id, campo_documento, url_nueva, motivo? }
+ */
+export const cargarDocumento = async (req, res) => {
+  try {
+    const { expediente_tipo, expediente_id, campo_documento, url_nueva, motivo } = req.body;
+    const user_id = req.user?.id;
+
+    if (!user_id) {
+      return res.status(401).json({ message: "Usuario no autenticado." });
+    }
+    if (!expediente_tipo || !expediente_id || !campo_documento || !url_nueva) {
+      return res.status(400).json({
+        message: "Faltan datos requeridos: expediente_tipo, expediente_id, campo_documento, url_nueva.",
+      });
+    }
+    const tablaExpediente = TABLAS_EXPEDIENTE[expediente_tipo];
+    if (!tablaExpediente) {
+      return res.status(400).json({ message: "Tipo de expediente inválido." });
+    }
+    if (!CAMPOS_PERMITIDOS.has(campo_documento)) {
+      return res.status(400).json({ message: `Campo de documento no permitido: ${campo_documento}.` });
+    }
+
+    // Solo si la casilla sigue vacía: si otra persona cargó mientras tanto, no
+    // se pisa su archivo (eso es un reemplazo, con su motivo e historial).
+    const { data: actualizado } = await supabaseAxios.patch(
+      `/${tablaExpediente}?id=eq.${expediente_id}&${campo_documento}=is.null`,
+      { [campo_documento]: url_nueva },
+      { headers: { Prefer: "return=representation" } },
+    );
+
+    if (!actualizado || actualizado.length === 0) {
+      const { data: existe } = await supabaseAxios.get(
+        `/${tablaExpediente}?select=id&id=eq.${expediente_id}`,
+      );
+      if (!existe || existe.length === 0) {
+        return res.status(404).json({ message: "Expediente no encontrado." });
+      }
+      return res.status(409).json({
+        message: "Ese documento ya fue cargado por otra persona. Recargá la hoja de vida para verlo.",
+      });
+    }
+
+    // Queda en el historial quién lo cargó. Si la tabla no acepta una versión
+    // sin documento anterior, el documento igual queda cargado.
+    try {
+      let reemplazado_por_nombre = null;
+      const { data: profileData } = await supabaseAxios.get(`/profiles?select=nombre&id=eq.${user_id}`);
+      reemplazado_por_nombre = profileData?.[0]?.nombre || null;
+      await supabaseAxios.post("/trazabilidad_documentos_versiones", {
+        expediente_tipo,
+        expediente_id,
+        campo_documento,
+        url_anterior: null,
+        url_nueva,
+        motivo: (typeof motivo === "string" && motivo.trim()) || "Carga inicial",
+        reemplazado_por_id: user_id,
+        reemplazado_por_email: req.user?.email || null,
+        reemplazado_por_nombre,
+      });
+    } catch (error) {
+      console.warn(
+        "Documento cargado, pero no se registró en el historial:",
+        error.response ? error.response.data : error.message,
+      );
+    }
+
+    return res.status(200).json({ message: "Documento cargado correctamente." });
+  } catch (error) {
+    console.error("Error en cargarDocumento:", error.response ? error.response.data : error.message);
+    return res.status(500).json({ message: "No se pudo cargar el documento." });
+  }
+};

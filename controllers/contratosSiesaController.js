@@ -14,6 +14,8 @@ import {
   contratoDe,
   paraLista,
   cruzarConRegistros,
+  registroDeCedula,
+  expedienteDesdeContrato,
 } from "../services/contratosSiesaService.js";
 import { normalizarCedula } from "../services/empleadosSiesaService.js";
 
@@ -108,5 +110,64 @@ export const obtenerContratoPorCedula = async (req, res) => {
     return res.json({ contrato, actualizado: siesa.actualizado });
   } catch (error) {
     return responderError(res, error);
+  }
+};
+
+const esCedulaDuplicada = (error) => {
+  const d = error?.response?.data;
+  return d?.code === "23505" || String(d?.details || d?.message || "").includes("cedula");
+};
+
+/**
+ * @route POST /api/trazabilidad/admin/expediente-siesa/:cedula
+ * { id, creado }
+ * Abre la Hoja de Vida de quien está en SIESA pero nunca llenó autogestión: si
+ * no tiene registro, se le crea uno vacío con los datos del contrato. Es
+ * idempotente: abrirlo dos veces (o dos personas a la vez) devuelve el mismo.
+ */
+export const asegurarExpedienteSiesa = async (req, res) => {
+  const cedula = normalizarCedula(req.params.cedula);
+  if (!/^[0-9]{3,15}$/.test(cedula)) {
+    return res.status(400).json({ message: "Cédula inválida." });
+  }
+
+  const buscarRegistro = async () => {
+    const { data } = await supabaseAxios.get(`/empleados_contabilidad?select=id,cedula`);
+    return registroDeCedula(data || [], cedula);
+  };
+
+  try {
+    const existente = await buscarRegistro();
+    if (existente) return res.json({ id: existente.id, creado: false });
+
+    let siesa;
+    try {
+      siesa = await obtenerContratos();
+    } catch (error) {
+      return responderError(res, error);
+    }
+    const contrato = contratoDe(siesa.contratos, cedula);
+    if (!contrato) {
+      return res.status(404).json({ message: "Esa cédula no tiene contrato en SIESA." });
+    }
+
+    try {
+      const { data } = await supabaseAxios.post(
+        "/empleados_contabilidad",
+        expedienteDesdeContrato(contrato, req.user?.id),
+        { headers: { Prefer: "return=representation" } },
+      );
+      return res.status(201).json({ id: data[0].id, creado: true });
+    } catch (error) {
+      // Otra persona lo abrió al mismo tiempo: ya existe, se usa ese.
+      if (esCedulaDuplicada(error)) {
+        const ganador = await buscarRegistro();
+        if (ganador) return res.json({ id: ganador.id, creado: false });
+      }
+      throw error;
+    }
+  } catch (error) {
+    console.error("Error creando expediente desde SIESA:", error?.response?.data || error?.message);
+    return res.status(500).json({ message: "No se pudo abrir la hoja de vida de este empleado." });
   }
 };

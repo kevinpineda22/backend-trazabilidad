@@ -17,6 +17,7 @@ import {
   listarContratosEmpleados,
   obtenerContratoEmpleado,
   obtenerContratoPorCedula,
+  asegurarExpedienteSiesa,
 } from "../controllers/contratosSiesaController.js";
 import {
   verRestricciones,
@@ -52,6 +53,9 @@ router.get("/expediente-empleado/:id", authMiddleware, authorizeRoles(...EMPLEAD
 router.get("/contratos-empleados", authMiddleware, authorizeRoles(...EMPLEADO_ROLES), listarContratosEmpleados);
 router.get("/contrato-empleado/:id", authMiddleware, authorizeRoles(...EMPLEADO_ROLES), obtenerContratoEmpleado);
 router.get("/contrato-cedula/:cedula", authMiddleware, authorizeRoles(...EMPLEADO_ROLES), obtenerContratoPorCedula);
+// Quien está en SIESA sin autogestión: crea (o devuelve) su expediente vacío
+// para abrir la misma Hoja de Vida que a cualquier empleado.
+router.post("/expediente-siesa/:cedula", authMiddleware, authorizeRoles(...EMPLEADO_ROLES), asegurarExpedienteSiesa);
 
 // Restricciones del empleado, por cédula (sirve con o sin Hoja de Vida).
 router.get("/restricciones/:cedula", authMiddleware, authorizeRoles(...RESTRICCIONES_ROLES), verRestricciones);

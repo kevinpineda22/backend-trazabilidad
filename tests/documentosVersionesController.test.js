@@ -12,6 +12,7 @@ vi.mock("../services/supabaseClient.js", () => ({
 import {
   reemplazarDocumento,
   getHistorialDocumento,
+  cargarDocumento,
 } from "../controllers/documentosVersionesController.js";
 import { supabaseAxios } from "../services/supabaseClient.js";
 
@@ -746,5 +747,77 @@ describe("getHistorialDocumento", () => {
     await getHistorialDocumento(req, res);
 
     expect(res.status).toHaveBeenCalledWith(500);
+  });
+});
+
+describe("cargarDocumento", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const body = {
+    expediente_tipo: "empleado",
+    expediente_id: "emp-1",
+    campo_documento: "url_cedula",
+    url_nueva: "https://x/cedula.pdf",
+  };
+
+  it("carga solo si la casilla está vacía y deja la carga en el historial", async () => {
+    supabaseAxios.patch.mockResolvedValue({ data: [{ id: "emp-1" }] });
+    supabaseAxios.get.mockResolvedValue({ data: [{ nombre: "Ana" }] });
+    supabaseAxios.post.mockResolvedValue({ data: [{}] });
+    const res = mockRes();
+
+    await cargarDocumento(mockReq({ body }), res);
+
+    expect(supabaseAxios.patch).toHaveBeenCalledWith(
+      "/empleados_contabilidad?id=eq.emp-1&url_cedula=is.null",
+      { url_cedula: "https://x/cedula.pdf" },
+      expect.anything(),
+    );
+    expect(supabaseAxios.post).toHaveBeenCalledWith(
+      "/trazabilidad_documentos_versiones",
+      expect.objectContaining({ url_anterior: null, motivo: "Carga inicial", reemplazado_por_nombre: "Ana" }),
+    );
+    expect(res.status).toHaveBeenCalledWith(200);
+  });
+
+  it("responde 409 si otra persona ya cargó ese documento", async () => {
+    supabaseAxios.patch.mockResolvedValue({ data: [] });
+    supabaseAxios.get.mockResolvedValue({ data: [{ id: "emp-1" }] });
+    const res = mockRes();
+
+    await cargarDocumento(mockReq({ body }), res);
+
+    expect(res.status).toHaveBeenCalledWith(409);
+    expect(supabaseAxios.post).not.toHaveBeenCalled();
+  });
+
+  it("responde 404 si el expediente no existe", async () => {
+    supabaseAxios.patch.mockResolvedValue({ data: [] });
+    supabaseAxios.get.mockResolvedValue({ data: [] });
+    const res = mockRes();
+
+    await cargarDocumento(mockReq({ body }), res);
+
+    expect(res.status).toHaveBeenCalledWith(404);
+  });
+
+  it("el documento queda cargado aunque el historial falle", async () => {
+    supabaseAxios.patch.mockResolvedValue({ data: [{ id: "emp-1" }] });
+    supabaseAxios.get.mockResolvedValue({ data: [] });
+    supabaseAxios.post.mockRejectedValue({ response: { data: { code: "23502" } } });
+    const res = mockRes();
+
+    await cargarDocumento(mockReq({ body }), res);
+
+    expect(res.status).toHaveBeenCalledWith(200);
+  });
+
+  it("rechaza campos fuera de la lista", async () => {
+    const res = mockRes();
+    await cargarDocumento(mockReq({ body: { ...body, campo_documento: "nombre" } }), res);
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(supabaseAxios.patch).not.toHaveBeenCalled();
   });
 });
