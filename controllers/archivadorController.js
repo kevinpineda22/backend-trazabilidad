@@ -1,7 +1,23 @@
 import { supabaseAxios } from "../services/supabaseClient.js";
+import { llaveCedula } from "../services/restriccionesService.js";
 
 // Tipos de expediente válidos para el archivador.
 const TIPOS_VALIDOS = new Set(["cliente", "empleado", "proveedor"]);
+
+/**
+ * Columna y valor con que se guarda la carpeta. Los empleados van por CÉDULA
+ * normalizada (sql/archivador_empleados_por_cedula.sql): así también tienen
+ * archivador los retirados que solo están en SIESA, y una persona conserva sus
+ * papeles aunque vuelva a llenar autogestión con otro id.
+ * @returns {{ columna: string, valor: string } | null}
+ */
+export const llaveExpediente = (tipo, id) => {
+  if (tipo === "empleado") {
+    const cedula = llaveCedula(id);
+    return cedula ? { columna: "cedula", valor: cedula } : null;
+  }
+  return id ? { columna: "expediente_id", valor: String(id) } : null;
+};
 
 /**
  * @route GET /api/trazabilidad/archivador/carpetas/:tipo/:id
@@ -18,8 +34,13 @@ export const listarCarpetas = async (req, res) => {
       });
     }
 
+    const llave = llaveExpediente(tipo, id);
+    if (!llave) {
+      return res.status(400).json({ message: "Identificador de expediente inválido." });
+    }
+
     const { data } = await supabaseAxios.get(
-      `/expediente_carpetas?expediente_tipo=eq.${tipo}&expediente_id=eq.${id}&select=*&order=created_at.asc`
+      `/expediente_carpetas?expediente_tipo=eq.${tipo}&${llave.columna}=eq.${encodeURIComponent(llave.valor)}&select=*&order=created_at.asc`
     );
 
     return res.status(200).json(data || []);
@@ -38,6 +59,7 @@ export const listarCarpetas = async (req, res) => {
  * @route POST /api/trazabilidad/archivador/carpetas
  * Crea una carpeta en el archivador de un expediente.
  * body: { expediente_tipo, expediente_id, nombre }
+ * Para empleados, expediente_id es la cédula.
  */
 export const crearCarpeta = async (req, res) => {
   try {
@@ -58,6 +80,11 @@ export const crearCarpeta = async (req, res) => {
       });
     }
 
+    const llave = llaveExpediente(expediente_tipo, expediente_id);
+    if (!llave) {
+      return res.status(400).json({ message: "Identificador de expediente inválido." });
+    }
+
     const nombreLimpio = String(nombre).trim();
     if (nombreLimpio.length === 0) {
       return res
@@ -69,7 +96,7 @@ export const crearCarpeta = async (req, res) => {
       "/expediente_carpetas",
       {
         expediente_tipo,
-        expediente_id,
+        [llave.columna]: llave.valor,
         nombre: nombreLimpio,
         created_by,
       },
