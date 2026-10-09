@@ -254,7 +254,7 @@ export const cargarDocumento = async (req, res) => {
         return res.status(404).json({ message: "Expediente no encontrado." });
       }
       return res.status(409).json({
-        message: "Ese documento ya fue cargado por otra persona. Recargá la hoja de vida para verlo.",
+        message: "Ese documento ya fue cargado por otra persona. Recargue la hoja de vida para verlo.",
       });
     }
 
