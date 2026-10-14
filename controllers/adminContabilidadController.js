@@ -1,6 +1,7 @@
 // src/controllers/adminContabilidadController.js
 import { supabaseAxios } from "../services/supabaseClient.js";
-import { sendEmail } from "../services/emailService.js";
+import { sendEmail, registrarSinDestinatario } from "../services/emailService.js";
+import { normalizarCedula } from "../services/empleadosSiesaService.js";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -472,6 +473,15 @@ export const marcarEntidadCreada = async (req, res) => {
       });
     }
 
+    // Cada correo de este paso queda en correos_enviados con la cédula o el NIT.
+    const documentoCorreo =
+      tipo === "empleado" ? registroDatos?.cedula : registroDatos?.nit;
+    const metaCorreo = (evento) => ({
+      evento,
+      entidadTipo: tipo,
+      documento: documentoCorreo,
+    });
+
     // -------------------------------------------------------------------------
     // CORRECCIÓN: ENVÍO CORREO SIESA (CON CARGO INCLUIDO)
     // -------------------------------------------------------------------------
@@ -547,7 +557,12 @@ export const marcarEntidadCreada = async (req, res) => {
                 </html>
               `;
 
-            await sendEmail(recipientsSiesa, subjectSiesa, htmlContentSiesa);
+            await sendEmail(
+              recipientsSiesa,
+              subjectSiesa,
+              htmlContentSiesa,
+              metaCorreo("usuario_siesa"),
+            );
             console.log("Correo SIESA enviado con éxito.");
           }
         }
@@ -633,7 +648,24 @@ export const marcarEntidadCreada = async (req, res) => {
                 </body>
                 </html>
             `;
-      await sendEmail(destinatario, subject, htmlContent);
+      // Sin try, un fallo acá respondía 500 con el estado YA guardado y
+      // cortaba el aviso a Tesorería que sigue.
+      try {
+        await sendEmail(destinatario, subject, htmlContent, metaCorreo("entidad_creada"));
+      } catch (err) {
+        console.error("Error enviando correo de entidad creada:", err);
+      }
+    } else {
+      const variable = {
+        empleado: "ADMIN_EMPLEADOS_EMAIL",
+        cliente: "ADMIN_CLIENTES_EMAIL",
+        proveedor: "ADMIN_PROVEEDORES_EMAIL",
+      }[tipo];
+      await registrarSinDestinatario(
+        variable || "Destinatario",
+        `Proceso Finalizado: ${nombreEntidad}`,
+        metaCorreo("entidad_creada"),
+      );
     }
 
     // --- Notificación a Tesorería (si existe la variable de entorno) ---
@@ -675,10 +707,21 @@ export const marcarEntidadCreada = async (req, res) => {
       `;
       // ✅ AWAIT AÑADIDO: Garantiza que el correo salga antes de responder al cliente
       try {
-        await sendEmail(emailTesoreria, subjectTesoreria, htmlContentTesoreria);
+        await sendEmail(
+          emailTesoreria,
+          subjectTesoreria,
+          htmlContentTesoreria,
+          metaCorreo("aviso_tesoreria"),
+        );
       } catch (err) {
         console.error("Error fatal enviando correo a tesorería:", err);
       }
+    } else {
+      await registrarSinDestinatario(
+        "ADMIN_TESORERIA_EMAIL",
+        `Nuevo Tercero Registrado: ${nombreEntidad}`,
+        metaCorreo("aviso_tesoreria"),
+      );
     }
 
     res.status(200).json({
@@ -690,5 +733,28 @@ export const marcarEntidadCreada = async (req, res) => {
       message: "Error interno del servidor.",
       error: error.message,
     });
+  }
+};
+
+/**
+ * @route GET /api/trazabilidad/admin/correos-empleado/:cedula
+ * Avisos que el sistema intentó mandar por este empleado (correos_enviados),
+ * el más reciente primero. Sin Vercel, es la única forma de saber si un
+ * encargado quedó sin notificar.
+ */
+export const listarCorreosEmpleado = async (req, res) => {
+  const cedula = normalizarCedula(req.params.cedula);
+  if (!/^[0-9]{5,12}$/.test(cedula)) {
+    return res.status(400).json({ message: "Cédula inválida." });
+  }
+  try {
+    const { data } = await supabaseAxios.get(
+      `/correos_enviados?select=id,creado_en,evento,destinatarios,asunto,estado,error` +
+        `&entidad_tipo=eq.empleado&documento=eq.${cedula}&order=creado_en.desc&limit=100`,
+    );
+    return res.json({ correos: data || [] });
+  } catch (error) {
+    console.error("Error listando correos del empleado:", error.response?.data || error.message);
+    return res.status(500).json({ message: "No se pudo leer el registro de correos." });
   }
 };

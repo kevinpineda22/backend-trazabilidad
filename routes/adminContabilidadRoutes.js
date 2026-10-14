@@ -11,6 +11,7 @@ import {
   archivarEntidad,
   restaurarEntidad,
   marcarEntidadCreada, // Nuevo controlador
+  listarCorreosEmpleado,
 } from "../controllers/adminContabilidadController.js";
 import { descargarComprobanteAdmin } from "../controllers/comprobantesController.js";
 import {
@@ -60,6 +61,10 @@ router.post("/expediente-siesa/:cedula", authMiddleware, authorizeRoles(...EMPLE
 // Restricciones del empleado, por cédula (sirve con o sin Hoja de Vida).
 router.get("/restricciones/:cedula", authMiddleware, authorizeRoles(...RESTRICCIONES_ROLES), verRestricciones);
 router.put("/restricciones/:cedula", authMiddleware, authorizeRoles(...RESTRICCIONES_ROLES), actualizarRestricciones);
+
+// Correos que el sistema mandó (o no pudo mandar) por este empleado. Mismos
+// roles que restricciones: Tesorería no ve el expediente completo.
+router.get("/correos-empleado/:cedula", authMiddleware, authorizeRoles(...RESTRICCIONES_ROLES), listarCorreosEmpleado);
 
 // Comprobante SAGRILAFT descargable (soporte de aceptación de cláusulas)
 router.get("/comprobante/:tipo/:id", authMiddleware, authorizeRoles(...CLIENTE_PROVEEDOR_ROLES), descargarComprobanteAdmin);

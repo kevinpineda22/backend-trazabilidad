@@ -1,6 +1,6 @@
 // controllers/aprobacionesController.js
 import { supabaseAxios } from "../services/supabaseClient.js";
-import { sendEmail } from "../services/emailService.js";
+import { sendEmail, registrarSinDestinatario } from "../services/emailService.js";
 import { enviarFotoAlBanco } from "../services/bancoFotosService.js";
 
 /**
@@ -378,6 +378,14 @@ export const aprobarRegistro = async (req, res) => {
     try {
       const adminContabilidadEmail = process.env.ADMIN_CONTABILIDAD_EMAIL;
       const adminSagrilaftEmail = process.env.ADMIN_SAGRILAFT_EMAIL;
+      const metaCorreo = {
+        evento: "registro_aprobado",
+        entidadTipo: registro.tipo,
+        documento:
+          registro.tipo === "empleado"
+            ? infoInsercion.payload.cedula
+            : infoInsercion.payload.nit,
+      };
 
       if (adminContabilidadEmail) {
         const recipients = [adminContabilidadEmail, adminSagrilaftEmail]
@@ -450,9 +458,14 @@ export const aprobarRegistro = async (req, res) => {
           </html>
         `;
 
-        await sendEmail(recipients, subject, htmlContent);
+        await sendEmail(recipients, subject, htmlContent, metaCorreo);
       } else {
         console.warn("ADMIN_CONTABILIDAD_EMAIL no está configurado.");
+        await registrarSinDestinatario(
+          "ADMIN_CONTABILIDAD_EMAIL",
+          "Registro Aprobado",
+          metaCorreo,
+        );
       }
     } catch (emailError) {
       console.error(

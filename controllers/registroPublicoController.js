@@ -1,6 +1,6 @@
 // controllers/registroPublicoController.js
 import { supabaseAxios } from "../services/supabaseClient.js";
-import { sendEmail } from "../services/emailService.js";
+import { sendEmail, registrarSinDestinatario } from "../services/emailService.js";
 import {
   marcarTokenUsado,
   TOKEN_DISABLED_MESSAGES,
@@ -223,9 +223,18 @@ export const registrarEmpleadoPublico = async (req, res) => {
           </body>
           </html>
         `;
-        await sendEmail(adminEmail, subject, htmlContent);
+        await sendEmail(adminEmail, subject, htmlContent, {
+          evento: "registro_recibido",
+          entidadTipo: "empleado",
+          documento: cedula,
+        });
       } else {
         console.warn("ADMIN_EMPLEADOS_EMAIL no está configurado.");
+        await registrarSinDestinatario(
+          "ADMIN_EMPLEADOS_EMAIL",
+          `Nuevo Registro de Empleado: ${nombre} ${apellidos}`,
+          { evento: "registro_recibido", entidadTipo: "empleado", documento: cedula },
+        );
       }
     } catch (emailError) {
       console.error("Error enviando correo al admin de empleados:", emailError);
@@ -525,9 +534,18 @@ export const registrarClientePublico = async (req, res) => {
           </body>
           </html>
         `;
-        await sendEmail(adminEmail, subject, htmlContent);
+        await sendEmail(adminEmail, subject, htmlContent, {
+          evento: "registro_recibido",
+          entidadTipo: "cliente",
+          documento: nit,
+        });
       } else {
         console.warn("ADMIN_CLIENTES_EMAIL no está configurado.");
+        await registrarSinDestinatario("ADMIN_CLIENTES_EMAIL", "Nuevo Registro de Cliente", {
+          evento: "registro_recibido",
+          entidadTipo: "cliente",
+          documento: nit,
+        });
       }
     } catch (emailError) {
       console.error("Error enviando correo al admin de clientes:", emailError);
@@ -754,9 +772,18 @@ export const registrarProveedorPublico = async (req, res) => {
           </body>
           </html>
         `;
-        await sendEmail(adminEmail, subject, htmlContent);
+        await sendEmail(adminEmail, subject, htmlContent, {
+          evento: "registro_recibido",
+          entidadTipo: "proveedor",
+          documento: datosConDocumentos.nit,
+        });
       } else {
         console.warn("ADMIN_PROVEEDORES_EMAIL no está configurado.");
+        await registrarSinDestinatario("ADMIN_PROVEEDORES_EMAIL", "Nuevo Registro de Proveedor", {
+          evento: "registro_recibido",
+          entidadTipo: "proveedor",
+          documento: datosConDocumentos.nit,
+        });
       }
     } catch (emailError) {
       console.error(
