@@ -11,6 +11,7 @@ const {
   guardarRestricciones,
   obtenerRestricciones,
   validarTextoOperativo,
+  obtenerRestriccionesOperativas,
   ConflictoVersion,
   MAX_CARACTERES,
   MAX_CARACTERES_OPERATIVA,
@@ -260,5 +261,89 @@ describe("guardarRestricciones (campo operativo)", () => {
     expect(error).toBeInstanceOf(ConflictoVersion);
     expect(error.actual.restriccionOperativa).toBe("De la otra persona");
     expect(supabaseAxios.post).not.toHaveBeenCalled();
+  });
+});
+
+describe("obtenerRestriccionesOperativas", () => {
+  it("selecciona SOLO cedula y restriccion_operativa, solo las no vacias", async () => {
+    supabaseAxios.get.mockReset();
+    supabaseAxios.get
+      .mockResolvedValueOnce({
+        data: [
+          { cedula: "00123", restriccion_operativa: "No cargar" },
+          { cedula: "456", restriccion_operativa: "Sin turno noche" },
+        ],
+      })
+      .mockResolvedValueOnce({ data: [] });
+
+    const mapa = await obtenerRestriccionesOperativas();
+
+    const url = supabaseAxios.get.mock.calls[0][0];
+    expect(url).toContain("select=cedula,restriccion_operativa");
+    expect(url).not.toMatch(/select=[^&]*restricciones[,&]/);
+    expect(url).toContain("restriccion_operativa=neq.");
+    expect(mapa).toBeInstanceOf(Map);
+    expect(mapa.get("123")).toBe("No cargar");
+    expect(mapa.get("456")).toBe("Sin turno noche");
+  });
+
+  it("propaga el error de lectura (no devuelve un mapa vacio)", async () => {
+    supabaseAxios.get.mockReset();
+    supabaseAxios.get.mockRejectedValue(new Error("boom"));
+    await expect(obtenerRestriccionesOperativas()).rejects.toThrow("boom");
+  });
+
+  const filas = (desde, n) =>
+    Array.from({ length: n }, (_, i) => ({
+      cedula: String(desde + i + 1),
+      restriccion_operativa: `r${desde + i}`,
+    }));
+  const offsetDe = (call) => Number(/offset=(\d+)/.exec(call[0])[1]);
+
+  it("pagina hasta una pagina vacia: 1000 + 3 + vacia -> offsets 0,1000,2000 y mapa completo", async () => {
+    supabaseAxios.get.mockReset();
+    supabaseAxios.get
+      .mockResolvedValueOnce({ data: filas(0, 1000) })
+      .mockResolvedValueOnce({ data: filas(1000, 3) })
+      .mockResolvedValueOnce({ data: [] });
+
+    const mapa = await obtenerRestriccionesOperativas();
+
+    expect(supabaseAxios.get.mock.calls.map(offsetDe)).toEqual([0, 1000, 2000]);
+    expect(mapa.size).toBe(1003);
+    expect(mapa.get("1003")).toBe("r1002");
+    for (const c of supabaseAxios.get.mock.calls) {
+      expect(c[0]).toContain("order=cedula.asc");
+      expect(c[0]).toContain("limit=1000");
+    }
+  });
+
+  it("no se detiene en una pagina corta (max-rows de PostgREST < 1000)", async () => {
+    supabaseAxios.get.mockReset();
+    supabaseAxios.get
+      .mockResolvedValueOnce({ data: filas(0, 500) })
+      .mockResolvedValueOnce({ data: filas(1000, 500) })
+      .mockResolvedValueOnce({ data: filas(2000, 7) })
+      .mockResolvedValueOnce({ data: [] });
+
+    const mapa = await obtenerRestriccionesOperativas();
+
+    expect(mapa.size).toBe(1007);
+    expect(supabaseAxios.get).toHaveBeenCalledTimes(4);
+  });
+
+  it("falla de la pagina 2 -> rechaza (nunca un mapa parcial)", async () => {
+    supabaseAxios.get.mockReset();
+    supabaseAxios.get
+      .mockResolvedValueOnce({ data: filas(0, 1000) })
+      .mockRejectedValueOnce(new Error("page2"));
+    await expect(obtenerRestriccionesOperativas()).rejects.toThrow("page2");
+  });
+
+  it("supera el maximo de paginas -> rechaza (guarda contra bucle infinito)", async () => {
+    supabaseAxios.get.mockReset();
+    supabaseAxios.get.mockResolvedValue({ data: filas(0, 1) });
+    await expect(obtenerRestriccionesOperativas()).rejects.toThrow(/paginas/i);
+    expect(supabaseAxios.get.mock.calls.length).toBeLessThanOrEqual(1000);
   });
 });

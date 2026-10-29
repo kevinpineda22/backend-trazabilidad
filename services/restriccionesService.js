@@ -91,6 +91,35 @@ export const obtenerRestricciones = async (cedula) => {
   };
 };
 
+const PAGINA_OPERATIVAS = 1000;
+const MAX_PAGINAS_OPERATIVAS = 200;
+
+/**
+ * Restricciones operativas (solo cedula + restriccion_operativa, nunca el texto
+ * libre sensible) de quienes tienen una cargada. Llave: cedula normalizada.
+ * Cualquier fallo de lectura se propaga: un mapa vacio por error se leeria como
+ * "sin restricciones".
+ * @returns {Promise<Map<string, string>>}
+ */
+export const obtenerRestriccionesOperativas = async () => {
+  const mapa = new Map();
+  // Se pagina hasta una pagina VACIA: el max-rows de PostgREST puede ser < 1000.
+  for (let pagina = 0; pagina < MAX_PAGINAS_OPERATIVAS; pagina++) {
+    const desde = pagina * PAGINA_OPERATIVAS;
+    const { data } = await supabaseAxios.get(
+      `/empleados_restricciones?select=cedula,restriccion_operativa&restriccion_operativa=neq.` +
+        `&order=cedula.asc&limit=${PAGINA_OPERATIVAS}&offset=${desde}`,
+    );
+    const filas = data || [];
+    if (filas.length === 0) return mapa;
+    for (const f of filas) {
+      const llave = normalizarCedula(f.cedula);
+      if (llave && f.restriccion_operativa) mapa.set(llave, f.restriccion_operativa);
+    }
+  }
+  throw new Error(`obtenerRestriccionesOperativas: se supero el maximo de ${MAX_PAGINAS_OPERATIVAS} paginas`);
+};
+
 /**
  * @param {{ cedula: string, texto: string, textoOperativo?: string, versionAnterior: string|null, usuario: { id, nombre } }}
  * `textoOperativo` undefined = no tocar el campo operativo (clientes que solo envían `restricciones`).
