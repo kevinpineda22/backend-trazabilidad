@@ -13,6 +13,8 @@ import { supabaseAxios } from "./supabaseClient.js";
 import { normalizarCedula } from "./empleadosSiesaService.js";
 
 export const MAX_CARACTERES = 4000;
+// Versión corta y sin diagnóstico para líderes (sql/restricciones_operativas.sql).
+export const MAX_CARACTERES_OPERATIVA = 500;
 const HISTORIAL_VISIBLE = 20;
 
 export class ConflictoVersion extends Error {
@@ -36,6 +38,18 @@ export const validarTexto = (valor) => {
   return { ok: true, texto };
 };
 
+export const validarTextoOperativo = (valor) => {
+  if (typeof valor !== "string") return { ok: false, mensaje: "La restricción operativa debe ser texto." };
+  const texto = valor.replace(/[ \t]+$/gm, "").trim();
+  if (texto.length > MAX_CARACTERES_OPERATIVA) {
+    return {
+      ok: false,
+      mensaje: `La restricción operativa admite máximo ${MAX_CARACTERES_OPERATIVA} caracteres (tiene ${texto.length}).`,
+    };
+  }
+  return { ok: true, texto };
+};
+
 export const llaveCedula = (cedula) => {
   const llave = normalizarCedula(cedula);
   return /^[0-9]{3,15}$/.test(llave) ? llave : null;
@@ -45,14 +59,15 @@ const mapear = (fila) =>
   fila
     ? {
         restricciones: fila.restricciones || "",
+        restriccionOperativa: fila.restriccion_operativa || "",
         actualizadoPor: fila.actualizado_por_nombre || null,
         actualizadoEn: fila.updated_at || null,
       }
-    : { restricciones: "", actualizadoPor: null, actualizadoEn: null };
+    : { restricciones: "", restriccionOperativa: "", actualizadoPor: null, actualizadoEn: null };
 
 const leerActual = async (cedula) => {
   const { data } = await supabaseAxios.get(
-    `/empleados_restricciones?cedula=eq.${cedula}&select=restricciones,actualizado_por_nombre,updated_at`,
+    `/empleados_restricciones?cedula=eq.${cedula}&select=restricciones,restriccion_operativa,actualizado_por_nombre,updated_at`,
   );
   return data?.[0] || null;
 };
@@ -62,13 +77,14 @@ export const obtenerRestricciones = async (cedula) => {
     leerActual(cedula),
     supabaseAxios.get(
       `/empleados_restricciones_historial?cedula=eq.${cedula}` +
-        `&select=restricciones,actualizado_por_nombre,created_at&order=created_at.desc&limit=${HISTORIAL_VISIBLE}`,
+        `&select=restricciones,restriccion_operativa,actualizado_por_nombre,created_at&order=created_at.desc&limit=${HISTORIAL_VISIBLE}`,
     ),
   ]);
   return {
     ...mapear(actual),
     historial: (historial || []).map((h) => ({
       restricciones: h.restricciones,
+      restriccionOperativa: h.restriccion_operativa || "",
       actualizadoPor: h.actualizado_por_nombre || null,
       actualizadoEn: h.created_at,
     })),
@@ -76,10 +92,11 @@ export const obtenerRestricciones = async (cedula) => {
 };
 
 /**
- * @param {{ cedula: string, texto: string, versionAnterior: string|null, usuario: { id, nombre } }}
+ * @param {{ cedula: string, texto: string, textoOperativo?: string, versionAnterior: string|null, usuario: { id, nombre } }}
+ * `textoOperativo` undefined = no tocar el campo operativo (clientes que solo envían `restricciones`).
  * `versionAnterior` = el `actualizadoEn` que vio quien edita (null si estaba vacío).
  */
-export const guardarRestricciones = async ({ cedula, texto, versionAnterior, usuario }) => {
+export const guardarRestricciones = async ({ cedula, texto, textoOperativo, versionAnterior, usuario }) => {
   const ahora = new Date().toISOString();
   const cambios = {
     restricciones: texto,
@@ -87,6 +104,7 @@ export const guardarRestricciones = async ({ cedula, texto, versionAnterior, usu
     actualizado_por_nombre: usuario?.nombre || null,
     updated_at: ahora,
   };
+  if (textoOperativo !== undefined) cambios.restriccion_operativa = textoOperativo;
   const representacion = { headers: { Prefer: "return=representation" } };
 
   let guardada;
@@ -119,6 +137,8 @@ export const guardarRestricciones = async ({ cedula, texto, versionAnterior, usu
     await supabaseAxios.post("/empleados_restricciones_historial", {
       cedula,
       restricciones: texto,
+      // Si no se envió, queda registrado el valor vigente que devolvió la escritura.
+      restriccion_operativa: guardada.restriccion_operativa ?? textoOperativo ?? "",
       actualizado_por: cambios.actualizado_por,
       actualizado_por_nombre: cambios.actualizado_por_nombre,
     });

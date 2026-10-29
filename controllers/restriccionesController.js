@@ -3,6 +3,7 @@ import {
   obtenerRestricciones,
   guardarRestricciones,
   validarTexto,
+  validarTextoOperativo,
   llaveCedula,
   ConflictoVersion,
 } from "../services/restriccionesService.js";
@@ -14,8 +15,20 @@ const faltaTabla = (error) => {
   return error?.response?.status === 404 || /does not exist|PGRST205/.test(texto);
 };
 
+// Columna `restriccion_operativa` ausente (sql/restricciones_operativas.sql sin correr).
+// Se evalúa antes que faltaTabla: "does not exist" también aparece en este caso.
+const faltaColumnaOperativa = (error) => {
+  const data = error?.response?.data;
+  return data?.code === "42703" || /restriccion_operativa/.test(JSON.stringify(data || ""));
+};
+
 const responderError = (res, error, accion) => {
   console.error(`Error al ${accion} restricciones:`, error?.response?.data || error?.message);
+  if (faltaColumnaOperativa(error)) {
+    return res.status(503).json({
+      message: "La restricción operativa todavía no está habilitada (falta correr sql/restricciones_operativas.sql).",
+    });
+  }
   if (faltaTabla(error)) {
     return res.status(503).json({
       message: "Las observaciones todavía no están habilitadas (falta correr sql/restricciones_empleados.sql).",
@@ -37,7 +50,8 @@ export const verRestricciones = async (req, res) => {
 
 /**
  * @route PUT /api/trazabilidad/admin/restricciones/:cedula
- * body: { restricciones: string, versionAnterior: string|null }
+ * body: { restricciones: string, restriccionOperativa?: string, versionAnterior: string|null }
+ * `restriccionOperativa` omitida = se conserva el valor actual.
  * 409 = otra persona guardó mientras tanto; trae `actual` para mostrarlo.
  */
 export const actualizarRestricciones = async (req, res) => {
@@ -47,10 +61,18 @@ export const actualizarRestricciones = async (req, res) => {
   const validacion = validarTexto(req.body?.restricciones);
   if (!validacion.ok) return res.status(400).json({ message: validacion.mensaje });
 
+  let textoOperativo;
+  if (req.body?.restriccionOperativa !== undefined) {
+    const operativa = validarTextoOperativo(req.body.restriccionOperativa);
+    if (!operativa.ok) return res.status(400).json({ message: operativa.mensaje });
+    textoOperativo = operativa.texto;
+  }
+
   try {
     const guardada = await guardarRestricciones({
       cedula,
       texto: validacion.texto,
+      textoOperativo,
       versionAnterior: req.body?.versionAnterior || null,
       usuario: { id: req.user?.id, nombre: req.user?.nombre || req.user?.email },
     });
