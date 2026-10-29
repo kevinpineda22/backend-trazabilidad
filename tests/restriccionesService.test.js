@@ -9,13 +9,18 @@ const {
   validarTexto,
   llaveCedula,
   guardarRestricciones,
+  obtenerRestricciones,
+  validarTextoOperativo,
+  obtenerRestriccionesOperativas,
   ConflictoVersion,
   MAX_CARACTERES,
+  MAX_CARACTERES_OPERATIVA,
 } = await import("../services/restriccionesService.js");
 
 const usuario = { id: "u1", nombre: "Luna Muñoz" };
 const fila = (extra = {}) => ({
   restricciones: "No levantar más de 10 kg",
+  restriccion_operativa: "No levantar más de 10 kg",
   actualizado_por_nombre: "Luna Muñoz",
   updated_at: "2026-10-02T15:00:00.123+00:00",
   ...extra,
@@ -134,5 +139,211 @@ describe("guardarRestricciones", () => {
 
     expect(r.restricciones).toBe("Nueva");
     consola.mockRestore();
+  });
+});
+
+describe("validarTextoOperativo", () => {
+  it("límite propio de 500 caracteres, distinto del de las observaciones", () => {
+    expect(MAX_CARACTERES_OPERATIVA).toBe(500);
+    expect(validarTextoOperativo("x".repeat(500)).ok).toBe(true);
+    expect(validarTextoOperativo("x".repeat(501)).ok).toBe(false);
+  });
+
+  it("recorta los bordes y conserva el contenido", () => {
+    expect(validarTextoOperativo("  No cargar peso \n")).toEqual({ ok: true, texto: "No cargar peso" });
+  });
+
+  it("quita espacios y tabs al final de cada línea y recorta los bordes", () => {
+    expect(validarTextoOperativo("  uno  \ndos\t\t\ntres \t ").texto).toBe("uno\ndos\ntres");
+  });
+
+  it("vacío es válido y lo que no es texto se rechaza", () => {
+    expect(validarTextoOperativo("  ")).toEqual({ ok: true, texto: "" });
+    expect(validarTextoOperativo(null).ok).toBe(false);
+    expect(validarTextoOperativo(12).ok).toBe(false);
+  });
+});
+
+describe("obtenerRestricciones (campo operativo)", () => {
+  it("devuelve ambos campos y pide la columna operativa en vigente e historial", async () => {
+    supabaseAxios.get
+      .mockResolvedValueOnce({
+        data: [fila({ restricciones: "Dx privado", restriccion_operativa: "Sin turnos nocturnos" })],
+      })
+      .mockResolvedValueOnce({
+        data: [{ restricciones: "Dx", restriccion_operativa: "Sin carga", actualizado_por_nombre: "Luna", created_at: "t1" }],
+      });
+
+    const r = await obtenerRestricciones("123");
+
+    expect(r.restricciones).toBe("Dx privado");
+    expect(r.restriccionOperativa).toBe("Sin turnos nocturnos");
+    expect(r.historial[0].restriccionOperativa).toBe("Sin carga");
+    expect(supabaseAxios.get.mock.calls[0][0]).toContain("restriccion_operativa");
+    expect(supabaseAxios.get.mock.calls[1][0]).toContain("restriccion_operativa");
+  });
+
+  it("sin fila, el campo operativo es cadena vacía", async () => {
+    supabaseAxios.get.mockResolvedValue({ data: [] });
+    const r = await obtenerRestricciones("123");
+    expect(r.restriccionOperativa).toBe("");
+  });
+});
+
+describe("guardarRestricciones (campo operativo)", () => {
+  it("escribe ambos campos en el PATCH condicional y en el historial", async () => {
+    supabaseAxios.patch.mockResolvedValue({
+      data: [fila({ restricciones: "Nueva", restriccion_operativa: "Op nueva" })],
+    });
+    supabaseAxios.post.mockResolvedValue({ data: [] });
+
+    const r = await guardarRestricciones({
+      cedula: "123",
+      texto: "Nueva",
+      textoOperativo: "Op nueva",
+      versionAnterior: "v1",
+      usuario,
+    });
+
+    expect(supabaseAxios.patch.mock.calls[0][0]).toContain("updated_at=eq.v1");
+    expect(supabaseAxios.patch.mock.calls[0][1]).toMatchObject({
+      restricciones: "Nueva",
+      restriccion_operativa: "Op nueva",
+    });
+    expect(supabaseAxios.post).toHaveBeenCalledWith(
+      "/empleados_restricciones_historial",
+      expect.objectContaining({ restricciones: "Nueva", restriccion_operativa: "Op nueva" }),
+    );
+    expect(r.restriccionOperativa).toBe("Op nueva");
+  });
+
+  it("si se omite el operativo, el PATCH no toca la columna y el historial conserva el vigente", async () => {
+    supabaseAxios.patch.mockResolvedValue({
+      data: [fila({ restricciones: "Nueva", restriccion_operativa: "Vigente intacto" })],
+    });
+    supabaseAxios.post.mockResolvedValue({ data: [] });
+
+    await guardarRestricciones({ cedula: "123", texto: "Nueva", versionAnterior: "v1", usuario });
+
+    expect(supabaseAxios.patch.mock.calls[0][1]).not.toHaveProperty("restriccion_operativa");
+    expect(supabaseAxios.post.mock.calls[0][1].restriccion_operativa).toBe("Vigente intacto");
+  });
+
+  it("un operativo vacío explícito sí se escribe (borra)", async () => {
+    supabaseAxios.patch.mockResolvedValue({ data: [fila({ restriccion_operativa: "" })] });
+    supabaseAxios.post.mockResolvedValue({ data: [] });
+
+    await guardarRestricciones({ cedula: "123", texto: "x", textoOperativo: "", versionAnterior: "v1", usuario });
+
+    expect(supabaseAxios.patch.mock.calls[0][1].restriccion_operativa).toBe("");
+  });
+
+  it("la primera vez, si se omite el operativo no manda la columna (default '')", async () => {
+    supabaseAxios.post.mockResolvedValue({ data: [fila({ restriccion_operativa: "" })] });
+
+    await guardarRestricciones({ cedula: "123", texto: "x", versionAnterior: null, usuario });
+
+    expect(supabaseAxios.post.mock.calls[0][1]).not.toHaveProperty("restriccion_operativa");
+  });
+
+  it("el conflicto de versión sigue funcionando y trae ambos campos", async () => {
+    supabaseAxios.patch.mockResolvedValue({ data: [] });
+    supabaseAxios.get.mockResolvedValue({ data: [fila({ restriccion_operativa: "De la otra persona" })] });
+
+    const error = await guardarRestricciones({
+      cedula: "123",
+      texto: "Mi cambio",
+      textoOperativo: "Mi op",
+      versionAnterior: "viejo",
+      usuario,
+    }).catch((e) => e);
+
+    expect(error).toBeInstanceOf(ConflictoVersion);
+    expect(error.actual.restriccionOperativa).toBe("De la otra persona");
+    expect(supabaseAxios.post).not.toHaveBeenCalled();
+  });
+});
+
+describe("obtenerRestriccionesOperativas", () => {
+  it("selecciona SOLO cedula y restriccion_operativa, solo las no vacias", async () => {
+    supabaseAxios.get.mockReset();
+    supabaseAxios.get
+      .mockResolvedValueOnce({
+        data: [
+          { cedula: "00123", restriccion_operativa: "No cargar" },
+          { cedula: "456", restriccion_operativa: "Sin turno noche" },
+        ],
+      })
+      .mockResolvedValueOnce({ data: [] });
+
+    const mapa = await obtenerRestriccionesOperativas();
+
+    const url = supabaseAxios.get.mock.calls[0][0];
+    expect(url).toContain("select=cedula,restriccion_operativa");
+    expect(url).not.toMatch(/select=[^&]*restricciones[,&]/);
+    expect(url).toContain("restriccion_operativa=neq.");
+    expect(mapa).toBeInstanceOf(Map);
+    expect(mapa.get("123")).toBe("No cargar");
+    expect(mapa.get("456")).toBe("Sin turno noche");
+  });
+
+  it("propaga el error de lectura (no devuelve un mapa vacio)", async () => {
+    supabaseAxios.get.mockReset();
+    supabaseAxios.get.mockRejectedValue(new Error("boom"));
+    await expect(obtenerRestriccionesOperativas()).rejects.toThrow("boom");
+  });
+
+  const filas = (desde, n) =>
+    Array.from({ length: n }, (_, i) => ({
+      cedula: String(desde + i + 1),
+      restriccion_operativa: `r${desde + i}`,
+    }));
+  const offsetDe = (call) => Number(/offset=(\d+)/.exec(call[0])[1]);
+
+  it("pagina hasta una pagina vacia: 1000 + 3 + vacia -> offsets 0,1000,2000 y mapa completo", async () => {
+    supabaseAxios.get.mockReset();
+    supabaseAxios.get
+      .mockResolvedValueOnce({ data: filas(0, 1000) })
+      .mockResolvedValueOnce({ data: filas(1000, 3) })
+      .mockResolvedValueOnce({ data: [] });
+
+    const mapa = await obtenerRestriccionesOperativas();
+
+    expect(supabaseAxios.get.mock.calls.map(offsetDe)).toEqual([0, 1000, 2000]);
+    expect(mapa.size).toBe(1003);
+    expect(mapa.get("1003")).toBe("r1002");
+    for (const c of supabaseAxios.get.mock.calls) {
+      expect(c[0]).toContain("order=cedula.asc");
+      expect(c[0]).toContain("limit=1000");
+    }
+  });
+
+  it("no se detiene en una pagina corta (max-rows de PostgREST < 1000)", async () => {
+    supabaseAxios.get.mockReset();
+    supabaseAxios.get
+      .mockResolvedValueOnce({ data: filas(0, 500) })
+      .mockResolvedValueOnce({ data: filas(1000, 500) })
+      .mockResolvedValueOnce({ data: filas(2000, 7) })
+      .mockResolvedValueOnce({ data: [] });
+
+    const mapa = await obtenerRestriccionesOperativas();
+
+    expect(mapa.size).toBe(1007);
+    expect(supabaseAxios.get).toHaveBeenCalledTimes(4);
+  });
+
+  it("falla de la pagina 2 -> rechaza (nunca un mapa parcial)", async () => {
+    supabaseAxios.get.mockReset();
+    supabaseAxios.get
+      .mockResolvedValueOnce({ data: filas(0, 1000) })
+      .mockRejectedValueOnce(new Error("page2"));
+    await expect(obtenerRestriccionesOperativas()).rejects.toThrow("page2");
+  });
+
+  it("supera el maximo de paginas -> rechaza (guarda contra bucle infinito)", async () => {
+    supabaseAxios.get.mockReset();
+    supabaseAxios.get.mockResolvedValue({ data: filas(0, 1) });
+    await expect(obtenerRestriccionesOperativas()).rejects.toThrow(/paginas/i);
+    expect(supabaseAxios.get.mock.calls.length).toBeLessThanOrEqual(1000);
   });
 });

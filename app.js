@@ -15,6 +15,7 @@ import adminDocumentosRoutes from "./routes/adminDocumentosRoutes.js";
 import documentosVersionesRoutes from "./routes/documentosVersionesRoutes.js";
 import archivadorRoutes from "./routes/archivadorRoutes.js";
 import empleadosSiesaRoutes from "./routes/empleadosSiesaRoutes.js";
+import serviceRoutes from "./routes/serviceRoutes.js";
 
 // Cargar variables de entorno
 dotenv.config();
@@ -35,6 +36,10 @@ app.use((req, res, next) => {
   res.setHeader("Cache-Control", "private, no-store");
   next();
 });
+
+// Superficie servicio-a-servicio (x-api-key, limiters propios): va ANTES del
+// limiter global para no compartir su cupo por IP.
+app.use("/api/trazabilidad/service", serviceRoutes);
 
 // Rate limiting global
 const globalLimiter = rateLimit({
